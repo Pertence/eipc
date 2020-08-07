@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops">
+<!-- Generated from TeX source by tex2page, v 4o,
+     (c) Dorai Sitaram, http://www.cs.rice.edu/~dorai/tex2page -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type: text/html; charset=utf-8"/>
+    <title>Estrutura e Interpretação de Programas de Computador</title>
+    <link rel="stylesheet" type="text/css" href="book-Z-C.css" title="default"/>
+  </head>
+  <body>
+
+
+
+<a name="%_sec_2.4" id="%_sec_2.4"/>
+<h2><a href="book-Z-H-4.html#%_toc_%_sec_2.4">2.4 Múltiplas representações para dados abstratos</a></h2><p>
+
+
+<a name="%_idx_2286" id="%_idx_2286"/><a name="%_idx_2288" id="%_idx_2288"/>Introduzimos a abstração de dados, uma metodologia para estruturar sistemas de forma que grande parte de um programa possa ser especificada independentemente das opções envolvidas na implementação dos objetos de dados que o programa manipula. Por exemplo, vimos na seção <a href="book-Z-H-14.html#%_sec_2.1.1">2.1.1</a> como separar a tarefa de projetar um programa que usa números racionais da tarefa de implementar números racionais em termos dos mecanismos primitivos da linguagem de computador para construir dados compostos. A ideia principal era erguer uma barreira de abstração - nesse caso, os seletores e construtores de números racionais (<tt>make-rat</tt>, <tt>numer</tt>, <tt>denom</tt>) - que isola a maneira como os números racionais são usados ​​de sua representação subjacente em termos de estrutura de lista. Uma barreira de abstração semelhante isola os detalhes dos procedimentos que executam aritmética racional (<tt>add-rat</tt>, <tt>sub-rat</tt>, <tt>mul-rat</tt>, e <tt>div-rat</tt>) dos procedimentos de “nível superior” que usam números racionais. O programa resultante possui a estrutura mostrada na figura <a href="book-Z-H-14.html#%_fig_2.1">2.1</a>.</p><p>Essas barreiras de abstração de dados são ferramentas poderosas para controlar a complexidade. Isolando as representações subjacentes dos objetos de dados, podemos dividir a tarefa de projetar um programa grande em tarefas menores que podem ser executadas separadamente. Mas esse tipo de abstração de dados ainda não é poderoso o suficiente, porque nem sempre faz sentido falar da &quot;representação subjacente&quot; de um objeto de dados.</p><p>Por um lado, pode haver mais de uma representação útil para um objeto de dados, e gostaríamos de projetar sistemas que possam lidar com várias representações. Para dar um exemplo simples, números complexos podem ser representados de duas maneiras quase equivalentes: na forma retangular (partes reais e imaginárias) e na forma polar (magnitude e ângulo). Às vezes, a forma retangular é mais apropriada e, às vezes, a forma polar é mais apropriada. De fato, é perfeitamente plausível imaginar um sistema em que números complexos sejam representados nos dois sentidos e em que os procedimentos para manipular números complexos funcionem com qualquer uma das representações.</p><p>Mais importante, os sistemas de programação geralmente são projetados por muitas pessoas que trabalham por longos períodos de tempo, assim esses sistemas são sujeitos a requisitos que mudam com o tempo. Nesse ambiente, simplesmente não é possível que todos concordem com antecedência sobre as opções de representação de dados. Portanto, além das barreiras de abstração de dados que isolam a representação do uso, precisamos de barreiras de abstração que isolem diferentes opções de projeto e permitam que diferentes opções coexistam em um único programa. Além disso, como programas grandes geralmente são criados combinando módulos preexistentes que foram projetados isoladamente, precisamos de convenções que permitam aos programadores incorporar módulos em sistemas maiores <a name="%_idx_2290" id="%_idx_2290"/><em>aditivamente</em>, isto é, sem ter que reprojetar ou reimplementar esses módulos.</p><p>Nesta seção, aprenderemos como lidar com dados que podem ser representados de diferentes maneiras por diferentes partes de um programa. Isso requer a construção de <a name="%_idx_2292" id="%_idx_2292"/><a name="%_idx_2294" id="%_idx_2294"/><em>procedimentos genéricos</em> - procedimentos que podem operar com dados que podem ser representados de mais de uma maneira. Nossa principal técnica para criar procedimentos genéricos será trabalhar em termos de objetos de dados que possuem <a name="%_idx_2296" id="%_idx_2296"/><em>etiquetas de tipo</em>, ou seja, objetos de dados que incluem informações explícitas sobre como eles devem ser processados. Também discutiremos a programação <a name="%_idx_2298" id="%_idx_2298"/><em>orientada a dados</em>, uma estratégia de implementação poderosa e conveniente para montar sistemas de forma aditiva com operações genéricas.</p><p>Começamos com o exemplo simples de número complexo. Veremos como as etiquetas de tipo e o estilo orientado a dados nos permitem projetar representações retangulares e polares separadas para números complexos, mantendo a noção de um objeto de dados abstrato &quot;número complexo&quot;. <a name="%_idx_2300" id="%_idx_2300"/><a name="%_idx_2302" id="%_idx_2302"/>Conseguiremos isso definindo procedimentos aritméticos para números complexos (<tt>add-complex</tt>, <tt>sub-complex</tt>, <tt>mul-complex</tt> e <tt>div-complex</tt>) em termos de seletores genéricos que acessam partes de um número complexo, independentemente de como o número é representado. O sistema de números complexos resultante, como mostrado na figura <a href="#%_fig_2.19">2.19</a>, contém dois tipos diferentes de barreiras de abstração<a name="%_idx_2304" id="%_idx_2304"/>. As barreiras de abstração “horizontal” desempenham o mesmo papel que as da figura <a href="book-Z-H-14.html#%_fig_2.1">2.1</a>. Eles isolam as operações de &quot;nível superior&quot; das representações de &quot;nível inferior&quot;. Além disso, existe uma barreira “vertical” que nos permite projetar e instalar separadamente representações alternativas.</p><p>
+
+<a name="%_fig_2.19" id="%_fig_2.19"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch2-Z-G-54.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.19:</b> Barreiras de abstração de dados no sistema de números complexos.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Na seção <a href="book-Z-H-18.html#%_sec_2.5">2.5</a>, mostraremos como usar etiquetas de tipo e estilo orientado a dados para desenvolver um pacote aritmético genérico. Isso fornece procedimentos (<tt>add</tt>, <tt>mul</tt>, e assim por diante) que podem ser usados ​​para manipular todos os tipos de &quot;números&quot; e podem ser facilmente estendidos quando um novo tipo de número é necessário. Na seção <a href="book-Z-H-18.html#%_sec_2.5.3">2.5.3</a>, mostraremos como usar a aritmética genérica em um sistema que executa álgebra simbólica.</p><p>
+
+<a name="%_sec_2.4.1" id="%_sec_2.4.1"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_2.4.1">2.4.1 Representações para números complexos</a></h3><p>
+
+</p><p>
+
+<a name="%_idx_2306" id="%_idx_2306"/>Desenvolveremos um sistema que executa operações aritméticas em números complexos como um exemplo simples, mas não realístico, de um programa que usa operações genéricas. Começamos discutindo duas representações plausíveis para números complexos como pares ordenados: forma retangular (parte real e parte imaginária) e forma polar (magnitude e ângulo).<a name="call_footnote_Temp_268" href="#footnote_Temp_268" id="call_footnote_Temp_268"><sup><small>43</small></sup></a> A seção <a href="#%_sec_2.4.2">2.4.2</a> mostrará como ambas as representações podem ser feitas para coexistir em um único sistema através do uso de etiquetas de tipo e operações genéricas.</p><p>Como números racionais, números complexos são naturalmente representados como pares ordenados. O conjunto de números complexos pode ser pensado como um espaço bidimensional com dois eixos ortogonais, o eixo &quot;real&quot; e o eixo &quot;imaginário&quot;. (Veja a figura <a href="#%_fig_2.20">2.20</a>). Desse ponto de vista, o número complexo <em>z</em> = <em>x</em> + <em>i</em><em>y</em> (onde <em>i</em><sup>2</sup> = - 1) pode ser pensado como o ponto no plano cuja coordenada real é <em>x</em> e cuja coordenada imaginária é <em>y</em>. A adição de números complexos reduz nessa representação à adição de coordenadas:</p><p>
+
+</p><p/><div align="left"><img src="images/ch2-Z-G-55.gif" border="0"/></div><p/><p>
+
+</p><p/><div align="left"><img src="images/ch2-Z-G-56.gif" border="0"/></div><p/><p>Ao multiplicar números complexos, é mais natural pensar em termos de representação de um número complexo em forma polar, como uma magnitude e um ângulo (<em>r</em> e <em>A</em> na figura <a href="#%_fig_2.20">2.20</a>). O produto de dois números complexos é o vetor obtido esticando um número complexo pelo comprimento do outro e girando-o pelo ângulo do outro:</p><p>
+
+</p><p/><div align="left"><img src="images/ch2-Z-G-57.gif" border="0"/></div><p/><p>
+
+</p><p/><div align="left"><img src="images/ch2-Z-G-58.gif" border="0"/></div><p>Portanto, existem duas representações diferentes para números complexos, que são apropriadas para operações diferentes. No entanto, do ponto de vista de alguém que escreve um programa que usa números complexos, o princípio da abstração de dados sugere que todas as operações para manipular números complexos devem estar disponíveis, independentemente de qual representação seja usada pelo computador. Por exemplo, geralmente é útil encontrar a magnitude de um número complexo especificado por coordenadas retangulares. Da mesma forma, geralmente é útil poder determinar a parte real de um número complexo especificado por coordenadas polares.</p><p>
+
+<a name="%_fig_2.20" id="%_fig_2.20"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch2-Z-G-59.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.20:</b> Números complexos como pontos no plano.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Para projetar esse sistema, podemos seguir a mesma estratégia de <a name="%_idx_2310" id="%_idx_2310"/>abstração de dados que seguimos ao projetar o pacote de números racionais na seção <a href="book-Z-H-14.html#%_sec_2.1.1">2.1.1</a>. Suponha que as operações em números complexos sejam implementadas em termos de quatro seletores: <tt>real-part</tt>, <tt>imag-part</tt>, <tt>magnitude</tt>, e <tt>angle</tt>. Suponha também que temos dois procedimentos para construir números complexos: <tt>make-from-real-imag</tt> retorna um número complexo com partes reais e imaginárias especificadas e <tt>make-from-mag-ang</tt> retorna um número complexo com magnitude e ângulo especificados. Esses procedimentos possuem a propriedade de que, para qualquer número complexo <tt>z</tt>, ambos</p><p>
+
+
+</p><p/><p><tt>(make-from-real-imag (real-part z) (imag-part z))<br/></tt></p><p/><p>e</p><p>
+
+
+</p><p/><p><tt>(make-from-mag-ang (magnitude z) (angle z))<br/></tt></p><p/><p>produza números complexos que são iguais a <tt>z</tt>.</p><p>Usando esses construtores e seletores, podemos implementar aritmética em números complexos usando os &quot;dados abstratos&quot; especificados pelos construtores e seletores, assim como fizemos para números racionais na seção <a href="book-Z-H-14.html#%_sec_2.1.1">2.1.1</a>. Como mostrado nas fórmulas acima, podemos adicionar e subtrair números complexos em termos de partes reais e imaginárias, multiplicando e dividindo números complexos em termos de magnitudes e ângulos:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2312" id="%_idx_2312"/>(define (add-complex z1 z2)<br/>
+  (make-from-real-imag (+ (real-part z1) (real-part z2))<br/>
+                       (+ (imag-part z1) (imag-part z2))))<br/><a name="%_idx_2314" id="%_idx_2314"/>(define (sub-complex z1 z2)<br/>
+  (make-from-real-imag (- (real-part z1) (real-part z2))<br/>
+                       (- (imag-part z1) (imag-part z2))))<br/><a name="%_idx_2316" id="%_idx_2316"/>(define (mul-complex z1 z2)<br/>
+  (make-from-mag-ang (* (magnitude z1) (magnitude z2))<br/>
+                     (+ (angle z1) (angle z2))))<br/><a name="%_idx_2318" id="%_idx_2318"/>(define (div-complex z1 z2)<br/>
+  (make-from-mag-ang (/ (magnitude z1) (magnitude z2))<br/>
+                     (- (angle z1) (angle z2))))<br/></tt></p><p/><p/><p>Para concluir o pacote de números complexos, precisamos escolher uma representação e implementar os construtores e seletores em termos de números primitivos e estrutura de lista primitiva. Há duas maneiras óbvias de fazer isso: podemos representar um número complexo na &quot;forma retangular&quot; como um par (parte real, parte imaginária) ou na &quot;forma polar&quot; como um par (magnitude, ângulo). Qual devemos escolher?</p><p>Para tornar as diferentes escolhas concretas, imagine que existem dois programadores, Ben Bitdiddle e Alyssa P. Hacker, que estão projetando representações independentemente para o sistema de números complexos. <a name="%_idx_2320" id="%_idx_2320"/>Ben escolhe representar números complexos em forma retangular. Com essa opção, a seleção das partes reais e imaginárias de um número complexo é simples, assim como a construção de um número complexo com determinadas partes reais e imaginárias. Para encontrar a magnitude e o ângulo, ou construir um número complexo com uma dada magnitude e ângulo, ele usa as relações trigonométricas</p><p>
+
+</p><p/><div align="left"><img src="images/ch2-Z-G-60.gif" border="0"/></div><p>
+</p><p/><div align="left"><img src="images/ch2-Z-G-61.gif" border="0"/></div><p/><p>que relacionam as partes reais e imaginárias (<em>x</em>, <em>y</em>) com a magnitude e o ângulo (<em>r</em>, <em>A</em>).<a name="call_footnote_Temp_269" href="#footnote_Temp_269" id="call_footnote_Temp_269"><sup><small>44</small></sup></a> A representação de Ben é, portanto, dada pelos seguintes seletores e construtores:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2328" id="%_idx_2328"/>(define (real-part z) (car z))<br/><a name="%_idx_2330" id="%_idx_2330"/>(define (imag-part z) (cdr z))<br/><a name="%_idx_2332" id="%_idx_2332"/>(define (magnitude z)<br/>
+  (sqrt (+ (square (real-part z)) (square (imag-part z)))))<br/><a name="%_idx_2334" id="%_idx_2334"/>(define (angle z)<br/>
+  (atan (imag-part z) (real-part z)))<br/><a name="%_idx_2336" id="%_idx_2336"/>(define (make-from-real-imag x y) (cons x y))<br/><a name="%_idx_2338" id="%_idx_2338"/>(define (make-from-mag-ang r a) <br/>
+  (cons (* r (cos a)) (* r (sin a))))<br/></tt></p><p/><p/><p>
+
+<a name="%_idx_2340" id="%_idx_2340"/>Alyssa, por outro lado, escolhe representar números complexos na forma polar. Para ela, a seleção da magnitude e do ângulo é direta, mas ela precisa usar as <a name="%_idx_2342" id="%_idx_2342"/>relações trigonométricas para obter as partes reais e imaginárias. A representação de Alyssa é:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2344" id="%_idx_2344"/>(define (real-part z)<br/>
+  (* (magnitude z) (cos (angle z))))<br/><a name="%_idx_2346" id="%_idx_2346"/>(define (imag-part z)<br/>
+  (* (magnitude z) (sin (angle z))))<br/><a name="%_idx_2348" id="%_idx_2348"/>(define (magnitude z) (car z))<br/><a name="%_idx_2350" id="%_idx_2350"/>(define (angle z) (cdr z))<br/><a name="%_idx_2352" id="%_idx_2352"/>(define (make-from-real-imag x y) <br/>
+  (cons (sqrt (+ (square x) (square y)))<br/>
+        (atan y x)))<br/><a name="%_idx_2354" id="%_idx_2354"/>(define (make-from-mag-ang r a) (cons r a))<br/></tt></p><p/><p/><p>A disciplina de abstração de dados garante que a mesma implementação de <tt>add-complex</tt>, <tt>sub-complex</tt>, <tt>mul-complex</tt> e <tt>div-complex</tt> funcionará com a representação de Ben ou com a de Alyssa.</p><p>
+
+<a name="%_sec_2.4.2" id="%_sec_2.4.2"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_2.4.2">2.4.2 Dados etiquetados</a></h3><p>
+
+
+<a name="%_idx_2356" id="%_idx_2356"/><a name="%_idx_2358" id="%_idx_2358"/><a name="%_idx_2360" id="%_idx_2360"/>Uma maneira de visualizar a abstração de dados é como uma aplicação do <a name="%_idx_2362" id="%_idx_2362"/><a name="%_idx_2364" id="%_idx_2364"/>&quot;princípio do menor comprometimento&quot;. Ao implementar o sistema de números complexos na seção <a href="#%_sec_2.4.1">2.4.1</a>, podemos usar a representação retangular de Ben ou a representação polar de Alyssa. A barreira de abstração formada pelos seletores e construtores nos permite adiar até o último momento possível a escolha de uma representação concreta para nossos objetos de dados e, assim, reter a máxima flexibilidade no projeto de nosso sistema.</p><p>O princípio do menor comprometimento pode ser levado a extremos ainda maiores. Se desejarmos, podemos manter a ambiguidade da representação mesmo <em>depois</em> de projetarmos os seletores e os construtores e optar por usar a representação de Ben <em>e</em> a representação de Alyssa. Se ambas as representações forem incluídas em um único sistema, no entanto, precisaremos de alguma maneira para distinguir dados na forma polar de dados na forma retangular. Caso contrário, se nos pedissem, por exemplo, para encontrar a <tt>magnitude</tt> do par (3,4), não saberíamos se responderíamos 5 (interpretando o número na forma retangular) ou 3(interpretação do número na forma polar). Uma maneira simples de conseguir essa distinção é incluir uma <a name="%_idx_2366" id="%_idx_2366"/><em>etiqueta do tipo</em> - o símbolo <tt>rectangular</tt> ou <tt>polar</tt> - como parte de cada complexo número. Então, quando precisamos manipular um número complexo, podemos usar a etiqueta para decidir qual seletor aplicar.</p><p>Para manipular dados etiquetados, assumiremos que temos procedimentos <tt>type-tag</tt> e <tt>contents</tt> que extraem de um objeto de dados a etiqueta e o conteúdo real (as coordenadas polares ou retangulares, no caso de um número complexo). Também postularemos um procedimento <tt>attach-tag</tt> que pega uma etiqueta e o conteúdo e produz um objeto de dados etiquetados. Uma maneira direta de implementar isso é usar a estrutura de lista comum:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2368" id="%_idx_2368"/>(define (attach-tag type-tag contents)<br/>
+  (cons type-tag contents))<br/><a name="%_idx_2370" id="%_idx_2370"/>(define (type-tag datum)<br/>
+  (if (pair? datum)<br/>
+      (car datum)<br/>
+      (error &quot;Bad tagged datum -- TYPE-TAG&quot; datum)))<br/><a name="%_idx_2372" id="%_idx_2372"/>(define (contents datum)<br/>
+  (if (pair? datum)<br/>
+      (cdr datum)<br/>
+      (error &quot;Bad tagged datum -- CONTENTS&quot; datum)))<br/></tt></p><p/><p/><p>Usando esses procedimentos, podemos definir os predicados <tt>rectangular?</tt> e <tt>polar?</tt>, que reconhecem números polares e retangulares, respectivamente:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2374" id="%_idx_2374"/>(define (rectangular? z)<br/>
+  (eq? (type-tag z) 'rectangular))<br/><a name="%_idx_2376" id="%_idx_2376"/>(define (polar? z)<br/>
+  (eq? (type-tag z) 'polar))<br/></tt></p><p/><p/><p>Com etiquetas de tipo, Ben e Alyssa agora podem modificar seu código para que suas duas representações diferentes possam coexistir no mesmo sistema. Sempre que Ben constrói um número complexo, ele o identifica como retangular. Sempre que Alyssa constrói um número complexo, ela o identifica como polar. Além disso, Ben e Alyssa devem garantir que os nomes de seus procedimentos não entrem em conflito. Uma maneira de fazer isso é Ben anexar o sufixo <tt>rectangular</tt> ao nome de cada um de seus procedimentos de representação e Alyssa anexar <tt>polar</tt> aos nomes dela. Aqui está a representação retangular revisada de Ben da seção <a href="#%_sec_2.4.1">2.4.1</a>:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2378" id="%_idx_2378"/>(define (real-part-rectangular z) (car z))<br/><a name="%_idx_2380" id="%_idx_2380"/>(define (imag-part-rectangular z) (cdr z))<br/><a name="%_idx_2382" id="%_idx_2382"/>(define (magnitude-rectangular z)<br/>
+  (sqrt (+ (square (real-part-rectangular z))<br/>
+           (square (imag-part-rectangular z)))))<br/><a name="%_idx_2384" id="%_idx_2384"/>(define (angle-rectangular z)<br/>
+  (atan (imag-part-rectangular z)<br/>
+        (real-part-rectangular z)))<br/><a name="%_idx_2386" id="%_idx_2386"/>(define (make-from-real-imag-rectangular x y)<br/>
+  (attach-tag 'rectangular (cons x y)))<br/><a name="%_idx_2388" id="%_idx_2388"/>(define (make-from-mag-ang-rectangular r a) <br/>
+  (attach-tag 'rectangular<br/>
+              (cons (* r (cos a)) (* r (sin a)))))<br/></tt></p><p/><p>e aqui está a representação polar revisada de Alyssa:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2390" id="%_idx_2390"/>(define (real-part-polar z)<br/>
+  (* (magnitude-polar z) (cos (angle-polar z))))<br/><a name="%_idx_2392" id="%_idx_2392"/>(define (imag-part-polar z)<br/>
+  (* (magnitude-polar z) (sin (angle-polar z))))<br/><a name="%_idx_2394" id="%_idx_2394"/>(define (magnitude-polar z) (car z))<br/><a name="%_idx_2396" id="%_idx_2396"/>(define (angle-polar z) (cdr z))<br/><a name="%_idx_2398" id="%_idx_2398"/>(define (make-from-real-imag-polar x y) <br/>
+  (attach-tag 'polar<br/>
+               (cons (sqrt (+ (square x) (square y)))<br/>
+                     (atan y x))))<br/><a name="%_idx_2400" id="%_idx_2400"/>(define (make-from-mag-ang-polar r a)<br/>
+  (attach-tag 'polar (cons r a)))<br/></tt></p><p/><p/><p>
+
+
+<a name="%_idx_2402" id="%_idx_2402"/><a name="%_idx_2404" id="%_idx_2404"/>Cada seletor genérico é implementado como um procedimento que verifica a etiqueta de seu argumento e chama o procedimento apropriado para manipular dados desse tipo. Por exemplo, para obter a parte real de um número complexo, <tt>real-part</tt> examina a etiqueta para determinar se deve usar <tt>real-part-rectangular</tt> de Ben ou <tt>real-part-polar</tt> de Alyssa. Em qualquer um dos casos, usamos <tt>contents</tt> para extrair os dados sem marcação e crus e enviá-los para o procedimento retangular ou polar, conforme necessário:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2406" id="%_idx_2406"/>(define (real-part z)<br/>
+  (cond ((rectangular? z) <br/>
+         (real-part-rectangular (contents z)))<br/>
+        ((polar? z)<br/>
+         (real-part-polar (contents z)))<br/>
+        (else (error &quot;Unknown type -- REAL-PART&quot; z))))<br/><a name="%_idx_2408" id="%_idx_2408"/>(define (imag-part z)<br/>
+  (cond ((rectangular? z)<br/>
+         (imag-part-rectangular (contents z)))<br/>
+        ((polar? z)<br/>
+         (imag-part-polar (contents z)))<br/>
+        (else (error &quot;Unknown type -- IMAG-PART&quot; z))))<br/><a name="%_idx_2410" id="%_idx_2410"/>(define (magnitude z)<br/>
+  (cond ((rectangular? z)<br/>
+         (magnitude-rectangular (contents z)))<br/>
+        ((polar? z)<br/>
+         (magnitude-polar (contents z)))<br/>
+        (else (error &quot;Unknown type -- MAGNITUDE&quot; z))))<br/><a name="%_idx_2412" id="%_idx_2412"/>(define (angle z)<br/>
+  (cond ((rectangular? z)<br/>
+         (angle-rectangular (contents z)))<br/>
+        ((polar? z)<br/>
+         (angle-polar (contents z)))<br/>
+        (else (error &quot;Unknown type -- ANGLE&quot; z))))<br/></tt></p><p/><p/><p>Para implementar as operações aritméticas de número complexo, podemos usar os mesmos procedimentos <tt>add-complex</tt>, <tt>sub-complex</tt>, <tt>mul-complex</tt> e <tt>div-complex</tt> da seção <a href="#%_sec_2.4.1">2.4.1</a>, porque os seletores que eles chamam são genéricos e, portanto, funcionarão com qualquer uma das representações. Por exemplo, o procedimento <tt>add-complex</tt> ainda é</p><p>
+
+</p><p/><p><tt>(define (add-complex z1 z2)<br/>
+  (make-from-real-imag (+ (real-part z1) (real-part z2))<br/>
+                       (+ (imag-part z1) (imag-part z2))))<br/></tt></p><p/><p/><p>Finalmente, devemos escolher entre construir números complexos usando a representação de Ben ou a representação de Alyssa. Uma escolha razoável é construir números retangulares sempre que tivermos partes reais e imaginárias e construir números polares sempre que tivermos magnitudes e ângulos:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2414" id="%_idx_2414"/>(define (make-from-real-imag x y)<br/>
+  (make-from-real-imag-rectangular x y))<br/><a name="%_idx_2416" id="%_idx_2416"/>(define (make-from-mag-ang r a)<br/>
+  (make-from-mag-ang-polar r a))<br/></tt></p><p/><p/><p>
+
+<a name="%_fig_2.21" id="%_fig_2.21"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch2-Z-G-62.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.21:</b> Estrutura do sistema aritmético complexo genérico.</div></caption><tr><td>
+<a name="%_idx_2418" id="%_idx_2418"/>
+</td></tr></table></div><p/><p>O sistema de números complexos resultante possui a estrutura mostrada na figura <a href="#%_fig_2.21">2.21</a>. O sistema foi decomposto em três partes relativamente independentes: as operações aritméticas de número complexo, a implementação polar de Alyssa e a implementação retangular de Ben. As implementações polares e retangulares poderiam ter sido escritas por Ben e Alyssa trabalhando separadamente, e ambas podem ser usadas como representações subjacentes por um terceiro programador implementando os procedimentos aritméticos complexos em termos da interface abstrata do construtor ou seletor.</p><p>
+
+<a name="%_idx_2420" id="%_idx_2420"/><a name="%_idx_2422" id="%_idx_2422"/>Como cada objeto de dados é marcado com seu tipo, os seletores operam nos dados de maneira genérica. Ou seja, cada seletor é definido para ter um comportamento que depende do tipo específico de dados ao qual é aplicado. Observe o mecanismo geral para fazer a interface das representações separadas: dentro de uma determinada implementação de representação (por exemplo, pacote polar de Alyssa), um número complexo é um par sem tipo (magnitude, ângulo). Quando um seletor genérico opera em um número do tipo <tt>polar</tt>, retira a etiqueta e passa o conteúdo para o código da Alyssa. Por outro lado, quando Alyssa constrói um número para uso geral, ela o identifica com um tipo para que possa ser reconhecido adequadamente pelos procedimentos de nível superior. Essa disciplina de remover e anexar etiquetas à medida que objetos de dados são passados ​​de nível para nível pode ser uma estratégia organizacional importante, como veremos na seção <a href="book-Z-H-18.html#%_sec_2.5">2.5</a>.</p><p>
+
+<a name="%_sec_2.4.3" id="%_sec_2.4.3"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_2.4.3">2.4.3 Programação orientada a dados e aditividade</a></h3><p>
+
+
+<a name="%_idx_2424" id="%_idx_2424"/><a name="%_idx_2426" id="%_idx_2426"/>
+<a name="%_idx_2428" id="%_idx_2428"/>A estratégia geral de verificar o tipo de dado e chamar um procedimento apropriado é chamada <a name="%_idx_2430" id="%_idx_2430"/><a name="%_idx_2432" id="%_idx_2432"/><em>despachando no tipo</em>. Essa é uma estratégia poderosa para obter modularidade no projeto do sistema. Por outro lado, a implementação da expedição como na seção <a href="#%_sec_2.4.2">2.4.2</a> apresenta duas fraquezas significativas. Um ponto fraco é que os procedimentos genéricos de interface (<tt>real-part</tt>, <tt>imag-part</tt>, <tt>magnitude</tt>, e <tt>angle</tt>) deve conhecer todas as diferentes representações. Por exemplo, suponha que desejássemos incorporar uma nova representação para números complexos em nosso sistema de números complexos. Precisamos identificar essa nova representação com um tipo e, em seguida, adicionar uma cláusula a cada um dos procedimentos genéricos de interface para verificar o novo tipo e aplicar o seletor apropriado para essa representação.</p><p>Outra fraqueza da técnica é que, embora as representações individuais possam ser projetadas separadamente, devemos garantir que não haja dois procedimentos no sistema inteiro com o mesmo nome. É por isso que Ben e Alyssa tiveram que alterar os nomes de seus procedimentos originais da seção <a href="#%_sec_2.4.1">2.4.1</a>.</p><p>O problema subjacente a essas duas fraquezas é que a técnica para implementar interfaces genéricas não é <em>aditiva</em>. A pessoa que implementa os procedimentos seletores genéricos deve modificá-los sempre que uma nova representação é instalada, e as pessoas que fazem interface com as representações individuais devem modificar seu código para evitar conflitos de nome. Em cada um desses casos, as alterações que devem ser feitas no código são diretas, mas devem ser feitas, no entanto, e isso é uma fonte de inconveniência e erro. Isso não é um grande problema para o sistema de números complexos como está, mas suponha que não houvesse duas, mas centenas de representações diferentes para números complexos. E suponha que havia muitos seletores genéricos a serem mantidos na interface de dados abstratos. Suponha, de fato, que nenhum programador conheça todos os procedimentos de interface ou todas as representações. O problema é real e deve ser tratado em programas como sistemas de gerenciamento de banco de dados em larga escala.</p><p>O que precisamos é de um meio de modularizar ainda mais o projeto do sistema. Isso é fornecido pela técnica de programação conhecida como <em>programação orientada a dados</em>. Para entender como a programação orientada a dados funciona, comece com a observação de que, sempre que lidamos com um conjunto de operações genéricas comuns a um conjunto de tipos diferentes, lidamos com uma tabela bidimensional que contém as operações possíveis em um eixo e os tipos possíveis no outro eixo. As entradas na tabela são os procedimentos que implementam cada operação para cada tipo de argumento apresentado. No sistema de números complexos desenvolvido na seção anterior, a correspondência entre o nome da operação, o tipo de dados e o procedimento real foi espalhada entre as várias cláusulas condicionais nos procedimentos genéricos de interface. Mas a mesma informação poderia ter sido organizada em uma tabela, como mostra a figura <a href="#%_fig_2.22">2.22</a>.</p><p>
+
+
+<a name="%_idx_2434" id="%_idx_2434"/>A programação orientada a dados é a técnica de projetar programas para trabalhar diretamente com essa tabela. Anteriormente, implementamos o mecanismo que faz a interface do código aritmético complexo com os dois pacotes de representação como um conjunto de procedimentos em que cada um executa um despacho explícito no tipo. Aqui, implementaremos a interface como um procedimento único que consulta a combinação do nome da operação e do tipo de argumento na tabela para encontrar o procedimento correto a ser aplicado e, em seguida, aplica-o ao conteúdo do argumento. Se fizermos isso, para adicionar um novo pacote de representação ao sistema, não precisaremos alterar nenhum procedimento existente; precisamos apenas adicionar novas entradas à tabela.</p><p>
+
+<a name="%_fig_2.22" id="%_fig_2.22"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch2-Z-G-63.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.22:</b> Tabela de operações para o sistema de números complexos.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Para implementar este plano, assuma que temos dois procedimentos, <tt>put</tt> e <tt>get</tt>, para manipular a tabela de operações e tipos:<a name="%_idx_2436" id="%_idx_2436"/>
+</p><p/><ul><a name="%_idx_2438" id="%_idx_2438"/><li><tt>(put &lt;<em>op</em>&gt; &lt;<em>type</em>&gt; &lt;<em>item</em>&gt;)</tt><br/> instala o <tt>&lt;<em>item</em>&gt;</tt> na tabela, indexada pelos <tt>&lt;<em>op</em>&gt;</tt> e <tt>&lt;<em>type</em>&gt;</tt>.<p>
+
+<a name="%_idx_2440" id="%_idx_2440"/></p></li><li><tt>(get &lt;<em>op</em>&gt; &lt;<em>type</em>&gt;)</tt><br/> procura a entrada <tt>&lt;<em>op</em>&gt;</tt>, <tt>&lt;<em>type</em>&gt;</tt> na tabela e retorna o item encontrado lá. Se nenhum item for encontrado, <tt>get</tt> retorna falso.</li></ul><p/><p>Por enquanto, podemos assumir que <tt>put</tt> e <tt>get</tt> estão incluídos em nossav linguagem. No capítulo 3 (seção <a href="book-Z-H-22.html#%_sec_3.3.3">3.3.3</a>, exercício <a href="book-Z-H-22.html#%_thm_3.24">3.24</a>), veremos como implementar essas e outras operações para manipular tabelas.</p><p>Aqui está como a programação orientada a dados pode ser usada no sistema de números complexos. Ben, que desenvolveu a representação retangular, implementa seu código exatamente como ele fez originalmente. Ele define uma coleção de procedimentos, ou um <a name="%_idx_2442" id="%_idx_2442"/><em>pacote</em>, e os conectam com o restante do sistema, adicionando entradas à tabela que informam ao sistema como operar em números retangulares. Isso é feito chamando o seguinte procedimento:<a name="%_idx_2444" id="%_idx_2444"/><a name="%_idx_2446" id="%_idx_2446"/>
+</p><p/><p><tt><a name="%_idx_2448" id="%_idx_2448"/>(define (install-rectangular-package)<br/>
+  <em>;; internal procedures</em><br/>
+  (define (real-part z) (car z))<br/>
+  (define (imag-part z) (cdr z))<br/>
+  (define (make-from-real-imag x y) (cons x y))<br/>
+  (define (magnitude z)<br/>
+    (sqrt (+ (square (real-part z))<br/>
+             (square (imag-part z)))))<br/>
+  (define (angle z)<br/>
+    (atan (imag-part z) (real-part z)))<br/>
+  (define (make-from-mag-ang r a) <br/>
+    (cons (* r (cos a)) (* r (sin a))))<br/>
+  <em>;; interface to the rest of the system</em><br/>
+  (define (tag x) (attach-tag 'rectangular x))<br/>
+  (put 'real-part '(rectangular) real-part)<br/>
+  (put 'imag-part '(rectangular) imag-part)<br/>
+  (put 'magnitude '(rectangular) magnitude)<br/>
+  (put 'angle '(rectangular) angle)<br/>
+  (put 'make-from-real-imag 'rectangular <br/>
+       (lambda (x y) (tag (make-from-real-imag x y))))<br/>
+  (put 'make-from-mag-ang 'rectangular <br/>
+       (lambda (r a) (tag (make-from-mag-ang r a))))<br/>
+  'done)<br/></tt></p><p/><p/><p>Observe que os procedimentos internos aqui são os mesmos da seção <a href="#%_sec_2.4.1">2.4.1</a> que Ben escreveu quando trabalhava isolado. Nenhuma alteração é necessária para fazer a interface com o restante do sistema. Além disso, como essas definições de procedimentos são internas ao procedimento de instalação, Ben não precisa se preocupar com conflitos de nomes com outros procedimentos fora do pacote retangular. Para fazer a interface com o restante do sistema, Ben instala seu procedimento <tt>real-part</tt> sob o nome da operação <tt>real-part</tt> e o tipo <tt>(rectangular)</tt> e da mesma forma para os outros seletores.<a name="call_footnote_Temp_270" href="#footnote_Temp_270" id="call_footnote_Temp_270"><sup><small>45</small></sup></a> A interface também define os construtores a serem usados ​​pelo sistema externo.<a name="call_footnote_Temp_271" href="#footnote_Temp_271" id="call_footnote_Temp_271"><sup><small>46</small></sup></a> Estes são idênticos aos construtores definidos internamente por Ben, exceto que eles anexam a etiqueta.</p><p>
+
+<a name="%_idx_2450" id="%_idx_2450"/><a name="%_idx_2452" id="%_idx_2452"/>O pacote polar de Alyssa é análogo:</p><p/><p><tt><a name="%_idx_2454" id="%_idx_2454"/>(define (install-polar-package)<br/>
+  <em>;; internal procedures</em><br/>
+  (define (magnitude z) (car z))<br/>
+  (define (angle z) (cdr z))<br/>
+  (define (make-from-mag-ang r a) (cons r a))<br/>
+  (define (real-part z)<br/>
+    (* (magnitude z) (cos (angle z))))<br/>
+  (define (imag-part z)<br/>
+    (* (magnitude z) (sin (angle z))))<br/>
+  (define (make-from-real-imag x y) <br/>
+    (cons (sqrt (+ (square x) (square y)))<br/>
+          (atan y x)))<br/>
+  <em>;; interface to the rest of the system</em><br/>
+  (define (tag x) (attach-tag 'polar x))<br/>
+  (put 'real-part '(polar) real-part)<br/>
+  (put 'imag-part '(polar) imag-part)<br/>
+  (put 'magnitude '(polar) magnitude)<br/>
+  (put 'angle '(polar) angle)<br/>
+  (put 'make-from-real-imag 'polar<br/>
+       (lambda (x y) (tag (make-from-real-imag x y))))<br/>
+  (put 'make-from-mag-ang 'polar <br/>
+       (lambda (r a) (tag (make-from-mag-ang r a))))<br/>
+  'done)<br/></tt></p><p/><p>
+</p><p>Embora Ben e Alyssa ainda usem seus procedimentos originais definidos com os mesmos nomes que os outros (por exemplo, <tt>real-part</tt>), essas definições agora são internas a diferentes procedimentos (consulte a seção <a href="book-Z-H-10.html#%_sec_1.1.8">1.1. 8</a>), para que não haja conflito de nome.</p><p>Os seletores aritméticos complexos acessam a tabela por meio de um procedimento geral de &quot;operação&quot; chamada <tt>apply-generic</tt>, que aplica uma operação genérica a alguns argumentos. <tt>Apply-generic</tt> procura na tabela sob o nome da operação e os tipos dos argumentos e aplica o procedimento resultante, se houver algum:<a name="call_footnote_Temp_272" href="#footnote_Temp_272" id="call_footnote_Temp_272"><sup><small>47</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_2462" id="%_idx_2462"/>(define (apply-generic op . args)<br/>
+  (let ((type-tags (map type-tag args)))<br/>
+    (let ((proc (get op type-tags)))<br/>
+      (if proc<br/>
+          (apply proc (map contents args))<br/>
+          (error<br/>
+            &quot;No method for these types -- APPLY-GENERIC&quot;<br/>
+            (list op type-tags))))))<br/></tt></p><p/><p>Usando <tt>apply-generic</tt>, podemos definir nossos seletores genéricos da seguinte maneira:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2464" id="%_idx_2464"/>(define (real-part z) (apply-generic 'real-part z))<br/><a name="%_idx_2466" id="%_idx_2466"/>(define (imag-part z) (apply-generic 'imag-part z))<br/><a name="%_idx_2468" id="%_idx_2468"/>(define (magnitude z) (apply-generic 'magnitude z))<br/><a name="%_idx_2470" id="%_idx_2470"/>(define (angle z) (apply-generic 'angle z))<br/></tt></p><p/><p>Observe que isso não muda se uma nova representação for adicionada ao sistema.</p><p>Também podemos extrair da tabela os construtores a serem usados ​​pelos programas externos aos pacotes para formar números complexos a partir de partes reais e imaginárias e de magnitudes e ângulos. Como na seção <a href="#%_sec_2.4.2">2.4.2</a>, construímos números retangulares sempre que temos partes reais e imaginárias e números polares sempre que temos magnitudes e ângulos:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2472" id="%_idx_2472"/>(define (make-from-real-imag x y)<br/>
+  ((get 'make-from-real-imag 'rectangular) x y))<br/><a name="%_idx_2474" id="%_idx_2474"/>(define (make-from-mag-ang r a)<br/>
+  ((get 'make-from-mag-ang 'polar) r a))<br/></tt></p><p/><p/><p>
+
+</p><p><a name="%_thm_2.73" id="%_thm_2.73"/>
+<b>Exercício 2.73.</b> A seção <a href="book-Z-H-16.html#%_sec_2.3.2">2.3.2</a> descreveu um programa que executa diferenciação simbólica:<a name="%_idx_2476" id="%_idx_2476"/><a name="%_idx_2478" id="%_idx_2478"/></p><p/><p><tt>(define (deriv exp var)<br/>
+  (cond ((number? exp) 0)<br/>
+        ((variable? exp) (if (same-variable? exp var) 1 0))<br/>
+        ((sum? exp)<br/>
+         (make-sum (deriv (addend exp) var)<br/>
+                   (deriv (augend exp) var)))<br/>
+        ((product? exp)<br/>
+         (make-sum<br/>
+           (make-product (multiplier exp)<br/>
+                         (deriv (multiplicand exp) var))<br/>
+           (make-product (deriv (multiplier exp) var)<br/>
+                         (multiplicand exp))))<br/>
+        &lt;<em>more rules can be added here</em>&gt;<br/>
+        (else (error &quot;unknown expression type -- DERIV&quot; exp))))<br/></tt></p><p/><p>Podemos considerar esse programa como executando um despacho sobre o tipo de expressão a ser diferenciada. Nesta situação, a &quot;etiqueta de tipo&quot; do dado é o símbolo do operador algébrico (como <tt>+</tt>) e a operação que é executada é <tt>deriv</tt>. Podemos transformar esse programa em estilo orientado a dados reescrevendo o procedimento derivado básico como</p><p/><p><tt><a name="%_idx_2480" id="%_idx_2480"/>(define (deriv exp var)<br/>
+   (cond ((number? exp) 0)<br/>
+         ((variable? exp) (if (same-variable? exp var) 1 0))<br/>
+         (else ((get 'deriv (operator exp)) (operands exp)<br/>
+                                            var))))<br/>
+(define (operator exp) (car exp))<br/>
+(define (operands exp) (cdr exp))<br/></tt></p><p/><p/><p>a. Explique o que foi feito acima. Por que não podemos assimilar os predicados <tt>number?</tt> e <tt>same-variable?</tt> no envio orientado a dados?</p><p>b. Escreva os procedimentos para derivadas de somas e produtos e o código auxiliar necessário para instalá-los na tabela usada pelo programa acima.</p><p>c. Escolha qualquer regra de diferenciação adicional que você desejar, como a dos expoentes (exercício <a href="book-Z-H-16.html#%_thm_2.56">2.56</a>) e instale-a neste sistema orientado a dados.</p><p>d. Neste manipulador algébrico simples, o tipo de uma expressão é o operador algébrico que a une. Suponha, no entanto, que indexemos os procedimentos da maneira oposta, para que a linha de expedição em <tt>deriv</tt> parecesse</p><p>
+
+</p><p/><p><tt>((get (operator exp) 'deriv) (operands exp) var)<br/></tt></p><p/><p>Quais alterações correspondentes no sistema derivativo são necessárias?</p><p/><p>
+
+
+</p><p><a name="%_thm_2.74" id="%_thm_2.74"/>
+<b>Exercício 2.74.</b> <a name="%_idx_2482" id="%_idx_2482"/><a name="%_idx_2484" id="%_idx_2484"/>Insatiable Enterprises, Inc., é uma empresa conglomerada altamente descentralizada que consiste em um grande número de divisões independentes localizadas em todo o mundo. As instalações de computadores da empresa acabaram de ser interconectadas por meio de um esquema inteligente de interface de rede que faz com que toda a rede pareça a qualquer usuário um único computador. O presidente da Insatiable, em sua primeira tentativa de explorar a capacidade da rede de extrair informações administrativas de arquivos da divisão, fica consternado ao descobrir que, embora todos os arquivos da divisão tenham sido implementados como estruturas de dados no Scheme, a estrutura de dados específica usada varia de divisão para divisão. Uma reunião de gerentes da divisão é convocada às pressas para buscar uma estratégia para integrar os arquivos que satisfaçam as necessidades da sede, preservando a autonomia existente das divisões.</p><p>Mostre como essa estratégia pode ser implementada com a programação orientada a dados. Como exemplo, suponha que os registradores de pessoal de cada divisão consistam em um único arquivo, que contém um conjunto de registradores digitados nos nomes dos funcionários. A estrutura do conjunto varia de divisão para divisão. Além disso, o registrador de cada funcionário é, ele próprio, um conjunto (estruturado diferentemente de divisão para divisão) que contém informações digitadas em identificadores, como <tt>address</tt> e <tt>salary</tt>. Em particular:</p><p>a. Implemente, na sede, um procedimento <tt>get-record</tt> que recupera o registrador de um funcionário especificado de um arquivo pessoal especificado. O procedimento deve ser aplicável a qualquer arquivo da divisão. Explique como os arquivos das divisões individuais devem ser estruturados. Em particular, que tipo de informação deve ser fornecida?</p><p>b. Implemente, na sede, um procedimento <tt>get-salary</tt> que retorna as informações de salário do registrador de um determinado funcionário a partir do arquivo de pessoal de qualquer divisão. Como o registrador deve ser estruturado para que essa operação funcione?</p><p>c. Implemente na sede um procedimento <tt>find-employee-record</tt>. Isso deve pesquisar todos os arquivos das divisões para o registrador de um determinado funcionário e retornar o registrador. Suponha que esse procedimento use como argumento o nome de um funcionário e uma lista de todos os arquivos das divisões.</p><p>d. Quando o Insatiable assume uma nova empresa, que mudanças devem ser feitas para incorporar as novas informações de pessoal ao sistema central?</p><p>
+
+<a name="%_sec_Temp_275" id="%_sec_Temp_275"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_275">Passagem de mensagem</a></h4><p>
+
+<a name="%_idx_2486" id="%_idx_2486"/>A ideia principal da programação orientada a dados é manipular operações genéricas em programas, lidando explicitamente com tabelas de operação e tipo, como a tabela na figura <a href="#%_fig_2.22">2.22</a>. O estilo de programação que usamos na seção <a href="#%_sec_2.4.2">2.4.2</a> organizou o envio necessário no tipo, fazendo com que cada operação cuide de seu próprio envio. Com efeito, isso decompõe a tabela de operação e tipo em linhas, com cada procedimento de operação genérico representando uma linha da tabela.</p><p>Uma estratégia de implementação alternativa é decompor a tabela em colunas e, em vez de usar &quot;operações inteligentes&quot; despachadas em tipos de dados, trabalhar com &quot;objetos de dados inteligentes&quot; despachados em nomes de operações. Podemos fazer isso organizando para que um objeto de dados, como um número retangular, seja representado como um procedimento que tome como entrada o nome da operação necessária e execute a operação indicada. Em tal disciplina, <tt>make-from-real-imag</tt> poderia ser escrito como</p><p>
+
+</p><p/><p><tt><a name="%_idx_2488" id="%_idx_2488"/>(define (make-from-real-imag x y)<br/>
+  (define (dispatch op)<br/>
+    (cond ((eq? op 'real-part) x)<br/>
+          ((eq? op 'imag-part) y)<br/>
+          ((eq? op 'magnitude)<br/>
+           (sqrt (+ (square x) (square y))))<br/>
+          ((eq? op 'angle) (atan y x))<br/>
+          (else<br/>
+           (error &quot;Unknown op -- MAKE-FROM-REAL-IMAG&quot; op))))<br/>
+  dispatch)<br/></tt></p><p/><p>O procedimento <tt>apply-generic</tt> correspondente, que aplica uma operação genérica a um argumento, agora simplesmente alimenta o nome da operação no objeto de dados e permite que o objeto faça o trabalho:<a name="call_footnote_Temp_276" href="#footnote_Temp_276" id="call_footnote_Temp_276"><sup><small>48</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_2490" id="%_idx_2490"/>(define (apply-generic op arg) (arg op))<br/></tt></p><p/><p>Observe que o valor retornado por <tt>make-from-real-imag</tt> é um procedimento - o procedimento interno <tt>dispatch</tt>. Este é o procedimento que é chamado quando <tt>apply-generic</tt> solicita que uma operação seja executada.</p><p>Esse estilo de programação é chamado <em>passagem de mensagem</em>. O nome vem da imagem de que um objeto de dados é uma entidade que recebe o nome da operação solicitada como uma &quot;mensagem&quot;. Já vimos um exemplo de passagem de mensagens na seção <a href="book-Z-H-14.html#%_sec_2.1.3">2.1.3</a>, na qual vimos como <tt>cons</tt>, <tt>car</tt> e <tt>cdr</tt> pode ser definido sem objetos de dados, mas apenas procedimentos. Aqui vemos que a passagem de mensagens não é um truque matemático, mas uma técnica útil para organizar sistemas com operações genéricas. No restante deste capítulo, continuaremos a usar a programação orientada a dados, em vez da passagem de mensagens, para discutir operações aritméticas genéricas. No capítulo 3, retornaremos à passagem de mensagens e veremos que ela pode ser uma ferramenta poderosa para estruturar programas de simulação.</p><p>
+
+</p><p><a name="%_thm_2.75" id="%_thm_2.75"/>
+<b>Exercício 2.75.</b> <a name="%_idx_2492" id="%_idx_2492"/>Implemente o construtor <tt>make-from-mag-ang</tt> no estilo de passagem de mensagens. Este procedimento deve ser análogo ao procedimento <tt>make-from-real-imag</tt> fornecido acima.</p><p/><p>
+
+</p><p><a name="%_thm_2.76" id="%_thm_2.76"/>
+<b>Exercício 2.76.</b> <a name="%_idx_2494" id="%_idx_2494"/>À medida que um sistema grande com operações genéricas evolui, novos tipos de objetos de dados ou novas operações podem ser necessários. Para cada uma das três estratégias - operações genéricas com despacho explícito, estilo orientado a dados e estilo de passagem de mensagens - descreva as alterações que devem ser feitas em um sistema para adicionar novos tipos ou novas operações. Qual organização seria mais apropriada para um sistema no qual novos tipos devem ser adicionados com frequência? Qual seria o mais apropriado para um sistema no qual novas operações frequentemente devem ser adicionadas?</p><p/><p>
+
+</p><p/><div class="smallprint"><hr/></div><p>
+</p><div class="footnote"><p><a name="footnote_Temp_268" href="#call_footnote_Temp_268" id="footnote_Temp_268"><sup><small>43</small></sup></a> Nos sistemas computacionais reais, a forma retangular é preferível à forma polar na maioria das vezes devido a <a name="%_idx_2308" id="%_idx_2308"/>erros de arredondamento na conversão entre retangulares e forma polar. É por isso que o exemplo de número complexo não é realista. No entanto, fornece uma ilustração clara do projeto de um sistema usando operações genéricas e uma boa introdução aos sistemas mais substanciais a serem desenvolvidos posteriormente neste capítulo.</p><p><a name="footnote_Temp_269" href="#call_footnote_Temp_269" id="footnote_Temp_269"><sup><small>44</small></sup></a> A função arco tangente referida por <a name="%_idx_2322" id="%_idx_2322"/><a name="%_idx_2324" id="%_idx_2324"/><a name="%_idx_2326" id="%_idx_2326"/>aqui, calculada pela <tt>atan</tt> do Scheme, é definida de forma a receber dois argumentos <em>y</em> e <em>x</em> e retornar o ângulo cuja tangente é <em>y</em>/<em>x</em>. Os sinais dos argumentos determinam o quadrante do ângulo.</p><p><a name="footnote_Temp_270" href="#call_footnote_Temp_270" id="footnote_Temp_270"><sup><small>45</small></sup></a> Usamos a lista <tt>(rectangular)</tt> em vez do símbolo <tt>rectangular</tt> para permitir a possibilidade de operações com vários argumentos, nem todos do mesmo tipo.</p><p><a name="footnote_Temp_271" href="#call_footnote_Temp_271" id="footnote_Temp_271"><sup><small>46</small></sup></a> O tipo em que os construtores estão instalados não precisa ser uma lista porque um construtor é sempre usado para criar um objeto de um tipo específico.</p><p><a name="footnote_Temp_272" href="#call_footnote_Temp_272" id="footnote_Temp_272"><sup><small>47</small></sup></a> <tt>Apply-generic</tt> usa a notação de <a name="%_idx_2456" id="%_idx_2456"/>cauda pontilhada descrita no exercício <a href="book-Z-H-15.html#%_thm_2.20">2.20</a>, porque operações genéricas diferentes podem levar diferentes números de argumentos. Em <tt>apply-generic</tt>, <tt>op</tt> possui como valor o primeiro argumento para <tt>apply-generic</tt> e <tt>args</tt> como valor uma lista dos argumentos restantes.</p><p>
+
+<tt>Apply-generic</tt> também usa o procedimento primitivo <a name="%_idx_2458" id="%_idx_2458"/><a name="%_idx_2460" id="%_idx_2460"/><tt>apply</tt>, que recebe dois argumentos, um procedimento e uma lista. <tt>Apply</tt> aplica o procedimento, usando os elementos da lista como argumentos. Por exemplo,</p><p/><p><tt>(apply + (list 1 2 3 4))<br/></tt></p><p/><p>
+returns 10.
+
+</p><p><a name="footnote_Temp_276" href="#call_footnote_Temp_276" id="footnote_Temp_276"><sup><small>48</small></sup></a> Uma limitação dessa organização é que ela permite apenas procedimentos genéricos de um argumento.</p></div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops">
+<!-- Generated from TeX source by tex2page, v 4o,
+     (c) Dorai Sitaram, http://www.cs.rice.edu/~dorai/tex2page -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type: text/html; charset=utf-8"/>
+    <title>Estrutura e Interpretação de Programas de Computador</title>
+    <link rel="stylesheet" type="text/css" href="book-Z-C.css" title="default"/>
+  </head>
+  <body>
+
+
+
+<a name="%_sec_1.1" id="%_sec_1.1"/>
+<h2><a href="book-Z-H-4.html#%_toc_%_sec_1.1">1.1 Os elementos da programação</a></h2><p>
+
+
+<a name="%_idx_118" id="%_idx_118"/>Uma linguagem de programação poderosa é mais do que apenas um meio para instruir um computador a executar tarefas. A linguagem também serve como uma estrutura na qual organizamos nossas ideias sobre processos. Assim, quando descrevemos uma linguagem, devemos prestar especial atenção aos meios que ela proporciona para combinar ideias simples para formar ideias mais complexas. Toda linguagem poderosa possui três mecanismos para fazer isso:</p><p>
+
+</p><p/><ul><a name="%_idx_120" id="%_idx_120"/><li><strong>expressões primitivas</strong>, que representam as entidades mais simples com as quais a linguagem se refere,<p>
+
+<a name="%_idx_122" id="%_idx_122"/><a name="%_idx_124" id="%_idx_124"/></p></li><li><strong>meio de combinação</strong>, pelo qual elementos compostos são construídos a partir de elementos mais simples, e<p>
+
+<a name="%_idx_126" id="%_idx_126"/></p></li><li><strong>meios de abstração</strong>, pelos quais elementos compostos podem ser nomeados e manipulados como unidades.<p>
+
+</p></li></ul><p/><p>Na programação, lidamos com dois tipos de elementos: <a name="%_idx_128" id="%_idx_128"/>procedimentos e <a name="%_idx_130" id="%_idx_130"/>dados. (Mais tarde, descobriremos que eles realmente não são tão distintos). Informalmente, dados são “objetos” que queremos manipular e procedimentos são descrições das regras para manipular os dados. Assim, qualquer linguagem de programação poderosa deve ser capaz de descrever dados e procedimentos primitivos e deve ter métodos para combinar e abstrair procedimentos e dados.</p><p>Neste capítulo, trataremos apenas de dados numéricos<a name="%_idx_132" id="%_idx_132"/><a name="%_idx_134" id="%_idx_134"/>, para que possamos focar nas regras para a criação de procedimentos.<a name="call_footnote_Temp_10" href="#footnote_Temp_10" id="call_footnote_Temp_10"><sup><small>4</small></sup></a> Nos próximos capítulos, veremos que essas mesmas regras nos permitem criar procedimentos para manipular dados compostos também.</p><p>
+
+<a name="%_sec_1.1.1" id="%_sec_1.1.1"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_1.1.1">1.1.1 Expressões</a></h3><p>
+
+</p><p>Uma maneira fácil de começar a programar é examinar algumas interações típicas com um interpretador para o dialeto Scheme do Lisp. Imagine que você está sentado em um terminal de computador. Você digita uma <em>expressão</em>, e o interpretador responde exibindo o resultado da sua <em>avaliação</em> dessa expressão.</p><p>
+
+<a name="%_idx_148" id="%_idx_148"/><a name="%_idx_150" id="%_idx_150"/>Um tipo de expressão primitiva que você pode digitar é um número. (Mais precisamente, a expressão que você digita consiste nos números que representam o número na base 10). Se você apresentar ao Lisp um número</p><p>
+
+</p><p/><p><tt>486<br/></tt></p><p/><p>o interpretador responderá imprimindo <a name="call_footnote_Temp_11" href="#footnote_Temp_11" id="call_footnote_Temp_11"><sup><small>5</small></sup></a></p><p>
+
+</p><p/><p><tt><i>486</i><br/></tt></p><p/><p/><p>
+
+<a name="%_idx_154" id="%_idx_154"/><a name="%_idx_156" id="%_idx_156"/>Expressões representando números podem ser combinadas com uma <a name="%_idx_158" id="%_idx_158"/>expressão representando um <a name="%_idx_160" id="%_idx_160"/><a name="%_idx_162" id="%_idx_162"/><a name="%_idx_164" id="%_idx_164"/><a name="%_idx_166" id="%_idx_166"/><a name="%_idx_168" id="%_idx_168"/>procedimento primitivo (como <tt>+</tt> ou <tt>*</tt>) para formar uma expressão composta que represente a aplicação do procedimento a esses números. Por exemplo:</p><p>
+
+</p><p/><p><tt>(+ 137 349)<br/><i>486</i><br/><a name="%_idx_170" id="%_idx_170"/><a name="%_idx_172" id="%_idx_172"/>(- 1000 334)<br/><i>666</i><br/>
+(* 5 99)<br/><i>495</i><br/><a name="%_idx_174" id="%_idx_174"/><a name="%_idx_176" id="%_idx_176"/>(/ 10 5)<br/><i>2</i><br/>
+(+ 2.7 10)<br/><i>12.7</i><br/></tt></p><p/><p/><p>Expressões como essas, formadas <a name="%_idx_178" id="%_idx_178"/>delimitando uma lista de expressões entre parênteses, a fim de denotar <a name="%_idx_180" id="%_idx_180"/>uma aplicação de procedimento, que são chamadas <em>combinações</em>. O elemento mais à esquerda na lista é chamado de <a name="%_idx_182" id="%_idx_182"/><em>operador</em>, e os outros elementos são chamados de <a name="%_idx_184" id="%_idx_184"/><em>operandos</em>. O <a name="%_idx_186" id="%_idx_186"/>valor de uma combinação é obtido aplicando o procedimento especificado pelo operador aos <a name="%_idx_188" id="%_idx_188"/><em>argumentos</em> que são os valores dos operandos.</p><p>A convenção de colocar o operador à esquerda dos operandos é conhecida como <a name="%_idx_190" id="%_idx_190"/><em>notação de prefixo</em>, e pode ser um pouco confusa a princípio porque se afasta significativamente da convenção matemática habitual. A notação de prefixo possui várias vantagens, no entanto. Uma delas é que ele pode acomodar <a name="%_idx_192" id="%_idx_192"/><a name="%_idx_194" id="%_idx_194"/>procedimentos que podem receber um número arbitrário de argumentos, como nos exemplos a seguir:</p><p>
+
+</p><p/><p><tt>(+ 21 35 12 7)<br/><i>75</i><br/><br/>
+(* 25 4 12)<br/><i>1200</i><br/></tt></p><p/><p>Nenhuma ambiguidade pode surgir, porque o operador é sempre o elemento mais à esquerda e toda a combinação é delimitada pelos parênteses.</p><p>
+
+<a name="%_idx_196" id="%_idx_196"/>Uma segunda vantagem da notação de prefixo é que ela se estende de maneira direta para permitir que combinações sejam <em>aninhadas</em>, ou seja, para ter combinações cujos elementos são elas próprias:</p><p>
+
+</p><p/><p><tt>(+ (* 3 5) (- 10 6))<br/><i>19</i><br/></tt></p><p/><p/><p>Não há limite (em princípio) à profundidade de tal aninhamento e à complexidade geral das expressões que o interpretador Lisp pode avaliar. Nós, humanos, ficamos confusos com expressões ainda relativamente simples, como</p><p>
+
+</p><p/><p><tt>(+ (* 3 (+ (* 2 4) (+ 3 5))) (+ (- 10 7) 6))<br/></tt></p><p/><p>que o interpretador avaliaria prontamente como sendo 57. Podemos nos ajudar escrevendo essa expressão na forma</p><p>
+
+</p><p/><p><tt>(+ (* 3<br/>
+      (+ (* 2 4)<br/>
+         (+ 3 5)))<br/>
+   (+ (- 10 7)<br/>
+      6))<br/></tt></p><p/><p>seguindo uma convenção de formatação conhecida como <a name="%_idx_198" id="%_idx_198"/><em>impressão elegante</em>, na qual cada combinação longa é escrita para que os operandos sejam alinhados verticalmente. Os recuos resultantes exibem claramente a estrutura da expressão.<a name="call_footnote_Temp_12" href="#footnote_Temp_12" id="call_footnote_Temp_12"><sup><small>6</small></sup></a></p><p>Mesmo com expressões complexas, o interpretador sempre opera no mesmo ciclo básico: lê uma expressão do terminal, avalia a expressão e imprime o resultado. Esse modo de operação geralmente é expresso dizendo que o interpretador é executado em um <a name="%_idx_204" id="%_idx_204"/><a name="%_idx_206" id="%_idx_206"/><em>loop de leitura, avaliação e impressão</em>. Observe, em particular, que não é necessário instruir explicitamente o interpretador para imprimir o valor da expressão.<a name="call_footnote_Temp_13" href="#footnote_Temp_13" id="call_footnote_Temp_13"><sup><small>7</small></sup></a></p><p>
+
+<a name="%_sec_1.1.2" id="%_sec_1.1.2"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_1.1.2">1.1.2 Nomeação e o ambiente</a></h3><p>Um aspecto crítico de uma linguagem de programação é o meio que ela fornece para usar nomes <a name="%_idx_216" id="%_idx_216"/>para se referir a objetos computacionais. Dizemos que o nome <a name="%_idx_218" id="%_idx_218"/>identifica uma <a name="%_idx_220" id="%_idx_220"/><em>variável</em> cujo <a name="%_idx_222" id="%_idx_222"/><em>valor</em> é o objeto.</p><p>No dialeto Scheme do Lisp, nomeamos os objetos com <a name="%_idx_224" id="%_idx_224"/><a name="%_idx_226" id="%_idx_226"/><tt>define</tt>. Digitando</p><p>
+
+</p><p/><p><tt>(define size 2)<br/></tt></p><p/><p>faz com que o interpretador associe o valor 2 ao nome <tt>size</tt>.<a name="call_footnote_Temp_14" href="#footnote_Temp_14" id="call_footnote_Temp_14"><sup><small>8</small></sup></a> Depois que o nome <tt>size</tt> foi associado ao número 2, podemos nos referir ao valor 2 pelo nome:</p><p>
+
+</p><p/><p><tt>size<br/><i>2</i><br/>
+(* 5 size)<br/><i>10</i><br/></tt></p><p/><p/><p>Aqui estão mais exemplos do uso de <tt>define</tt>:</p><p>
+
+</p><p/><p><tt>(define pi 3.14159)<br/>
+(define radius 10)<br/>
+(* pi (* radius radius))<br/><i>314.159</i><br/>
+(define circumference (* 2 pi radius))<br/>
+circumference<br/><i>62.8318</i><br/></tt></p><p/><p/><p>
+
+<a name="%_idx_232" id="%_idx_232"/><tt>Define</tt> é o meio mais simples de abstração da nossa linguagem, pois nos permite usar nomes simples para nos referir aos resultados de operações compostas, como a <tt>circumference</tt> calculada acima. Em geral, os objetos computacionais podem ter estruturas muito complexas, e seria extremamente inconveniente precisar lembrar e repetir seus detalhes sempre que desejá-los usá-los. De fato, programas complexos são construídos construindo, passo a passo, objetos computacionais de crescente complexidade. O interpretador torna essa construção do programa passo a passo particularmente conveniente porque as associações nome-objeto podem ser criadas gradualmente em interações sucessivas. Esse recurso incentiva o desenvolvimento e o teste incrementais <a name="%_idx_234" id="%_idx_234"/><a name="%_idx_236" id="%_idx_236"/>de programas e é amplamente responsável pelo fato de que <a name="%_idx_238" id="%_idx_238"/>um programa Lisp geralmente consiste em um grande número de procedimentos relativamente simples.</p><p>Deve ficar claro que a possibilidade de associar valores a símbolos e depois recuperá-los significa que o interpretador deve manter algum tipo de memória que controla os pares nome-objeto. Essa memória é chamada de <a name="%_idx_240" id="%_idx_240"/><em>ambiente</em> (mais precisamente o <a name="%_idx_242" id="%_idx_242"/><em>ambiente global</em>, pois veremos mais adiante que uma computação pode envolver vários ambientes diferentes <a name="call_footnote_Temp_15" href="#footnote_Temp_15" id="call_footnote_Temp_15"><sup><small>9</small></sup></a></p><p>
+
+<a name="%_sec_1.1.3" id="%_sec_1.1.3"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_1.1.3">1.1.3 Avaliando combinações</a></h3><p>
+
+
+<a name="%_idx_244" id="%_idx_244"/><a name="%_idx_246" id="%_idx_246"/>Um dos nossos objetivos neste capítulo é isolar questões sobre o pensamento processual. Como exemplo, consideremos que, ao avaliar combinações, o próprio interpretador segue um procedimento.</p><p>
+
+</p><p/><ul><li>Para avaliar uma combinação, faça o seguinte:</li></ul><p/><p>
+
+</p><blockquote>
+<p>1. Avalie as subexpressões da combinação.</p><p>
+
+</p><p>2. Aplique o procedimento que é o valor da subexpressão mais à esquerda (o operador) nos argumentos que são os valores das outras subexpressões (os operandos).</p></blockquote><p>Mesmo essa regra simples ilustra alguns pontos importantes sobre processos em geral. Primeiro, observe que o primeiro passo determina que, para realizar o processo de avaliação de uma combinação, devemos primeiro executar o processo de avaliação em cada elemento da combinação. Assim, a regra de avaliação é de <a name="%_idx_248" id="%_idx_248"/><em>recursiva</em>; isto é, inclui, como uma de suas etapas, a necessidade de invocar a própria regra.<a name="call_footnote_Temp_16" href="#footnote_Temp_16" id="call_footnote_Temp_16"><sup><small>10</small></sup></a></p><p>
+
+<a name="%_idx_250" id="%_idx_250"/>Observe como sucintamente a ideia de recursão pode ser usada para expressar o que, no caso de uma combinação profundamente aninhada, seria visto como um processo bastante complicado. Por exemplo, avaliando</p><p>
+
+</p><p/><p><tt>(* (+ 2 (* 4 6))<br/>
+   (+ 3 5 7))<br/></tt></p><p/><p>requer que a regra de avaliação seja aplicada a quatro combinações diferentes. Podemos obter uma imagem desse processo <a name="%_idx_252" id="%_idx_252"/>representando a combinação na forma de uma árvore<a name="%_idx_254" id="%_idx_254"/>, como mostra a figura <a href="#%_fig_1.1">1.1</a>. Cada combinação é representada por um nó <a name="%_idx_256" id="%_idx_256"/>com ramificações <a name="%_idx_258" id="%_idx_258"/>correspondentes ao operador e os operandos da combinação decorrentes dele. Os nós do terminal <a name="%_idx_260" id="%_idx_260"/>(ou seja, nós sem ramificações decorrentes deles) representam operadores ou números. Vendo a avaliação em termos da árvore, podemos imaginar que os valores dos operandos movem para cima, começando pelos nós terminais e combinando em níveis cada vez mais altos. Em geral, veremos que a recursão é uma técnica muito poderosa para lidar com objetos hierárquicos e os semelhantes a árvores. De fato, a forma “mover valores ​​para cima” da regra de avaliação é um exemplo de um tipo geral de processo conhecido como <a name="%_idx_262" id="%_idx_262"/><em>acumulação de árvore</em>.</p><p>
+
+<a name="%_fig_1.1" id="%_fig_1.1"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch1-Z-G-1.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 1.1:</b> Representação em árvore, mostrando o valor de cada subcombinação.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Em seguida, observe que a aplicação repetida da primeira etapa nos leva ao ponto em que precisamos avaliar, não combinações, mas expressões primitivas, como números, operadores internos ou outros nomes. Cuidamos dos casos primitivos, estipulando que</p><p>
+
+<a name="%_idx_264" id="%_idx_264"/><a name="%_idx_266" id="%_idx_266"/></p><p/><ul><li>os valores dos numerais são os números que eles nomeiam,<p>
+
+</p></li><li>os valores dos operadores embutidos são as sequências de instruções da máquina que executam as operações correspondentes, e<p>
+
+</p></li><li>os valores de outros nomes são os objetos associados a esses nomes no ambiente.</li></ul><p/><p>Podemos considerar a segunda regra como um caso especial da terceira, estipulando que símbolos como <tt>+</tt> e <tt>*</tt> também estão incluídos no ambiente global e estão associados às sequências de instruções da máquina que são seus &quot;valores&quot;. O ponto principal a ser observado é o papel do ambiente <a name="%_idx_268" id="%_idx_268"/>na determinação do significado dos símbolos nas expressões. Em uma linguagem interativa como Lisp, não faz sentido falar do valor de uma expressão como <tt>(+ x 1)</tt> sem especificar nenhuma informação sobre o ambiente que possa fornecer um significado ao símbolo <tt>x</tt> (ou mesmo para o símbolo <tt>+</tt>). Como veremos no capítulo 3, a noção geral de ambiente como um contexto em que a avaliação ocorre desempenhará um papel importante em nossa compreensão da execução do programa.</p><p>
+
+<a name="%_idx_270" id="%_idx_270"/>Observe que a regra de avaliação fornecida acima não trata de definições. Por exemplo, avaliar <tt>(define x 3)</tt> não se aplica <tt>define</tt> para dois argumentos, um dos quais é o valor do símbolo <tt>x</tt> e o outro dos quais é 3, pois o objetivo de <tt>define</tt> é precisamente associar <tt>x</tt> a um valor. (Ou seja, <tt>(define x 3)</tt> não é uma combinação).</p><p>
+
+<a name="%_idx_272" id="%_idx_272"/>Tais exceções à regra geral de avaliação são chamadas <em>formas especiais</em>. <tt>Define</tt> é o único exemplo de uma forma especial que vimos até agora, mas encontraremos outras em breve. <a name="%_idx_274" id="%_idx_274"/> Cada forma especial possui sua própria regra de avaliação. Os vários tipos de expressões (cada um com sua regra de avaliação associada) constituem a sintaxe <a name="%_idx_276" id="%_idx_276"/>da linguagem de programação. Em comparação com a maioria das outras linguagens de programação, o Lisp possui uma sintaxe muito simples; isto é, a regra de avaliação para expressões pode ser descrita por uma regra geral simples, com regras especializadas para um pequeno número de formas especiais.<a name="call_footnote_Temp_17" href="#footnote_Temp_17" id="call_footnote_Temp_17"><sup><small>11</small></sup></a></p><p>
+
+<a name="%_sec_1.1.4" id="%_sec_1.1.4"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_1.1.4">1.1.4 Procedimentos compostos</a></h3><p>
+
+</p><p>Identificamos no Lisp alguns dos elementos que devem aparecer em qualquer linguagem de programação poderosa:</p><p>
+
+
+</p><p/><ul><li>Números e operações aritméticas são dados e procedimentos primitivos, respectivamente.<p>
+
+</p></li><li>O aninhamento de combinações fornece um meio de combinar operações.<p>
+
+</p></li><li>Definições que associam nomes a valores fornecem um meio limitado de abstração.</li></ul><p/><p>Agora aprenderemos sobre <a name="%_idx_292" id="%_idx_292"/><em>definições de procedimento</em>, uma técnica de abstração muito mais poderosa pela qual uma operação composta pode receber um nome e ser chamada de unidade.</p><p>Começamos examinando como expressar a ideia de &quot;elevar ao quadrado&quot;. Poderíamos dizer: &quot;Para elevar algo ao quadrado, multiplique-o por si mesmo&quot;. Isso é expresso em nossa linguagem como</p><p>
+
+</p><p/><p><tt><a name="%_idx_294" id="%_idx_294"/>(define (square x) (* x x))<br/></tt></p><p/><p/><p>Podemos entender isso da seguinte maneira:</p><p>
+
+
+
+</p><p/><p><tt>(define (square  x)        (*         x     x))<br/>    ↑        ↑     ↑          ↑         ↑    ↑<br/> Para elevar algo ao quadrado, multiplique-o por si só.<br/></tt></p><p/><p>
+<a name="%_idx_296" id="%_idx_296"/><a name="%_idx_298" id="%_idx_298"/>Temos aqui um <em>procedimento composto</em>, que recebeu o nome de <tt>square</tt>. O procedimento representa a operação de multiplicar algo por si só. O objeto a ser multiplicado recebe um nome local, <tt>x</tt>, que desempenha o mesmo papel que um pronome desempenha na linguagem natural. <a name="%_idx_300" id="%_idx_300"/> <a name="%_idx_302" id="%_idx_302"/><a name="%_idx_304" id="%_idx_304"/>A avaliação da definição cria esse procedimento composto e o associa ao nome <tt>square</tt>.<a name="call_footnote_Temp_18" href="#footnote_Temp_18" id="call_footnote_Temp_18"><sup><small>12</small></sup></a></p><p>
+
+<a name="%_idx_306" id="%_idx_306"/><a name="%_idx_308" id="%_idx_308"/>A forma geral de uma definição de procedimento é</p><p>
+
+</p><p/><p><tt>(define (&lt;<em>name</em>&gt; &lt;<em>formal parameters</em>&gt;) &lt;<em>body</em>&gt;)<br/></tt></p><p/><p>
+<a name="%_idx_310" id="%_idx_310"/><a name="%_idx_312" id="%_idx_312"/>O &lt;<em>name</em>&gt; é um símbolo a ser associado à definição de procedimento no ambiente.<a name="call_footnote_Temp_19" href="#footnote_Temp_19" id="call_footnote_Temp_19"><sup><small>13</small></sup></a> O <a name="%_idx_318" id="%_idx_318"/><a name="%_idx_320" id="%_idx_320"/>&lt;<em>formal parameters</em>&gt; são os nomes usados ​​no corpo do procedimento para se referir aos argumentos correspondentes do procedimento. O<a name="%_idx_322" id="%_idx_322"/> <a name="%_idx_324" id="%_idx_324"/>&lt;<em>body</em>&gt; é uma expressão que produzirá o valor da aplicação de procedimento quando os parâmetros formais forem substituídos pelos argumentos reais aos quais o procedimento é aplicado. <a name="call_footnote_Temp_20" href="#footnote_Temp_20" id="call_footnote_Temp_20"><sup><small>14</small></sup></a> O &lt;<em>name</em>&gt; e os &lt;<em>formal parameters</em>&gt; estão agrupados em <a name="%_idx_328" id="%_idx_328"/>parênteses, exatamente como seriam em uma chamada real para o procedimento que está será definido.</p><p>Tendo definido <tt>square</tt>, agora podemos usá-lo:</p><p>
+
+</p><p/><p><tt>(square 21)<br/><i>441</i><br/><br/>
+(square (+ 2 5))<br/><i>49</i><br/><br/>
+(square (square 3))<br/><i>81</i><br/></tt></p><p/><p/><p>Também podemos usar <tt>square</tt> como um componente básico na definição de outros procedimentos. Por exemplo, <em>x</em><sup>2</sup> + <em>y</em><sup>2</sup> pode ser expresso como</p><p>
+
+</p><p/><p><tt>(+ (square x) (square y))<br/></tt></p><p/><p>Podemos facilmente definir um procedimento <tt>sum-of-squares</tt> que, dados dois números como argumentos, produza a soma de seus quadrados:</p><p>
+
+</p><p/><p><tt><a name="%_idx_330" id="%_idx_330"/>(define (sum-of-squares x y)<br/>
+  (+ (square x) (square y)))<br/><br/>
+(sum-of-squares 3 4)<br/><i>25</i><br/></tt></p><p/><p>Agora podemos usar a <tt>sum-of-squares</tt> como um bloco de construção na construção de procedimentos adicionais:</p><p>
+
+</p><p/><p><tt>(define (f a)<br/>
+  (sum-of-squares (+ a 1) (* a 2)))<br/><br/>
+(f 5)<br/><i>136</i><br/></tt></p><p/><p>
+<a name="%_idx_332" id="%_idx_332"/>Os procedimentos compostos são usados ​​exatamente da mesma maneira que os procedimentos primitivos. De fato, não se poderia dizer, olhando para a definição de <tt>sum-of-squares</tt> dada acima, se <tt>square</tt> foi incorporado ao interpretador, como <tt>+</tt> e <tt>*</tt>, ou definido como um procedimento composto.</p><p>
+
+<a name="%_sec_1.1.5" id="%_sec_1.1.5"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_1.1.5">1.1.5 O Modelo de Substituição para Aplicação de Procedimentos</a></h3><p>
+
+
+<a name="%_idx_334" id="%_idx_334"/>Para avaliar uma combinação cujo operador nomeia um procedimento composto, o interpretador segue o mesmo processo que para combinações cujos operadores nomeiam procedimentos primitivos, que descrevemos na seção <a href="#%_sec_1.1.3">1.1.3</a>. Ou seja, o interpretador avalia os elementos da combinação e aplica o procedimento (que é o valor do operador da combinação) aos argumentos (que são os valores dos operandos da combinação).</p><p>Podemos assumir que o mecanismo para aplicar procedimentos primitivos aos argumentos está embutido no interpretador. Para procedimentos compostos, o processo de aplicação é o seguinte:</p><p>
+
+</p><p/><ul><li>Para aplicar um procedimento composto aos argumentos, avalie o corpo do procedimento com cada parâmetro formal substituído pelo argumento correspondente.</li></ul><p/><p>Para ilustrar esse processo, avaliaremos a combinação</p><p>
+
+</p><p/><p><tt>(f 5)<br/></tt></p><p/><p>onde <tt>f</tt> é o procedimento definido na seção <a href="#%_sec_1.1.4">1.1.4</a>. Começamos recuperando o corpo de <tt>f</tt>:</p><p>
+
+</p><p/><p><tt>(sum-of-squares (+ a 1) (* a 2))<br/></tt></p><p/><p>Em seguida, substituímos o parâmetro formal <tt>a</tt> pelo argumento 5:</p><p>
+
+</p><p/><p><tt>(sum-of-squares (+ 5 1) (* 5 2))<br/></tt></p><p/><p>Assim, o problema se reduz à avaliação de uma combinação com dois operandos e um operador <tt>sum-of-squares</tt>. A avaliação dessa combinação envolve três subproblemas. Devemos avaliar o operador para obter o procedimento a ser aplicado e devemos avaliar os operandos para obter os argumentos. Agora <tt>(+ 5 1)</tt> produz 6 e <tt>(* 5 2)</tt> produz 10, portanto, devemos aplicar o procedimento <tt>sum-of-squares</tt> para 6 e 10. Esses valores são substituídos pelos parâmetros formais <tt>x</tt> e <tt>y</tt> no corpo da <tt>sum-of-squares</tt>, reduzindo a expressão para</p><p>
+
+</p><p/><p><tt>(+ (square 6) (square 10))<br/></tt></p><p/><p>Se usarmos a definição de <tt>square</tt>, isso reduz a</p><p>
+
+</p><p/><p><tt>(+ (* 6 6) (* 10 10))<br/></tt></p><p/><p>que reduz pela multiplicação para</p><p>
+
+</p><p/><p><tt>(+ 36 100)<br/></tt></p><p/><p>e finalmente para</p><p>
+
+</p><p/><p><tt>136<br/></tt></p><p/><p>
+</p><p>O processo que acabamos de descrever é chamado de <em>modelo de substituição</em> para aplicação de procedimentos. Pode ser tomado como um modelo que determina o &quot;significado&quot; da aplicação do procedimento, no que diz respeito aos procedimentos deste capítulo. No entanto, há dois pontos que devem ser enfatizados:</p><p>
+
+</p><p/><ul><li>O objetivo da substituição é ajudar-nos a pensar sobre a aplicação do procedimento, não fornecer uma descrição de como o interpretador realmente funciona. interpretadores típicos não avaliam aplicações de procedimento manipulando o texto de um procedimento para substituir valores pelos parâmetros formais. Na prática, a “substituição” é realizada usando um ambiente local para os parâmetros formais. Discutiremos isso mais detalhadamente nos capítulos 3 e 4 quando examinarmos a implementação de um interpretador em detalhes.<p>
+
+</p></li><li>No decorrer deste livro, apresentaremos uma sequência de modelos cada vez mais elaborados de como os interpretadores funcionam, culminando com uma implementação completa de um interpretador e compilador no capítulo 5. O modelo de substituição é apenas o primeiro desses modelos - uma maneira de começar a pensar formalmente sobre o processo de avaliação. Em geral, ao <a name="%_idx_336" id="%_idx_336"/>modelar fenômenos na ciência e na engenharia, começamos com modelos simplificados e incompletos. À medida que examinamos com mais detalhes, esses modelos simples se tornam inadequados e devem ser substituídos por modelos mais refinados. O modelo de substituição não é exceção. Em particular, quando abordarmos no capítulo 3 o uso de procedimentos com “dados mutáveis”, veremos que o modelo de substituição falha e deve ser substituído por um modelo mais complicado de aplicação de procedimentos.<a name="call_footnote_Temp_21" href="#footnote_Temp_21" id="call_footnote_Temp_21"><sup><small>15</small></sup></a>
+</li></ul><p/><p>
+
+<a name="%_sec_Temp_22" id="%_sec_Temp_22"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_22">Ordem aplicável versus ordem normal</a></h4><p>De acordo com a descrição da avaliação fornecida na seção <a href="#%_sec_1.1.3">1.1.3</a>, o interpretador avalia primeiro o operador e os operandos e depois aplica o procedimento resultante aos argumentos resultantes. Esta não é a única maneira de realizar a avaliação. Um modelo de avaliação alternativo não avaliaria os operandos até que seus valores fossem necessários. Em vez disso, substituiria primeiro expressões de operando por parâmetros até obter uma expressão envolvendo apenas operadores primitivos e, em seguida, executaria a avaliação. Se usarmos esse método, a avaliação de</p><p>
+
+</p><p/><p><tt>(f 5)<br/></tt></p><p/><p>prosseguiria de acordo com a sequência de expansões</p><p>
+
+</p><p/><p><tt>(sum-of-squares (+ 5 1) (* 5 2))<br/><br/>
+(+    (square (+ 5 1))      (square (* 5 2))  )<br/><br/>
+(+    (* (+ 5 1) (+ 5 1))   (* (* 5 2) (* 5 2)))<br/></tt></p><p/><p>
+followed by the reductions</p><p>
+
+</p><p/><p><tt>(+         (* 6 6)             (* 10 10))<br/><br/>
+(+           36                   100)<br/><br/>
+                    136<br/></tt></p><p/><p>Isso dá a mesma resposta que nosso modelo de avaliação anterior, mas o processo é diferente. Em particular, as avaliações de <tt>(+ 5 1)</tt> e <tt>(* 5 2)</tt> são realizadas aqui duas vezes, correspondendo à redução da expressão</p><p>
+
+</p><p/><p><tt>(* x x)<br/></tt></p><p/><p>com <tt>x</tt> substituído respectivamente por <tt>(+ 5 1)</tt> e <tt>(* 5 2)</tt>.</p><p>Nessa alternativa “expandir e reduzir completamente”, o método de avaliação é conhecida como <a name="%_idx_340" id="%_idx_340"/><em>avaliação em ordem normal</em>, em contraste com o método &quot;avaliar os argumentos e depois aplicar&quot; que o interpretador realmente usa, que é chamado de <a name="%_idx_342" id="%_idx_342"/><em>avaliação por ordem de aplicação</em>. Pode-se mostrar que, para aplicações de procedimento que podem ser modelados usando substituição (incluindo todos os procedimentos dos dois primeiros capítulos deste livro) e que produzem valores legítimos, a avaliação da ordem normal e da ordem aplicativa produz o mesmo valor. (Veja o exercício <a href="#%_thm_1.5">1.5</a> para obter uma instância de um valor &quot;ilegítimo&quot;, em que a avaliação de ordem normal e de ordem aplicativa não fornece o mesmo resultado).</p><p>
+
+<a name="%_idx_344" id="%_idx_344"/><a name="%_idx_346" id="%_idx_346"/>O Lisp usa avaliação de ordem de aplicação, em parte devido à eficiência adicional obtida ao evitar várias avaliações de expressões como as ilustradas com <tt>(+ 5 1)</tt> e <tt>(* 5 2)</tt> acima e, mais significativamente, porque a avaliação em ordem normal se torna muito mais complicada de lidar quando deixamos o campo de procedimentos que podem ser modelados por substituição. Por outro lado, a avaliação em ordem normal pode ser uma ferramenta extremamente valiosa e investigaremos algumas de suas implicações nos capítulos 3 e 4.<a name="call_footnote_Temp_23" href="#footnote_Temp_23" id="call_footnote_Temp_23"><sup><small>16</small></sup></a></p><p>
+
+<a name="%_sec_1.1.6" id="%_sec_1.1.6"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_1.1.6">1.1.6 Expressões condicionais e predicados</a></h3><p>
+
+</p><p>O poder expressivo da classe de procedimentos que podemos definir neste momento é muito limitado, porque não temos como fazer testes e executar operações diferentes, dependendo do resultado de um teste. Por exemplo, não podemos definir um procedimento que calcule o valor absoluto <a name="%_idx_348" id="%_idx_348"/>de um número testando se o número é positivo, negativo ou zero e executando ações diferentes nos diferentes casos, de acordo com a regra</p><p>
+
+</p><p/><div align="left"><img src="images/ch1-Z-G-2.gif" border="0"/></div><p/><p>
+
+<a name="%_idx_350" id="%_idx_350"/>Essa construção é chamada de <em>análise de caso</em>, e existe uma forma especial no Lisp para anotar essa análise de caso. É chamado <a name="%_idx_352" id="%_idx_352"/><a name="%_idx_354" id="%_idx_354"/><a name="%_idx_356" id="%_idx_356"/><tt>cond</tt> (que significa &quot;condicional&quot;) e é usado da seguinte forma:</p><p>
+
+</p><p/><p><tt><a name="%_idx_358" id="%_idx_358"/>(define (abs x)<br/>
+  (cond ((&gt; x 0) x)<br/>
+        ((= x 0) 0)<br/>
+        ((&lt; x 0) (- x))))<br/></tt></p><p/><p>A forma geral de uma expressão condicional é</p><p>
+
+</p><p/><p><tt>(cond (&lt;<em>p<sub>1</sub></em>&gt; &lt;<em>e<sub>1</sub></em>&gt;)<br/>
+      (&lt;<em>p<sub>2</sub></em>&gt; &lt;<em>e<sub>2</sub></em>&gt;)<br/>
+      ⋮<br/>
+      (&lt;<em>p<sub><em>n</em></sub></em>&gt; &lt;<em>e<sub><em>n</em></sub></em>&gt;))<br/></tt></p><p/><p>consistindo no símbolo <tt>cond</tt> seguido por <a name="%_idx_360" id="%_idx_360"/>pares de expressões entre parênteses <tt>(&lt;<em>p</em>&gt; &lt;<em>e</em>&gt;)</tt> chamado <a name="%_idx_362" id="%_idx_362"/><a name="%_idx_364" id="%_idx_364"/><em>cláusulas</em>. A primeira expressão em cada par é um <a name="%_idx_366" id="%_idx_366"/><em>predicate</em> - ou seja, uma expressão cujo valor é interpretado como verdadeiro ou falso.<a name="call_footnote_Temp_24" href="#footnote_Temp_24" id="call_footnote_Temp_24"><sup><small>17</small></sup></a></p><p>
+
+<a name="%_idx_384" id="%_idx_384"/><a name="%_idx_386" id="%_idx_386"/>Expressões condicionais são avaliadas da seguinte maneira. O predicado &lt;<em>p<sub>1</sub></em>&gt; é avaliado primeiro. Se seu valor for falso, &lt;<em>p<sub>2</sub></em>&gt; será avaliado. Se o valor de &lt;<em>p<sub>2</sub></em>&gt; também for falso, o &lt;<em>p<sub>3</sub></em>&gt; será avaliado. Esse processo continua até que seja encontrado um predicado cujo valor é verdadeiro; nesse caso, o interpretador retorna o valor da correspondente expressão <a name="%_idx_388" id="%_idx_388"/><em>consequente</em> &lt;<em>e</em>&gt; da cláusula como o valor da expressão condicional. Se nenhum dos &lt;<em>p</em>&gt; for considerado verdadeiro, o valor do <tt>cond</tt> será indefinido.</p><p>
+
+<a name="%_idx_390" id="%_idx_390"/>A palavra <em>predicate</em> é usada para procedimentos que retornam verdadeiro ou falso, bem como para expressões que avaliam como verdadeiro ou falso. O procedimento de valor absoluto <tt>abs</tt> utiliza os <a name="%_idx_392" id="%_idx_392"/><a name="%_idx_394" id="%_idx_394"/><a name="%_idx_396" id="%_idx_396"/><a name="%_idx_398" id="%_idx_398"/><a name="%_idx_400" id="%_idx_400"/><a name="%_idx_402" id="%_idx_402"/><a name="%_idx_404" id="%_idx_404"/><a name="%_idx_406" id="%_idx_406"/><a name="%_idx_408" id="%_idx_408"/>predicados primitivos <tt>&gt;</tt>, <tt>&lt;</tt>, e <tt>=</tt>.<a name="call_footnote_Temp_25" href="#footnote_Temp_25" id="call_footnote_Temp_25"><sup><small>18</small></sup></a> Estes recebem dois números como argumentos e testam se o primeiro número é, respectivamente, maior que, menor que ou igual ao segundo número, retornando verdadeiro ou falso de acordo.</p><p>Outra maneira de escrever o procedimento de valor absoluto é</p><p>
+
+</p><p/><p><tt><a name="%_idx_414" id="%_idx_414"/>(define (abs x)<br/>
+  (cond ((&lt; x 0) (- x))<br/>
+        (else x)))<br/></tt></p><p/><p>que pode ser expresso em português como &quot;Se <em>x</em> for menor que zero retorno - <em>x</em>; caso contrário, retorne <em>x</em>. &quot; <a name="%_idx_416" id="%_idx_416"/><tt>Else</tt> é um símbolo especial que pode ser usado no lugar de &lt;<em>p</em>&gt; na cláusula final de um <tt>cond</tt>. Isso faz com que o <tt>cond</tt> retorne como seu valor o valor dos correspondentes <em>e</em>&gt; sempre que todas as cláusulas anteriores tiverem sido ignoradas. De fato, qualquer expressão que sempre avalie como um valor verdadeiro pode ser usada como &lt;<em>p</em>&gt; aqui.</p><p>Aqui está outra maneira de escrever o procedimento de valor absoluto:</p><p>
+
+</p><p/><p><tt><a name="%_idx_418" id="%_idx_418"/>(define (abs x)<br/>
+  (if (&lt; x 0)<br/>
+      (- x)<br/>
+      x))<br/></tt></p><p/><p>
+<a name="%_idx_420" id="%_idx_420"/><a name="%_idx_422" id="%_idx_422"/><a name="%_idx_424" id="%_idx_424"/>Isso usa o formato especial <tt>if</tt>, um tipo restrito de condicional que pode ser usado quando há precisamente <a name="%_idx_426" id="%_idx_426"/>dois casos na análise de caso. A forma geral de uma expressão <tt>if</tt> é</p><p>
+
+</p><p/><p><tt>(if &lt;<em>predicate</em>&gt; &lt;<em>consequent</em>&gt; &lt;<em>alternative</em>&gt;)<br/></tt></p><p/><p>
+<a name="%_idx_428" id="%_idx_428"/><a name="%_idx_430" id="%_idx_430"/><a name="%_idx_432" id="%_idx_432"/>Para avaliar uma expressão <tt>if</tt>, o interpretador começa avaliando a parte <a name="%_idx_434" id="%_idx_434"/>&lt;<em>predicate</em>&gt; da expressão. Se o &lt;<em>predicate</em>&gt; for avaliado como um valor verdadeiro, o interpretador avalia o <a name="%_idx_436" id="%_idx_436"/>&lt;<em>consequent</em>&gt; e retorna seu valor. Caso contrário, ele avalia a <a name="%_idx_438" id="%_idx_438"/>&lt;<em>alternative</em>&gt; e retorna seu valor.<a name="call_footnote_Temp_26" href="#footnote_Temp_26" id="call_footnote_Temp_26"><sup><small>19</small></sup></a></p><p>Além de predicados primitivos, como <tt>&lt;</tt>, <tt>=</tt> e <tt>&gt;</tt>, existem operações de composição lógica, que nos permitem construir predicados compostos. Os três mais usados ​​são:</p><p>
+
+</p><p/><ul><a name="%_idx_446" id="%_idx_446"/><a name="%_idx_448" id="%_idx_448"/><a name="%_idx_450" id="%_idx_450"/><a name="%_idx_452" id="%_idx_452"/><li><tt>(and &lt;<em>e<sub>1</sub></em>&gt; <tt>...</tt> &lt;<em>e<sub><em>n</em></sub></em>&gt;)</tt><p>O interpretador avalia as expressões &lt;<em>e</em>&gt; uma de cada vez, na ordem da esquerda para a direita. Se algum &lt;<em>e</em>&gt; for avaliado como falso, o valor das expressões <tt>and</tt> será falso, e o restante dos &lt;<em>e</em>&gt; serão Não avaliado. Se todos os &lt;<em>e</em>&gt; forem avaliados como valores verdadeiros, o valor das expressões <tt>and</tt> será o valor do último.</p><p>
+
+<a name="%_idx_454" id="%_idx_454"/><a name="%_idx_456" id="%_idx_456"/><a name="%_idx_458" id="%_idx_458"/><a name="%_idx_460" id="%_idx_460"/></p></li><li><tt>(or &lt;<em>e<sub>1</sub></em>&gt; <tt>...</tt> &lt;<em>e<sub><em>n</em></sub></em>&gt;)</tt><p>O interpretador avalia as expressões &lt;<em>e</em>&gt; uma de cada vez, na ordem da esquerda para a direita. Se algum &lt;<em>e</em>&gt; for avaliado como um valor verdadeiro, esse valor será retornado como o valor da expressão <tt>or</tt> e o restante dos &lt;<em>e</em>&gt; não são avaliados. Se todos os &lt;<em>e</em>&gt; forem avaliados como false, o valor da expressão <tt>or</tt> será falso.</p><p>
+
+<a name="%_idx_462" id="%_idx_462"/><a name="%_idx_464" id="%_idx_464"/></p></li><li><tt>(not &lt;<em>e</em>&gt;)</tt><p>O valor de uma expressão <tt>not</tt> é verdadeiro quando a expressão &lt;<em>e</em>&gt; é avaliada como falsa e, caso contrário, falsa.</p></li></ul><p/><p>
+
+<a name="%_idx_466" id="%_idx_466"/><a name="%_idx_468" id="%_idx_468"/>Observe que <tt>and</tt> e <tt>or</tt> são formas especiais, não procedimentos, porque as subexpressões não são necessariamente todas avaliadas. <tt>Not</tt> é um procedimento comum.</p><p>Como um exemplo de como eles são usados, a condição de um número <em>x</em> estar no intervalo 5 &lt;<em>x</em> &lt;10 pode ser expressa como</p><p>
+
+</p><p/><p><tt>(and (&gt; x 5) (&lt; x 10))<br/></tt></p><p/><p>Como outro exemplo, podemos definir um predicado para testar se um número é maior ou igual a outro como</p><p>
+
+</p><p/><p><tt><a name="%_idx_470" id="%_idx_470"/>(define (&gt;= x y)<br/>
+  (or (&gt; x y) (= x y)))<br/></tt></p><p/><p>
+or alternatively as</p><p>
+
+</p><p/><p><tt><a name="%_idx_472" id="%_idx_472"/>(define (&gt;= x y)<br/>
+  (not (&lt; x y)))<br/></tt></p><p/><p/><p>
+
+</p><p><a name="%_thm_1.1" id="%_thm_1.1"/>
+<b>Exercício 1.1.</b> Abaixo está uma sequência de expressões. Qual é o resultado impresso pelo interpretador em resposta a cada expressão? Suponha que a sequência seja avaliada na ordem em que é apresentada.</p><p>
+
+</p><p/><p><tt>10<br/>
+(+ 5 3 4)<br/>
+(- 9 1)<br/>
+(/ 6 2)<br/>
+(+ (* 2 4) (- 4 6))<br/>
+(define a 3)<br/>
+(define b (+ a 1))<br/>
+(+ a b (* a b))<br/>
+(= a b)<br/>
+(if (and (&gt; b a) (&lt; b (* a b)))<br/>
+    b<br/>
+    a)<br/>
+(cond ((= a 4) 6)<br/>
+      ((= b 4) (+ 6 7 a))<br/>
+      (else 25))<br/>
+(+ 2 (if (&gt; b a) b a))<br/>
+(* (cond ((&gt; a b) a)<br/>
+         ((&lt; a b) b)<br/>
+         (else -1))<br/>
+   (+ a 1))<br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_1.2" id="%_thm_1.2"/>
+<b>Exercício 1.2.</b> Traduza a seguinte expressão no formato de prefixo</p><p/><div align="left"><img src="images/ch1-Z-G-3.gif" border="0"/></div><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_1.3" id="%_thm_1.3"/>
+<b>Exercício 1.3.</b> Defina um procedimento que use três números como argumentos e retorne a soma dos quadrados dos dois números maiores.</p><p/><p>
+
+</p><p><a name="%_thm_1.4" id="%_thm_1.4"/>
+<b>Exercício 1.4.</b> <a name="%_idx_474" id="%_idx_474"/><a name="%_idx_476" id="%_idx_476"/><a name="%_idx_478" id="%_idx_478"/> Observe que nosso modelo de avaliação permite combinações cujos operadores são expressões compostas. Use esta observação para descrever o comportamento do seguinte procedimento:</p><p/><p><tt>(define (a-plus-abs-b a b)<br/>
+  ((if (&gt; b 0) + -) a b))<br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_1.5" id="%_thm_1.5"/>
+<b>Exercício 1.5.</b> <a name="%_idx_480" id="%_idx_480"/><a name="%_idx_482" id="%_idx_482"/> Ben Bitdiddle inventou um teste para determinar se o interpretador com o qual ele se depara usa a avaliação de ordem aplicativa ou avaliação de ordem normal. Ele define os dois procedimentos a seguir:</p><p/><p><tt>(define (p) (p))<br/><br/>
+(define (test x y)<br/>
+  (if (= x 0)<br/>
+      0<br/>
+      y))<br/></tt></p><p/><p>Então ele avalia a expressão</p><p/><p><tt>(test 0 (p))<br/></tt></p><p/><p>Que comportamento Ben observará com um interpretador que use avaliação de ordem de aplicação? Que comportamento ele observará com um interpretador que use avaliação de ordem normal? Explique sua resposta. <a name="%_idx_484" id="%_idx_484"/><a name="%_idx_486" id="%_idx_486"/>(Suponha que a regra de avaliação para a forma especial <tt>if</tt> seja a mesma, independentemente de o interpretador usar ordem normal ou aplicativa: A expressão do predicado é avaliada primeiro e o resultado determina avaliar a expressão consequente ou a alternativa).</p><p/><p>
+
+
+<a name="%_sec_1.1.7" id="%_sec_1.1.7"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_1.1.7">1.1.7 Exemplo: raízes quadradas pelo método de Newton</a></h3><p>
+
+</p><p>
+
+<a name="%_idx_488" id="%_idx_488"/><a name="%_idx_490" id="%_idx_490"/>Os procedimentos, como apresentados acima, são muito parecidos com funções matemáticas comuns. Eles especificam um valor que é determinado por um ou mais parâmetros. Mas há uma diferença importante entre funções matemáticas e procedimentos de computador. Os procedimentos devem ser eficazes.</p><p>Como exemplo, considere o problema de calcular raízes quadradas. Podemos definir a função de raiz quadrada como</p><p/><div align="left"><img src="images/ch1-Z-G-4.gif" border="0"/></div><p/><p>Isso descreve uma função matemática perfeitamente legítima. Poderíamos usá-lo para reconhecer se um número é a raiz quadrada de outro ou para derivar fatos sobre raízes quadradas em geral. Por outro lado, a definição não descreve um procedimento. De fato, ele nos diz quase nada sobre como encontrar a raiz quadrada de um determinado número. Não ajudará a reformular esta definição no pseudo-Lisp:</p><p>
+
+</p><p/><p><tt>(define (sqrt x)<br/>
+  (the y (and (&gt;= y 0)<br/>
+              (= (square y) x))))<br/></tt></p><p/><p>Isso apenas levanta a questão.</p><p>O contraste entre função e procedimento é um reflexo da distinção geral entre descrever propriedades dos objetos e descrever como os fazer, ou, como às vezes é referido, a distinção entre <a name="%_idx_492" id="%_idx_492"/><a name="%_idx_494" id="%_idx_494"/>conhecimento declarativo e conhecimento imperativo. Na <a name="%_idx_496" id="%_idx_496"/><a name="%_idx_498" id="%_idx_498"/>matemática, geralmente nos preocupamos com descrições declarativas (o que é), enquanto na ciência da computação geralmente nos preocupamos com descrições imperativas (como).<a name="call_footnote_Temp_32" href="#footnote_Temp_32" id="call_footnote_Temp_32"><sup><small>20</small></sup></a></p><p>
+
+<a name="%_idx_508" id="%_idx_508"/><a name="%_idx_510" id="%_idx_510"/>Como alguém calcula raízes quadradas? A maneira mais comum é usar o método de aproximações sucessivas de Newton, que diz que sempre que adivinhamos <em>y</em> o valor da raiz quadrada de um número <em>x</em>, podemos execute uma manipulação simples para obter uma estimativa melhor (uma mais próxima da raiz quadrada real) calculando a média de <em>y</em> com <em>x</em>/<em>y</em>.<a name="call_footnote_Temp_33" href="#footnote_Temp_33" id="call_footnote_Temp_33"><sup><small>21</small></sup></a> Por exemplo, podemos calcular a raiz quadrada de 2 da seguinte maneira. Suponha que nosso palpite inicial seja 1:</p><p>
+
+</p><table border="0"><tr><td valign="top">Palpite</td><td valign="top">Quociente</td><td valign="top">Média</td></tr><tr><td valign="top">  </td></tr><tr><td valign="top">1      </td><td valign="top"> (2/1)  =  2        </td><td valign="top">
+((2 + 1)/2)  =  1.5 </td></tr><tr><td valign="top">  </td></tr><tr><td valign="top">1.5    </td><td valign="top"> (2/1.5)  =  1.3333 </td><td valign="top">
+((1.3333 + 1.5)/2)  =  1.4167 </td></tr><tr><td valign="top">  </td></tr><tr><td valign="top">1.4167 </td><td valign="top"> (2/1.4167)  =  1.4118 </td><td valign="top">
+((1.4167 + 1.4118)/2)  =  1.4142 </td></tr><tr><td valign="top">  </td></tr><tr><td valign="top">1.4142 </td><td valign="top"><tt>...</tt></td><td valign="top"><tt>...</tt></td></tr><tr><td valign="top"/></tr></table><p>Continuando esse processo, obtemos melhores e melhores aproximações à raiz quadrada.</p><p>Agora formalizaremos o processo em termos de procedimentos. Começamos com um valor para o <a name="%_idx_514" id="%_idx_514"/>radicando (o número cuja raiz quadrada tentamos calcular) e um valor para o palpite. Se o palpite é bom o suficiente para nossos propósitos, estamos prontos; caso contrário, devemos repetir o processo com um palpite aprimorado. Escrevemos esta estratégia básica como um procedimento:</p><p>
+
+</p><p/><p><tt>(define (sqrt-iter guess x)<br/>
+  (if (good-enough? guess x)<br/>
+      guess<br/>
+      (sqrt-iter (improve guess x)<br/>
+                 x)))<br/></tt></p><p/><p>Um palpite é aprimorado com a média do quociente do radicando e do palpite antigo:</p><p>
+
+</p><p/><p><tt>(define (improve guess x)<br/>
+  (average guess (/ x guess)))<br/></tt></p><p/><p>
+where</p><p>
+
+</p><p/><p><tt><a name="%_idx_516" id="%_idx_516"/>(define (average x y)<br/>
+  (/ (+ x y) 2))<br/></tt></p><p/><p>Também temos que dizer o que queremos dizer com &quot;bom o suficiente&quot;. O que se segue serve de ilustração, mas não é realmente um teste muito bom. (Veja o exercício <a href="#%_thm_1.7">1.7</a>). A ideia é melhorar a resposta até que ela esteja próxima o suficiente para que seu quadrado seja diferente do radicando em menos de uma tolerância predeterminada (aqui 0,001):<a name="call_footnote_Temp_34" href="#footnote_Temp_34" id="call_footnote_Temp_34"><sup><small>22</small></sup></a></p><p>
+
+</p><p/><p><tt>(define (good-enough? guess x)<br/>
+  (&lt; (abs (- (square guess) x)) 0.001))<br/></tt></p><p/><p>Finalmente, precisamos de uma maneira de começar. Por exemplo, sempre podemos adivinhar que a raiz quadrada de qualquer número é 1:<a name="call_footnote_Temp_35" href="#footnote_Temp_35" id="call_footnote_Temp_35"><sup><small>23</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_550" id="%_idx_550"/>(define (sqrt x)<br/>
+  (sqrt-iter 1.0 x))<br/></tt></p><p/><p>Se digitarmos essas definições para o interpretador, poderemos usar <tt>sqrt</tt> da mesma maneira que podemos usar qualquer procedimento:</p><p>
+
+</p><p/><p><tt>(sqrt 9)<br/><i>3.00009155413138</i><br/>
+(sqrt (+ 100 37))<br/><i>11.704699917758145</i><br/>
+(sqrt (+ (sqrt 2) (sqrt 3)))<br/><i>1.7739279023207892</i><br/>
+(square (sqrt 1000))<br/><i>1000.000369924366</i><br/></tt></p><p/><p>
+</p><p>
+
+<a name="%_idx_552" id="%_idx_552"/>O programa <tt>sqrt</tt> também ilustra que a linguagem processual simples que introduzimos até agora é suficiente para escrever qualquer programa puramente numérico em que alguém possa escrever, por exemplo, C ou Pascal. Isso pode parecer surpreendente, uma vez que não incluímos em nossa linguagem nenhuma construção iterativa <a name="%_idx_554" id="%_idx_554"/>(loop) que direciona o computador a fazer algo repetidamente. <tt>Sqrt-iter</tt>, por outro lado, demonstra como a iteração pode ser realizada usando nenhuma construção especial além da capacidade comum de chamar um procedimento.<a name="call_footnote_Temp_36" href="#footnote_Temp_36" id="call_footnote_Temp_36"><sup><small>24</small></sup></a>
+
+</p><p><a name="%_thm_1.6" id="%_thm_1.6"/>
+<b>Exercício 1.6.</b> <a name="%_idx_556" id="%_idx_556"/><a name="%_idx_558" id="%_idx_558"/> Alyssa P. Hacker não vê por que <tt>if</tt> precisa ser fornecido como uma forma especial. &quot;Por que não posso defini-lo como um procedimento comum em termos de <tt>cond</tt>?&quot; ela pergunta. A amiga de Alyssa, Eva Lu Ator, afirma que isso pode realmente ser feito, e ela define uma nova versão de <tt>if</tt>:</p><p>
+
+</p><p/><p><tt>(define (new-if predicate then-clause else-clause)<br/>
+  (cond (predicate then-clause)<br/>
+        (else else-clause)))<br/></tt></p><p/><p>Eva demonstra o programa para Alyssa:</p><p>
+
+</p><p/><p><tt>(new-if (= 2 3) 0 5)<br/><i>5</i><br/><br/>
+(new-if (= 1 1) 0 5)<br/><i>0</i><br/></tt></p><p/><p>Encantado, o Alyssa usa <tt>new-if</tt> para reescrever o programa de raiz quadrada:</p><p>
+
+</p><p/><p><tt>(define (sqrt-iter guess x)<br/>
+  (new-if (good-enough? guess x)<br/>
+          guess<br/>
+          (sqrt-iter (improve guess x)<br/>
+                     x)))<br/></tt></p><p/><p>O que acontece quando Alyssa tenta usar isso para calcular raízes quadradas? Explique.</p><p/><p>
+
+</p><p><a name="%_thm_1.7" id="%_thm_1.7"/>
+<b>Exercício 1.7.</b> O teste <tt>good-enough?</tt> usado na computação de raízes quadradas não será muito eficaz para encontrar as raízes quadradas de números muito pequenos. Além disso, em computadores reais, as operações aritméticas são quase sempre executadas com precisão limitada. Isso torna nosso teste inadequado para números muito grandes. Explique essas instruções, com exemplos mostrando como o teste falha em números pequenos e grandes. Uma estratégia alternativa para implementar o <tt>good-enough?</tt> é observar como o <tt>guess</tt> muda de uma iteração para a seguinte e parar quando a mudança é uma fração muito pequena do palpite. Crie um procedimento de raiz quadrada que use esse tipo de teste final. Isso funciona melhor para números pequenos e grandes?</p><p/><p>
+
+</p><p><a name="%_thm_1.8" id="%_thm_1.8"/>
+<b>Exercício 1.8.</b> <a name="%_idx_560" id="%_idx_560"/><a name="%_idx_562" id="%_idx_562"/> O método de Newton para raízes de cubos é baseado no fato de que se <em>y</em> é uma aproximação à raiz do cubo de <em>x</em>, então uma melhor aproximação é dada pelo valor</p><p/><div align="left"><img src="images/ch1-Z-G-5.gif" border="0"/></div><p>Use esta fórmula para implementar um procedimento de raiz de cubo análogo ao procedimento de raiz quadrada. (Na seção <a href="book-Z-H-12.html#%_sec_1.3.4">1.3.4</a>, veremos como implementar o método de Newton em geral como uma abstração desses procedimentos de raiz quadrada e raiz cúbica).</p><p/><p>
+
+<a name="%_sec_1.1.8" id="%_sec_1.1.8"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_1.1.8">1.1.8 Procedimentos como abstrações de caixa preta</a></h3><p>
+
+</p><p>
+
+<tt>Sqrt</tt> é o nosso primeiro exemplo de processo definido por um conjunto de procedimentos definidos mutuamente. Observe que a definição de <tt>sqrt-iter</tt> é <a name="%_idx_564" id="%_idx_564"/><em>recursiva</em>; isto é, o procedimento é definido em termos de si mesmo. A ideia de poder definir um procedimento em termos de si mesma pode ser perturbadora; pode parecer pouco claro como tal definição &quot;circular&quot; poderia fazer sentido, muito menos especificar um processo bem definido a ser executado por um computador. Isso será tratado com mais cuidado na seção <a href="book-Z-H-11.html#%_sec_1.2">1.2</a>. Mas primeiro consideraremos alguns outros pontos importantes ilustrados pelo exemplo do <tt>sqrt</tt>.</p><p>
+
+<a name="%_idx_566" id="%_idx_566"/>Observe que o problema de calcular raízes quadradas se divide naturalmente em vários subproblemas: como saber se um palpite é bom o suficiente, como melhorar um palpite e assim por diante. Cada uma dessas tarefas é realizada por um procedimento separado. Todo o programa <tt>sqrt</tt> pode ser visto como um cluster de procedimentos (mostrado na figura <a href="#%_fig_1.2">1.2</a>) que reflete a decomposição do problema em subproblemas.</p><p>
+
+<a name="%_fig_1.2" id="%_fig_1.2"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch1-Z-G-6.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 1.2:</b> Decomposição processual do programa <tt>sqrt</tt>.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>
+
+<a name="%_idx_568" id="%_idx_568"/>A importância dessa estratégia de decomposição não é simplesmente dividir o programa em partes. Afinal, poderíamos pegar qualquer programa grande e dividi-lo em partes - as dez primeiras linhas, as próximas dez linhas, as próximas dez linhas e assim por diante. Em vez disso, é crucial que cada procedimento realize uma tarefa identificável que possa ser usada como um módulo na definição de outros procedimentos. <a name="%_idx_570" id="%_idx_570"/> Por exemplo, quando definimos o procedimento <tt>good-enough?</tt> em termos de <tt>square</tt>, podemos considerar o procedimento <tt>square</tt> como uma <a name="%_idx_572" id="%_idx_572"/>&quot;caixa preta&quot;. Nesse momento, não estamos preocupados com <em>como</em> o procedimento calcula seu resultado, apenas com o fato de que ele calcula o quadrado. Os detalhes de como o quadrado é calculado podem ser suprimidos, para serem considerados posteriormente. De fato, no que diz respeito ao procedimento <tt>good-enough?</tt>, <tt>square</tt> não é um procedimento, mas uma abstração de um procedimento, o então chamado <a name="%_idx_574" id="%_idx_574"/><a name="%_idx_576" id="%_idx_576"/><em>abstração processual</em>. Nesse nível de abstração, qualquer procedimento que calcule o quadrado é igualmente bom.</p><p>Assim, considerando apenas os valores retornados, os dois procedimentos a seguir para elevar um número ao quadrado devem ser indistinguíveis. Cada um recebe um argumento numérico e produz o quadrado desse número como valor.<a name="call_footnote_Temp_40" href="#footnote_Temp_40" id="call_footnote_Temp_40"><sup><small>25</small></sup></a></p><p>
+
+</p><p/><p><tt>(define (square x) (* x x))<br/><br/>
+(define (square x) <br/>
+  (exp (double (log x))))<br/><br/>
+(define (double x) (+ x x))<br/></tt></p><p/><p/><p>Portanto, uma definição de procedimento deve poder suprimir detalhes. Os usuários do procedimento podem não ter escrito o procedimento, mas podem ter obtido de outro programador como uma caixa preta. Um usuário não precisa saber como o procedimento é implementado para usá-lo.</p><p>
+
+<a name="%_sec_Temp_41" id="%_sec_Temp_41"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_41">Nomes locais</a></h4><p>
+
+<a name="%_idx_578" id="%_idx_578"/>Um detalhe da implementação de um procedimento que não deve importar para o usuário do procedimento é a escolha dos nomes do implementador para os parâmetros formais do procedimento. Portanto, os seguintes procedimentos não devem ser distinguíveis:</p><p>
+
+</p><p/><p><tt>(define (square x) (* x x))<br/><br/>
+(define (square y) (* y y))<br/></tt></p><p/><p>Esse princípio - que o significado de um procedimento deve ser independente dos nomes de parâmetros usados ​​por seu autor - parece superficialmente evidente, mas suas consequências são profundas. A consequência mais simples é que os nomes de parâmetros de um procedimento devem ser locais para o corpo do procedimento. Por exemplo, usamos <tt>square</tt> na definição de <tt>good-enough?</tt> em nosso procedimento de raiz quadrada:</p><p>
+
+</p><p/><p><tt>(define (good-enough? guess x)<br/>
+  (&lt; (abs (- (square guess) x)) 0.001))<br/></tt></p><p/><p>A intenção do autor de <tt>good-enough?</tt> é determinar se o quadrado do primeiro argumento está dentro de uma determinada tolerância do segundo argumento. Vimos que o autor de <tt>good-enough?</tt> usou o nome <tt>guess</tt> para se referir ao primeiro argumento e <tt>x</tt> para se referir ao segundo argumento. O argumento do <tt>square</tt> é <tt>guess</tt>. Se o autor do <tt>square</tt> usou <tt>x</tt> (como acima) para se referir a esse argumento, veremos que o <tt>x</tt> em <tt>good-enough?</tt> deve ser um <tt>x</tt> diferente de <tt>square</tt>. A execução do procedimento <tt>square</tt> não deve afetar o valor de <tt>x</tt> usado por <tt>good-enough?</tt>, porque esse valor de <tt>x</tt> pode ser necessário para <tt>good-enough?</tt> depois que <tt>square</tt> terminou de ser computado.</p><p>Se os parâmetros não fossem locais para os corpos de seus respectivos procedimentos, o parâmetro <tt>x</tt> no <tt>square</tt> poderia ser confundido com o parâmetro <tt>x</tt> em <tt>good-enough?</tt>, e o comportamento de <tt>good-enough?</tt> dependeria de qual versão do <tt>square</tt> usamos. Portanto, <tt>square</tt> não seria a caixa preta que desejamos.</p><p>
+
+<a name="%_idx_580" id="%_idx_580"/><a name="%_idx_582" id="%_idx_582"/>Um parâmetro formal de um procedimento possui um papel muito especial na definição do procedimento, pois não importa qual nome o parâmetro formal tenha. Esse nome é chamado de <a name="%_idx_584" id="%_idx_584"/><a name="%_idx_586" id="%_idx_586"/><em>variável ligada</em>, e dizemos que a definição de procedimento <a name="%_idx_588" id="%_idx_588"/><em>liga</em> seus parâmetros formais. O significado de uma definição de procedimento permanece inalterado se uma variável ligada for renomeada de forma consistente em toda a definição.<a name="call_footnote_Temp_42" href="#footnote_Temp_42" id="call_footnote_Temp_42"><sup><small>26</small></sup></a> Se uma variável não estiver ligada, dizemos que ela é <a name="%_idx_590" id="%_idx_590"/><a name="%_idx_592" id="%_idx_592"/><em>livre</em>. O conjunto de expressões para as quais uma ligação define um nome é chamado de <a name="%_idx_594" id="%_idx_594"/><a name="%_idx_596" id="%_idx_596"/><em>escopo</em> desse nome. Em uma definição de procedimento, as variáveis ​​associadas declaradas como os parâmetros formais do procedimento <a name="%_idx_598" id="%_idx_598"/><a name="%_idx_600" id="%_idx_600"/><a name="%_idx_602" id="%_idx_602"/>têm o corpo do procedimento como seu escopo.</p><p>Na definição de <tt>good-enough?</tt> acima, <tt>guess</tt> e <tt>x</tt> são variáveis ​​ligadas, mas <tt>&lt;</tt>, <tt>-</tt>, <tt>abs</tt>, e <tt>square</tt> são livres. O significado de <tt>good-enough?</tt> deve ser independente dos nomes que escolhemos para <tt>guess</tt> e <tt>x</tt> desde que sejam distintos e diferentes de <tt>&lt;</tt>, <tt>-</tt>, <tt>abs</tt>, e <tt>square</tt>. (Se renomeamos <tt>guess</tt> para <tt>abs</tt>, teríamos introduzido um erro <a name="%_idx_604" id="%_idx_604"/><a name="%_idx_606" id="%_idx_606"/><a name="%_idx_608" id="%_idx_608"/><em>capturando</em> a variável <tt>abs</tt>. No entanto, o significado de <tt>good-enough?</tt> não é independente dos nomes de suas variáveis ​​livres. Certamente depende do fato (externo a esta definição) de que o símbolo <tt>abs</tt> nomeie um procedimento para calcular o valor absoluto de um número. <tt>Good-enough?</tt> calculará uma função diferente se substituirmos <tt>cos</tt> por <tt>abs</tt> em sua definição.</p><p>
+
+<a name="%_sec_Temp_43" id="%_sec_Temp_43"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_43">Definições internas e estrutura de blocos</a></h4><p>
+
+</p><p>Até agora, temos um tipo de isolamento de nome disponível: os parâmetros formais de um procedimento são locais no corpo do procedimento. O programa de raiz quadrada ilustra outra maneira pela qual gostaríamos de controlar o uso de nomes. <a name="%_idx_610" id="%_idx_610"/> O programa existente consiste em procedimentos separados:</p><p>
+
+</p><p/><p><tt>(define (sqrt x)<br/>
+  (sqrt-iter 1.0 x))<br/>
+(define (sqrt-iter guess x)<br/>
+  (if (good-enough? guess x)<br/>
+      guess<br/>
+      (sqrt-iter (improve guess x) x)))<br/>
+(define (good-enough? guess x)<br/>
+  (&lt; (abs (- (square guess) x)) 0.001))<br/>
+(define (improve guess x)<br/>
+  (average guess (/ x guess)))<br/></tt></p><p/><p/><p>O problema com este programa é que o único procedimento importante para os usuários do <tt>sqrt</tt> é o <tt>sqrt</tt>. Os outros procedimentos (<tt>sqrt-iter</tt>, <tt>good-enough?</tt>, e <tt>improve</tt>) apenas confundem suas mentes. Eles não podem definir nenhum outro procedimento chamado <tt>good-enough?</tt> como parte de outro programa para trabalhar em conjunto com o programa de raiz quadrada, porque o <tt>sqrt</tt> precisa dele. O problema é especialmente grave na construção de grandes sistemas por muitos programadores isolados. Por exemplo, na construção de uma grande biblioteca de procedimentos numéricos, muitas funções numéricas são computadas como aproximações sucessivas e, portanto, podem ter procedimentos denominados <tt>good-enough?</tt> e <tt>improve</tt> como procedimentos auxiliares. Gostaríamos de localizar os subprocedimentos, ocultando-os dentro do <tt>sqrt</tt> para que o <tt>sqrt</tt> pudesse coexistir com outras aproximações sucessivas, cada uma com seu próprio procedimento privado <tt>good-enough?</tt>. Para tornar isso possível, permitimos que um procedimento tenha <a name="%_idx_612" id="%_idx_612"/><a name="%_idx_614" id="%_idx_614"/>definições internas que são locais para esse procedimento. Por exemplo, no problema da raiz quadrada, podemos escrever</p><p>
+
+</p><p/><p><tt>(define (sqrt x)<br/>
+  (define (good-enough? guess x)<br/>
+    (&lt; (abs (- (square guess) x)) 0.001))<br/>
+  (define (improve guess x)<br/>
+    (average guess (/ x guess)))<br/>
+  (define (sqrt-iter guess x)<br/>
+    (if (good-enough? guess x)<br/>
+        guess<br/>
+        (sqrt-iter (improve guess x) x)))<br/>
+  (sqrt-iter 1.0 x))<br/></tt></p><p/><p/><p>Esse aninhamento de definições, chamado <em>estrutura de blocos</em>, é basicamente a solução certa para o problema mais simples de empacotamento de nomes. Mas há uma ideia melhor à espreita aqui. Além de internalizar as definições dos procedimentos auxiliares, podemos simplificá-las. Como <tt>x</tt> está ligado na definição de <tt>sqrt</tt>, os procedimentos <tt>good-enough?</tt>, <tt>improve</tt>, e <tt>sqrt-iter</tt>, que são definidos internamente como <tt>sqrt</tt>, estão no escopo de <tt>x</tt>. Portanto, não é necessário passar <tt>x</tt> explicitamente para cada um desses procedimentos. Em vez disso, permitimos que <tt>x</tt> seja uma variável livre <a name="%_idx_616" id="%_idx_616"/><a name="%_idx_618" id="%_idx_618"/>nas definições internas, como mostrado abaixo. Então <tt>x</tt> obtém seu valor a partir do argumento com o qual o procedimento de fechamento <tt>sqrt</tt> é chamado. Essa disciplina é chamada de <a name="%_idx_620" id="%_idx_620"/><em>escopo lexical</em>.<a name="call_footnote_Temp_44" href="#footnote_Temp_44" id="call_footnote_Temp_44"><sup><small>27</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_624" id="%_idx_624"/>(define (sqrt x)<br/>
+  (define (good-enough? guess)<br/>
+    (&lt; (abs (- (square guess) x)) 0.001))<br/>
+  (define (improve guess)<br/>
+    (average guess (/ x guess)))<br/>
+  (define (sqrt-iter guess)<br/>
+    (if (good-enough? guess)<br/>
+        guess<br/>
+        (sqrt-iter (improve guess))))<br/>
+  (sqrt-iter 1.0))<br/></tt></p><p/><p/><p>Usaremos a estrutura de blocos extensivamente para nos ajudar a dividir grandes programas em partes tratáveis.<a name="call_footnote_Temp_45" href="#footnote_Temp_45" id="call_footnote_Temp_45"><sup><small>28</small></sup></a> A ideia de estrutura de blocos se originou na linguagem de programação <a name="%_idx_628" id="%_idx_628"/>Algol 60. Ela aparece nas linguagens de programação mais avançadas e é uma ferramenta importante para ajudar a organizar a construção de grandes programas.</p><p>
+
+</p><p/><div class="smallprint"><hr/></div><p>
+</p><div class="footnote"><p><a name="footnote_Temp_10" href="#call_footnote_Temp_10" id="footnote_Temp_10"><sup><small>4</small></sup></a> A caracterização de números como &quot;dados simples&quot; é um blefe descalço. De fato, o tratamento de números é um dos aspectos mais complicados e confusos de qualquer linguagem de programação. Alguns problemas típicos envolvidos são os seguintes: <a name="%_idx_136" id="%_idx_136"/><a name="%_idx_138" id="%_idx_138"/><a name="%_idx_140" id="%_idx_140"/>Alguns sistemas de computador distinguem <em>números inteiros</em>, como 2, de <em>números reais</em>, como 2,71. O número real 2,00 é diferente do número inteiro 2? As operações aritméticas usadas para números inteiros são iguais às operações usadas para números reais? 6 dividido por 2 produz 3 ou 3,0? Quão largo o número que podemos representar? Quantas casas decimais de precisão podemos representar? O intervalo de números inteiros é igual ao intervalo de números reais? <a name="%_idx_142" id="%_idx_142"/><a name="%_idx_144" id="%_idx_144"/><a name="%_idx_146" id="%_idx_146"/>Acima e além dessas perguntas, é claro, existe uma coleção de questões relacionadas a erros de arredondamento e truncamento - toda a ciência da análise numérica. Como nosso foco neste livro é o projeto de programas em larga escala e não as técnicas numéricas, ignoraremos esses problemas. Os exemplos numéricos deste capítulo exibirão o comportamento usual de arredondamento que se observa ao usar operações aritméticas que preservam um número limitado de casas decimais de precisão em operações não-integrais.</p><p><a name="footnote_Temp_11" href="#call_footnote_Temp_11" id="footnote_Temp_11"><sup><small>5</small></sup></a> Ao longo deste livro, <a name="%_idx_152" id="%_idx_152"/>quando desejamos enfatizar a distinção entre a entrada digitada pelo usuário e a resposta impressa pelo interpretador, mostraremos o último em caracteres inclinados.</p><p><a name="footnote_Temp_12" href="#call_footnote_Temp_12" id="footnote_Temp_12"><sup><small>6</small></sup></a> <a name="%_idx_200" id="%_idx_200"/><a name="%_idx_202" id="%_idx_202"/>Os sistemas Lisp normalmente fornecem recursos para ajudar o usuário na formatação de expressões. Dois recursos especialmente úteis são um que recua automaticamente para a posição de impressão bonita adequada sempre que uma nova linha é iniciada e outro que destaca o parêntese esquerdo correspondente sempre que um parêntese direito é digitado.</p><p><a name="footnote_Temp_13" href="#call_footnote_Temp_13" id="footnote_Temp_13"><sup><small>7</small></sup></a> <a name="%_idx_208" id="%_idx_208"/><a name="%_idx_210" id="%_idx_210"/><a name="%_idx_212" id="%_idx_212"/><a name="%_idx_214" id="%_idx_214"/>Lisp obedece à convenção de que toda expressão possui um valor. Essa convenção, com a antiga reputação do Lisp como uma linguagem ineficiente, é a fonte da piada de Alan Perlis (parafraseando Oscar Wilde) de que “os programadores do Lisp sabem o valor de tudo, menos o custo de nada”.</p><p><a name="footnote_Temp_14" href="#call_footnote_Temp_14" id="footnote_Temp_14"><sup><small>8</small></sup></a><a name="%_idx_228" id="%_idx_228"/><a name="%_idx_230" id="%_idx_230"/> Neste livro, não mostramos a resposta do interpretador na avaliação de definições, pois é uma implementação altamente dependente.</p><p><a name="footnote_Temp_15" href="#call_footnote_Temp_15" id="footnote_Temp_15"><sup><small>9</small></sup></a> O capítulo 3 mostrará que essa noção de ambiente é crucial, tanto para entender como o interpretador funciona quanto para implementar interpretadores.</p><p><a name="footnote_Temp_16" href="#call_footnote_Temp_16" id="footnote_Temp_16"><sup><small>10</small></sup></a> Pode parecer estranho que a regra de avaliação diga, como parte da primeira etapa, que devemos avaliar o elemento mais à esquerda de uma combinação, já que, nesse ponto, só pode ser um operador como <tt>+</tt> ou <tt>*</tt> representando um procedimento primitivo interno, como adição ou multiplicação. Veremos mais adiante que é útil poder trabalhar com combinações cujos operadores são eles mesmos expressões compostas.</p><p><a name="footnote_Temp_17" href="#call_footnote_Temp_17" id="footnote_Temp_17"><sup><small>11</small></sup></a> <a name="%_idx_278" id="%_idx_278"/><a name="%_idx_280" id="%_idx_280"/><a name="%_idx_282" id="%_idx_282"/><a name="%_idx_284" id="%_idx_284"/><a name="%_idx_286" id="%_idx_286"/><a name="%_idx_288" id="%_idx_288"/><a name="%_idx_290" id="%_idx_290"/>Formas sintáticas especiais que são simplesmente estruturas de superfície alternativas para objetos que podem ser escritas de maneiras mais uniformes são às vezes chamadas de <em>açúcar sintático</em>, para usar uma frase cunhada por Peter Landin. Em comparação com usuários de outras linguagens, os programadores Lisp, por regra, estão menos preocupados com questões de sintaxe. (Por outro lado, examine qualquer manual do Pascal e observe quanto dele é dedicado às descrições de sintaxe). Esse desdém pela sintaxe se deve em parte à flexibilidade do Lisp, que facilita a alteração da sintaxe da superfície e em parte à observação de que muitas construções sintáticas “convenientes”, que tornam a linguagem menos uniforme, acabam causando mais problemas do que valem quando os programas se tornam grandes e complexos. Nas palavras de Alan Perlis, &quot;o açúcar sintático causa câncer de ponto e vírgula&quot;.</p><p><a name="footnote_Temp_18" href="#call_footnote_Temp_18" id="footnote_Temp_18"><sup><small>12</small></sup></a> Observe que há duas operações diferentes sendo combinadas aqui: criamos o procedimento e dando o nome de <tt>square</tt>. É possível, de fato importante, poder separar essas duas noções - criar procedimentos sem nomeá-las e dar nomes aos procedimentos que já foram criados. Veremos como fazer isso na seção <a href="book-Z-H-12.html#%_sec_1.3.2">1.3.2</a>.</p><p><a name="footnote_Temp_19" href="#call_footnote_Temp_19" id="footnote_Temp_19"><sup><small>13</small></sup></a> Ao longo deste livro, descreveremos <a name="%_idx_314" id="%_idx_314"/><a name="%_idx_316" id="%_idx_316"/>a sintaxe geral das expressões usando símbolos em itálico delimitados por colchetes angulares - por exemplo, &lt;<em>nome</em>&gt; - para indicar os &quot;espaços&quot; na expressão a ser preenchida quando essa expressão for realmente usada.</p><p><a name="footnote_Temp_20" href="#call_footnote_Temp_20" id="footnote_Temp_20"><sup><small>14</small></sup></a> Mais <a name="%_idx_326" id="%_idx_326"/>geralmente, o corpo do procedimento pode ser uma sequência de expressões. Nesse caso, o interpretador avalia cada expressão na sequência e retorna o valor da expressão final como o valor da aplicação de procedimento.</p><p><a name="footnote_Temp_21" href="#call_footnote_Temp_21" id="footnote_Temp_21"><sup><small>15</small></sup></a> Apesar da simplicidade da ideia de substituição, acaba sendo surpreendentemente complicado fornecer uma definição matemática rigorosa do processo de substituição. O problema surge da possibilidade de confusão entre os nomes usados ​​para os parâmetros formais de um procedimento e os nomes (possivelmente idênticos) usados ​​nas expressões às quais o procedimento pode ser aplicado. De fato, há uma longa história de definições errôneas de <em>substituição</em> na literatura de lógica e semântica de programação. <a name="%_idx_338" id="%_idx_338"/> Veja Stoy 1977 para uma discussão cuidadosa da substituição.</p><p><a name="footnote_Temp_23" href="#call_footnote_Temp_23" id="footnote_Temp_23"><sup><small>16</small></sup></a> No capítulo 3, apresentaremos <em>processamento de fluxo</em>, que é uma maneira de lidar com estruturas de dados aparentemente &quot;infinitas&quot; incorporando uma forma limitada de avaliação de ordem normal. Na seção <a href="book-Z-H-27.html#%_sec_4.2">4.2</a>, modificaremos o interpretador Scheme para produzir uma variante de ordem normal do Scheme.</p><p><a name="footnote_Temp_24" href="#call_footnote_Temp_24" id="footnote_Temp_24"><sup><small>17</small></sup></a> <a name="%_idx_368" id="%_idx_368"/><a name="%_idx_370" id="%_idx_370"/><a name="%_idx_372" id="%_idx_372"/><a name="%_idx_374" id="%_idx_374"/><a name="%_idx_376" id="%_idx_376"/><a name="%_idx_378" id="%_idx_378"/><a name="%_idx_380" id="%_idx_380"/><a name="%_idx_382" id="%_idx_382"/>&quot;Interpretado como verdadeiro ou falso&quot; significa o seguinte: No Scheme, existem dois valores distintos que são indicados pelas constantes <tt>#t</tt> e <tt>#f</tt>. Quando o interpretador verifica o valor de um predicado, ele interpreta <tt>#f</tt> como falso. Qualquer outro valor é tratado como verdadeiro. (Portanto, fornecer <tt>#t</tt> é logicamente desnecessário, mas é conveniente). Neste livro, usaremos os nomes <tt>true</tt> e <tt>false</tt>, que são associados aos valores <tt>#t</tt> e <tt>#f</tt>, respectivamente.</p><p><a name="footnote_Temp_25" href="#call_footnote_Temp_25" id="footnote_Temp_25"><sup><small>18</small></sup></a> <tt>Abs</tt> também usa <a name="%_idx_410" id="%_idx_410"/><a name="%_idx_412" id="%_idx_412"/>o operador &quot;menos&quot; <tt>-</tt>, que, quando usado com um único operando, como em <tt>(- x)</tt>, indica negação.</p><p><a name="footnote_Temp_26" href="#call_footnote_Temp_26" id="footnote_Temp_26"><sup><small>19</small></sup></a> Uma pequena diferença <a name="%_idx_440" id="%_idx_440"/><a name="%_idx_442" id="%_idx_442"/><a name="%_idx_444" id="%_idx_444"/>entre <tt>if</tt> e <tt>cond</tt> é que a parte &lt;<em>e</em>&gt; de cada cláusula <tt>cond</tt> pode ser uma sequência de expressões. Se o &lt;<em>p</em>&gt; correspondente for considerado verdadeiro, as expressões &lt;<em>e</em>&gt; serão avaliadas em sequência e o valor da expressão final na sequência será retornado como o valor do <tt>cond</tt>. Em uma expressão <tt>if</tt>, no entanto, a &lt;<em>consequent</em>&gt; e a &lt;<em>alternative</em>&gt; devem ser expressões únicas.</p><p><a name="footnote_Temp_32" href="#call_footnote_Temp_32" id="footnote_Temp_32"><sup><small>20</small></sup></a> Descrições declarativas e imperativas estão intimamente relacionadas, assim como a matemática e a ciência da computação. Por exemplo, dizer que a resposta produzida por um programa é <a name="%_idx_500" id="%_idx_500"/>&quot;correta&quot; é fazer uma declaração declarativa sobre o programa. Existe uma grande quantidade de pesquisas destinadas a estabelecer técnicas para <a name="%_idx_502" id="%_idx_502"/>provar que os programas estão corretos, e grande parte da dificuldade técnica desse assunto está relacionada à negociação da transição entre declarações imperativas (a partir da qual os programas são construídos) e declarativas. instruções (que podem ser usadas para deduzir). De maneira semelhante, uma área atual importante no projeto da linguagem de programação é a exploração das chamadas linguagens de alto nível<a name="%_idx_504" id="%_idx_504"/><a name="%_idx_506" id="%_idx_506"/>, nas quais na verdade se programa em termos de afirmações declarativas. A ideia é tornar os interpretadores sofisticados o suficiente para que, dado o conhecimento &quot;o que é&quot; especificado pelo programador, eles possam gerar automaticamente o conhecimento de &quot;como fazer&quot;. Isso não pode ser feito em geral, mas há áreas importantes em que houve progresso. Revisitaremos essa ideia no capítulo 4.</p><p><a name="footnote_Temp_33" href="#call_footnote_Temp_33" id="footnote_Temp_33"><sup><small>21</small></sup></a> Esse algoritmo de raiz quadrada é realmente um caso especial do método de Newton, que é uma técnica geral para encontrar raízes de equações. O próprio algoritmo de raiz quadrada foi desenvolvido por Heron de <a name="%_idx_512" id="%_idx_512"/>Alexandria no primeiro século <font size="-2">A</font>. <font size="-2">D</font>. Veremos como expressar o método geral de Newton como um procedimento Lisp na seção <a href="book-Z-H-12.html#%_sec_1.3.4">1.3.4</a>.</p><p><a name="footnote_Temp_34" href="#call_footnote_Temp_34" id="footnote_Temp_34"><sup><small>22</small></sup></a> Normalmente, forneceremos <a name="%_idx_518" id="%_idx_518"/><a name="%_idx_520" id="%_idx_520"/><a name="%_idx_522" id="%_idx_522"/><a name="%_idx_524" id="%_idx_524"/>nomes de predicados que terminam com pontos de interrogação, para que ajude-nos a lembrar que eles são predicados. Esta é apenas uma convenção estilística. Para o interpretador, o ponto de interrogação é apenas um caractere comum.</p><p><a name="footnote_Temp_35" href="#call_footnote_Temp_35" id="footnote_Temp_35"><sup><small>23</small></sup></a> Observe que expressamos nosso palpite inicial como 1,0 em vez de 1. Isso não faria nenhuma diferença em muitas implementações do Lisp. <a name="%_idx_526" id="%_idx_526"/><a name="%_idx_528" id="%_idx_528"/><a name="%_idx_530" id="%_idx_530"/><a name="%_idx_532" id="%_idx_532"/><a name="%_idx_534" id="%_idx_534"/><a name="%_idx_536" id="%_idx_536"/><a name="%_idx_538" id="%_idx_538"/><a name="%_idx_540" id="%_idx_540"/><a name="%_idx_542" id="%_idx_542"/><a name="%_idx_544" id="%_idx_544"/><a name="%_idx_546" id="%_idx_546"/><a name="%_idx_548" id="%_idx_548"/> MIT Scheme, no entanto, distingue entre números inteiros exatos e valores decimais, e a divisão de dois números inteiros produz um número racional em vez de um decimal. Por exemplo, dividir 10 por 6 gera 5/3, enquanto dividir 10,0 por 6,0 gera 1,6666666666666667. (Aprenderemos como implementar aritmética em números racionais na seção <a href="book-Z-H-14.html#%_sec_2.1.1">2.1.1</a>). Se começarmos com um palpite inicial de 1 em nosso programa de raiz quadrada e <em>x</em> é um número inteiro exato, todos os valores subsequentes produzidos no cálculo da raiz quadrada serão números racionais, em vez de decimais. Operações mistas em números racionais e decimais sempre produzem números decimais, portanto, começar com uma estimativa inicial de 1,0 força todos os valores subsequentes a serem decimais.</p><p><a name="footnote_Temp_36" href="#call_footnote_Temp_36" id="footnote_Temp_36"><sup><small>24</small></sup></a> Os leitores preocupados com os problemas de eficiência envolvidos no uso de chamadas de procedimento para implementar a iteração devem observar as observações sobre &quot;recursão de cauda&quot; na seção <a href="book-Z-H-11.html#%_sec_1.2.1">1.2.1</a>.</p><p><a name="footnote_Temp_40" href="#call_footnote_Temp_40" id="footnote_Temp_40"><sup><small>25</small></sup></a> Ainda não está claro qual desses procedimentos é uma implementação mais eficiente. Isso depende do hardware disponível. Existem máquinas para as quais a implementação &quot;óbvia&quot; é a menos eficiente. Considere uma máquina que possui extensas tabelas de logaritmos e antilogaritmos armazenados de maneira muito eficiente.</p><p><a name="footnote_Temp_42" href="#call_footnote_Temp_42" id="footnote_Temp_42"><sup><small>26</small></sup></a> O conceito de renomeação consistente é realmente sutil e difícil de definir formalmente. Lógicos famosos cometeram erros embaraçosos aqui.</p><p><a name="footnote_Temp_44" href="#call_footnote_Temp_44" id="footnote_Temp_44"><sup><small>27</small></sup></a> O escopo lexical dita que variáveis ​​livres em um procedimento sejam usadas para se referir a ligações feitas por definições de procedimento anexadas; isto é, eles são pesquisados ​​no <a name="%_idx_622" id="%_idx_622"/>ambiente em que o procedimento foi definido. Veremos como isso funciona em detalhes no capítulo 3, quando estudarmos os ambientes e o comportamento detalhado do interpretador.</p><p><a name="footnote_Temp_45" href="#call_footnote_Temp_45" id="footnote_Temp_45"><sup><small>28</small></sup></a> As definições incorporadas <a name="%_idx_626" id="%_idx_626"/>devem vir em primeiro lugar no corpo de um procedimento. O gerenciamento não é responsável pelas consequências da execução de programas que entrelaçam definição e uso.</p></div>
+
+
+
+</body>
+</html>

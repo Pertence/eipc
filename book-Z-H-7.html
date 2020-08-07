@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops">
+<!-- Generated from TeX source by tex2page, v 4o,
+     (c) Dorai Sitaram, http://www.cs.rice.edu/~dorai/tex2page -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type: text/html; charset=utf-8"/>
+    <title>Estrutura e Interpretação de Programas de Computador</title>
+    <link rel="stylesheet" type="text/css" href="book-Z-C.css" title="default"/>
+  </head>
+  <body>
+
+
+
+<a name="%_chap_Temp_4" id="%_chap_Temp_4"/>
+<h1 class="chapter">
+<div class="chapterheading"> </div></h1><p>
+<a href="book-Z-H-4.html#%_toc_%_chap_Temp_4">Prefácio à Primeira Edição</a></p><p>
+
+</p><p>
+</p><div align="right">
+<table width="60%"><tr><td>
+<span class="epigraph">
+<p>Um computador é como um violino. Você pode imaginar um novato tentando primeiro um fonógrafo e depois um violino. O último, ele diz, parece terrível. Esse é o argumento que ouvimos de nossos humanistas e da maioria de nossos cientistas da computação. Os programas de computador são bons, dizem eles, para fins específicos, mas não são flexíveis. Nem é um violino, nem uma máquina de escrever, até você aprender a usá-lo.</p><p>
+
+<a name="%_idx_4" id="%_idx_4"/>Marvin Minsky, “Por que programar é bom <br/> Meio para expressar ideias mal compreendidas e mal formuladas ”</p><p>
+
+</p></span>
+</td></tr></table></div>
+
+<p/><p>“A estrutura e a interpretação dos programas de computador” é o assunto básico em ciência da computação no Massachusetts Institute of Technology. É exigido a todos os estudantes do MIT que se especializam em engenharia elétrica ou ciência da computação, como um quarto do “currículo básico comum”, que também inclui duas disciplinas sobre circuitos e sistemas lineares e uma disciplina sobre o projeto de sistemas digitais. Estamos envolvidos no desenvolvimento desse assunto desde 1978 e ensinamos esse material em sua forma atual desde o outono de 1980 a entre 600 e 700 alunos a cada ano. A maioria desses estudantes teve pouco ou nenhum treinamento formal prévio em computação, embora muitos tenham brincado um pouco com computadores e alguns tenham tido uma extensa experiência em programação ou projeto de hardware.</p><p>Nosso projeto desta disciplina introdutória de ciência da computação reflete duas preocupações principais. Primeiro, queremos estabelecer a ideia de que uma linguagem de computador não é apenas uma maneira de fazer com que um computador realize operações, mas que é um novo meio formal para expressar ideias sobre metodologia. Portanto, os programas devem ser escritos para as pessoas lerem e, incidentalmente, para as máquinas executarem. Segundo, acreditamos que o material essencial a ser abordado por uma disciplina nesse nível não é a sintaxe de construções particulares da linguagem de programação, nem algoritmos inteligentes para computar funções específicas com eficiência, nem mesmo a análise matemática de algoritmos e os fundamentos da computação, mas sim as técnicas usadas para controlar a complexidade intelectual de grandes sistemas de software.</p><p>Nosso objetivo é que os alunos que concluírem esse assunto tenham uma boa noção dos elementos de estilo e estética da programação. Eles devem ter o domínio das principais técnicas para controlar a complexidade em um sistema grande. Eles devem ser capazes de ler um programa de 50 páginas, se for escrito em um estilo exemplar. Eles devem saber o que não ler e o que não precisam entender a qualquer momento. Eles devem se sentir seguros ao modificar um programa, mantendo o espírito e o estilo do autor original.</p><p>Essas habilidades não são de forma alguma exclusivas da programação de computadores. As técnicas que ensinamos e utilizamos são comuns a todos os projetos de engenharia. Controlamos a complexidade criando abstrações que ocultam detalhes quando apropriado. Controlamos a complexidade, estabelecendo interfaces convencionais que nos permitem construir sistemas combinando peças padrão e bem compreendidas de uma maneira &quot;misturar e combinar&quot;. Controlamos a complexidade estabelecendo novas linguagens para descrever um projeto, cada qual enfatizando aspectos particulares do projeto e enfatizando outros.</p><p>Subjacente à nossa abordagem a esse assunto está a convicção de que “ciência da computação” não é uma ciência e que seu significado possui pouco a ver com computadores. A revolução dos computadores é uma revolução na maneira como pensamos e na maneira como expressamos o que pensamos. A essência dessa mudança é o surgimento do que poderia ser melhor chamado de <em>epistemologia processual</em> - o estudo da estrutura do conhecimento de um ponto de vista imperativo, em oposição ao ponto de vista mais declarativo adotado pelos clássicos assuntos matemáticos. A matemática fornece uma estrutura para lidar precisamente com as noções de &quot;o que é&quot;. A computação fornece uma estrutura para lidar precisamente com as noções de &quot;como fazer&quot;.</p><p>Ao ensinar nosso material, usamos um dialeto da linguagem de programação Lisp. Nunca ensinamos formalmente a linguagem, porque não precisamos. Apenas o usamos, e os alunos aprendem em alguns dias. Essa é uma grande vantagem das linguagens do tipo Lisp: elas possuem muito poucas maneiras de formar expressões compostas e quase nenhuma estrutura sintática. Todas as propriedades formais podem ser cobertas em uma hora, como as regras do xadrez. Depois de um curto período de tempo, esquecemos os detalhes sintáticos da linguagem (porque não há nenhum) e continuamos com os problemas reais - descobrindo o que queremos calcular, como iremos decompor os problemas em partes gerenciáveis ​​e como trabalharemos por partes. Outra vantagem do Lisp é que ele suporta (mas não aplica) mais estratégias de larga escala para decomposição modular de programas do que qualquer outra linguagem que conhecemos. Podemos fazer abstrações procedurais e de dados, podemos usar funções de ordem superior para capturar padrões comuns de uso, podemos modelar o estado local usando atribuição e mutação de dados, podemos vincular partes de um programa a fluxos e avaliação atrasada, e podemos facilmente implementar linguagens incorporadas. Tudo isso é incorporado em um ambiente interativo com excelente suporte para projeto, construção, teste e depuração incrementais do programa. Agradecemos a todas as gerações de assistentes Lisp, começando por John McCarthy, que criou uma excelente ferramenta de poder e elegância sem precedentes.</p><p>Scheme, o dialeto de Lisp que usamos, é uma tentativa de reunir o poder e a elegância de Lisp e Algol. Do Lisp, tomamos o poder metalinguístico derivado da sintaxe simples, da representação uniforme dos programas como objetos de dados e dos dados alocados no heap coletados pelo lixo. Em Algol, adotamos o escopo léxico e a estrutura de blocos, presentes dos pioneiros do projeto da linguagem de programação que estavam no comitê de Algol. Desejamos citar John Reynolds e Peter Landin por suas ideias sobre a relação do cálculo lambda de Church com a estrutura das linguagens de programação. Também reconhecemos nossa dívida com os matemáticos que exploraram esse território décadas antes de os computadores aparecerem em cena. Esses pioneiros incluem Alonzo Church, Barkley Rosser, Stephen Kleene e Haskell Curry.</p><p>
+
+</p><p>
+
+
+
+
+</p></body>
+</html>

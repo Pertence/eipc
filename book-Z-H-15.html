@@ -1,0 +1,834 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops">
+<!-- Generated from TeX source by tex2page, v 4o,
+     (c) Dorai Sitaram, http://www.cs.rice.edu/~dorai/tex2page -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type: text/html; charset=utf-8"/>
+    <title>Estrutura e Interpretação de Programas de Computador</title>
+    <link rel="stylesheet" type="text/css" href="book-Z-C.css" title="default"/>
+  </head>
+  <body>
+
+
+
+<a name="%_sec_2.2" id="%_sec_2.2"/>
+<h2><a href="book-Z-H-4.html#%_toc_%_sec_2.2">2.2 Dados hierárquicos e a propriedade de fechamento</a></h2><p>
+
+</p><p>Como vimos, os pares fornecem uma &quot;cola&quot; primitiva que podemos usar para construir objetos de dados compostos. A figura <a href="#%_fig_2.2">2.2</a> mostra uma maneira padrão de visualizar um par <a name="%_idx_1526" id="%_idx_1526"/>- nesse caso, o par formado por <tt>(cons 1 2)</tt>. Nesta representação, chamada <a name="%_idx_1528" id="%_idx_1528"/><em>notação de caixa e ponteiro</em>, cada objeto é mostrado como um <a name="%_idx_1530" id="%_idx_1530"/><em>ponteiro</em> para uma caixa. A caixa para um objeto primitivo contém uma representação do objeto. Por exemplo, a caixa de um número contém um numeral. A caixa para um par é na verdade uma caixa dupla, a parte esquerda contendo (um ponteiro para) o <tt>car</tt> do par e a parte direita contendo o <tt>cdr</tt>.</p><p>Já vimos que <tt>cons</tt> podem ser usados ​​para combinar não apenas números, mas também pares. (Você fez uso desse fato, ou deveria ter, ao fazer os exercícios <a href="book-Z-H-14.html#%_thm_2.2">2.2</a> e <a href="book-Z-H-14.html#%_thm_2.3">2.3</a>). Como consequência, os pares fornecem um bloco de construção universal a partir do qual podemos construir todos tipos de estruturas de dados. Figura <a href="#%_fig_2.3">2.3</a> mostra duas maneiras de usar pares para combinar os números 1, 2, 3 e 4.</p><p>
+
+<a name="%_fig_2.2" id="%_fig_2.2"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch2-Z-G-11.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.2:</b> Representação em caixa e ponteiro de <tt>(cons 1 2)</tt>.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>
+
+<a name="%_fig_2.3" id="%_fig_2.3"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch2-Z-G-12.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.3:</b> Duas maneiras de combinar 1, 2, 3 e 4 usando pares.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>A capacidade de criar pares cujos elementos são pares é a essência da importância da estrutura de lista como uma ferramenta representacional. Nos referimos a essa capacidade como a <a name="%_idx_1532" id="%_idx_1532"/><a name="%_idx_1534" id="%_idx_1534"/><em>propriedade de fechamento</em> dos <tt>cons</tt>. Em geral, uma operação para combinar objetos de dados satisfaz a propriedade de fechamento se os resultados da combinação de itens com essa operação puderem ser combinados usando a mesma operação.<a name="call_footnote_Temp_154" href="#footnote_Temp_154" id="call_footnote_Temp_154"><sup><small>6</small></sup></a> O fechamento é a chave do poder em qualquer meio de combinação, pois nos permite criar <a name="%_idx_1538" id="%_idx_1538"/><a name="%_idx_1540" id="%_idx_1540"/><em>estruturas hierárquicas</em> - estruturas compostas de partes, que são compostas por elas peças e assim por diante.</p><p>Desde o início do capítulo 1, fizemos um uso essencial do fechamento para lidar com procedimentos, porque todos os programas, exceto os mais simples, se baseiam no fato de que os elementos de uma combinação podem ser combinações. Nesta seção, abordamos as consequências do fechamento para dados compostos. Descrevemos algumas técnicas convencionais para o uso de pares para representar sequências e árvores e exibimos uma linguagem gráfica que ilustra o fechamento de maneira vívida.<a name="call_footnote_Temp_155" href="#footnote_Temp_155" id="call_footnote_Temp_155"><sup><small>7</small></sup></a></p><p>
+
+<a name="%_sec_2.2.1" id="%_sec_2.2.1"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_2.2.1">2.2.1 Representando sequências</a></h3><p>
+
+</p><p>
+
+<a name="%_fig_2.4" id="%_fig_2.4"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch2-Z-G-13.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.4:</b> A sequência 1, 2, 3, 4 representada como uma cadeia de pares.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Uma das estruturas úteis que podemos construir com pares é uma <a name="%_idx_1554" id="%_idx_1554"/><a name="%_idx_1556" id="%_idx_1556"/><a name="%_idx_1558" id="%_idx_1558"/><em>sequência</em> - uma coleção ordenada de objetos de dados. É claro que existem muitas maneiras de representar sequências em termos de pares. Uma representação particularmente direta é ilustrada na figura <a href="#%_fig_2.4">2.4</a>, onde a sequência 1, 2, 3, 4 é representada como uma cadeia de pares. O <tt>car</tt> de cada par é o item correspondente na cadeia, e o <tt>cdr</tt> do par é o próximo par da cadeia. O <tt>cdr</tt> do par final sinaliza o final da sequência apontando para um valor distinto que não é um par, representado nos diagramas de caixa e ponteiro como uma linha diagonal e <a name="%_idx_1560" id="%_idx_1560"/>em programas como o valor da variável <a name="%_idx_1562" id="%_idx_1562"/><a name="%_idx_1564" id="%_idx_1564"/><tt>nil</tt>. A sequência inteira é construída por operações <tt>cons</tt> aninhadas:</p><p>
+
+</p><p/><p><tt>(cons 1<br/>
+      (cons 2<br/>
+            (cons 3<br/>
+                  (cons 4 nil))))<br/></tt></p><p/><p/><p>Essa sequência de pares, formada por <tt>cons</tt> aninhadas, é chamada de <a name="%_idx_1566" id="%_idx_1566"/><em>lista</em>, e o Scheme fornece um primitivo chamado <a name="%_idx_1568" id="%_idx_1568"/><a name="%_idx_1570" id="%_idx_1570"/><tt>list</tt> para ajudar na construção de listas.<a name="call_footnote_Temp_156" href="#footnote_Temp_156" id="call_footnote_Temp_156"><sup><small>8</small></sup></a> A sequência acima pode ser produzida por <tt>(list 1 2 3 4)</tt>. Em geral,</p><p>
+
+
+</p><p/><p><tt>(list &lt;<em>a<sub>1</sub></em>&gt; &lt;<em>a<sub>2</sub></em>&gt; <tt>...</tt> &lt;<em>a<sub><em>n</em></sub></em>&gt;)<br/></tt></p><p/><p>é equivalente a</p><p>
+
+
+</p><p/><p><tt>(cons &lt;<em>a<sub>1</sub></em>&gt; (cons &lt;<em>a<sub>2</sub></em>&gt; (cons <tt>...</tt> (cons &lt;<em>a<sub><em>n</em></sub></em>&gt; nil) <tt>...</tt>)))<br/></tt></p><p/><p>Os sistemas Lisp convencionalmente imprimem listas imprimindo a sequência de elementos<a name="%_idx_1576" id="%_idx_1576"/>, entre parênteses. Assim, o objeto de dados na figura <a href="#%_fig_2.4">2.4</a> é impresso como <tt>(1 2 3 4)</tt>:</p><p>
+
+
+</p><p/><p><tt>(define one-through-four (list 1 2 3 4))<br/><br/>
+one-through-four<br/><i>(1 2 3 4)</i><br/></tt></p><p/><p>Cuidado para não confundir a expressão <tt>(list 1 2 3 4)</tt> com a lista <tt>(1 2 3 4)</tt>, que é o resultado obtido quando a expressão é avaliada. Tentar avaliar a expressão <tt>(1 2 3 4)</tt> sinalizará um erro quando o interpretador tentar aplicar o procedimento <tt>1</tt> aos argumentos <tt>2</tt>, <tt>3</tt> e <tt>4</tt>.</p><p>Podemos pensar em <a name="%_idx_1578" id="%_idx_1578"/><a name="%_idx_1580" id="%_idx_1580"/><tt>car</tt> como selecionando o primeiro item da lista e em <a name="%_idx_1582" id="%_idx_1582"/><tt>cdr</tt> como selecionando a sub-lista composta por todos, mas o primeiro item. Aplicativos aninhados de <tt>car</tt> e <tt>cdr</tt> podem ser usados ​​para extrair o segundo, terceiro e itens subsequentes da lista.<a name="call_footnote_Temp_157" href="#footnote_Temp_157" id="call_footnote_Temp_157"><sup><small>9</small></sup></a> O construtor <a name="%_idx_1592" id="%_idx_1592"/><tt>cons</tt> faz uma lista como a original, mas com um item adicional no início.</p><p>
+
+
+</p><p/><p><tt>(car one-through-four)<br/><i>1</i><br/><br/>
+(cdr one-through-four)<br/><i>(2 3 4)</i><br/>
+(car (cdr one-through-four))<br/><i>2</i><br/><br/>
+(cons 10 one-through-four)<br/><i>(10 1 2 3 4)</i><br/><br/>
+(cons 5 one-through-four)<br/><i>(5 1 2 3 4)</i><br/></tt></p><p/><p>O valor de <tt>nil</tt>, usado para finalizar a cadeia de pares, pode ser pensado como uma sequência sem elementos, a <a name="%_idx_1594" id="%_idx_1594"/><a name="%_idx_1596" id="%_idx_1596"/><em>lista vazia</em>. A palavra <em>nil</em> é uma contração da palavra latina <em>nihil</em>, que significa &quot;nada&quot;.<a name="call_footnote_Temp_158" href="#footnote_Temp_158" id="call_footnote_Temp_158"><sup><small>10</small></sup></a></p><p>
+
+<a name="%_sec_Temp_159" id="%_sec_Temp_159"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_159">Operações de lista</a></h4><p>
+
+<a name="%_idx_1602" id="%_idx_1602"/><a name="%_idx_1604" id="%_idx_1604"/>O uso de pares para representar sequências de elementos como listas é acompanhado por técnicas de programação convencionais para manipular listas, sucessivamente aplicando<a name="%_idx_1606" id="%_idx_1606"/><a name="%_idx_1608" id="%_idx_1608"/><tt>cdr</tt> nas listas. Por exemplo, o procedimento <a name="%_idx_1610" id="%_idx_1610"/><tt>list-ref</tt> usa como argumentos uma lista e um número <em>n</em> e retorna o <em>n</em>ésimo item da lista. É habitual numerar os elementos da lista começando com 0. O método para calcular <tt>list-ref</tt> é o seguinte:</p><p>
+
+</p><p/><ul><li>Para <em>n</em> = 0, <tt>list-ref</tt> deve retornar o <tt>car</tt> da lista.<p>
+
+</p></li><li>Caso contrário, <tt>list-ref</tt> deve retornar o (<em>n</em> - 1)ésimo item do <tt>cdr</tt> da lista.</li></ul><p/><p>
+
+</p><p/><p><tt><a name="%_idx_1612" id="%_idx_1612"/>(define (list-ref items n)<br/>
+  (if (= n 0)<br/>
+      (car items)<br/>
+      (list-ref (cdr items) (- n 1))))<br/>
+(define squares (list 1 4 9 16 25))<br/><br/>
+(list-ref squares 3)<br/><i>16</i><br/></tt></p><p/><p/><p>Frequentemente, aplicamos <tt>cdr</tt> na lista inteira. Para ajudar nisso, o Scheme inclui um predicado primitivo <a name="%_idx_1614" id="%_idx_1614"/><a name="%_idx_1616" id="%_idx_1616"/><a name="%_idx_1618" id="%_idx_1618"/><tt>null?</tt>, que testa se seu argumento é a lista vazia. O procedimento <a name="%_idx_1620" id="%_idx_1620"/><a name="%_idx_1622" id="%_idx_1622"/><tt>length</tt>, que retorna o número de itens em uma lista, ilustra esse padrão típico de uso:</p><p>
+
+</p><p/><p><tt><a name="%_idx_1624" id="%_idx_1624"/>(define (length items)<br/>
+  (if (null? items)<br/>
+      0<br/>
+      (+ 1 (length (cdr items)))))<br/>
+(define odds (list 1 3 5 7))<br/><br/>
+(length odds)<br/><i>4</i><br/></tt></p><p/><p>O procedimento <tt>length</tt> implementa um plano recursivo simples. A etapa de redução é:</p><p>
+
+</p><p/><ul><li>O <tt>length</tt> de qualquer lista é 1 mais o <tt>length</tt> do <tt>cdr</tt> da lista.</li></ul><p/><p>Isso é aplicado sucessivamente até chegarmos ao caso base:</p><p>
+
+</p><p/><ul><li>O <tt>length</tt> da lista vazia é 0.</li></ul><p/><p>Também podemos calcular <tt>length</tt> em um estilo iterativo:</p><p>
+
+</p><p/><p><tt><a name="%_idx_1626" id="%_idx_1626"/>(define (length items)<br/>
+  (define (length-iter a count)<br/>
+    (if (null? a)<br/>
+        count<br/>
+        (length-iter (cdr a) (+ 1 count))))<br/>
+  (length-iter items 0))<br/></tt></p><p/><p/><p>Outra técnica de programação convencional é aplicar <a name="%_idx_1628" id="%_idx_1628"/><a name="%_idx_1630" id="%_idx_1630"/>&quot;<tt>cons</tt> em uma lista de respostas enquanto <tt>cdr</tt> faz uma lista, como no procedimento <a name="%_idx_1632" id="%_idx_1632"/><a name="%_idx_1634" id="%_idx_1634"/><tt>append</tt>, que usa duas listas como argumentos e combina seus elementos para criar uma nova lista:</p><p>
+
+</p><p/><p><tt>(append squares odds)<br/><i>(1 4 9 16 25 1 3 5 7)</i><br/><br/>
+(append odds squares)<br/><i>(1 3 5 7 1 4 9 16 25)</i><br/></tt></p><p/><p>
+<tt>Append</tt> também é implementado usando um plano recursivo. Para <tt>append</tt> as listas <tt>list1</tt> e <tt>list2</tt>, faça o seguinte:</p><p>
+
+</p><p/><ul><li>Se <tt>list1</tt> for a lista vazia, o resultado será apenas <tt>list2</tt>.<p>
+
+</p></li><li>Caso contrário, <tt>append</tt> o <tt>cdr</tt> de <tt>list1</tt> e <tt>list2</tt> e <tt>cons</tt> o <tt>car</tt> da <tt>list1</tt> no resultado:</li></ul><p/><p>
+
+</p><p/><p><tt><a name="%_idx_1636" id="%_idx_1636"/>(define (append list1 list2)<br/>
+  (if (null? list1)<br/>
+      list2<br/>
+      (cons (car list1) (append (cdr list1) list2))))<br/></tt></p><p/><p/><p>
+
+</p><p><a name="%_thm_2.17" id="%_thm_2.17"/>
+<b>Exercício 2.17.</b> Defina um procedimento <a name="%_idx_1638" id="%_idx_1638"/><a name="%_idx_1640" id="%_idx_1640"/><tt>last-pair</tt> que retorna a lista que contém apenas o último elemento de uma lista (não vazia):</p><p>
+
+</p><p/><p><tt>(last-pair (list 23 72 149 34))<br/><i>(34)</i><br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_2.18" id="%_thm_2.18"/>
+<b>Exercício 2.18.</b> Defina um procedimento <a name="%_idx_1642" id="%_idx_1642"/><a name="%_idx_1644" id="%_idx_1644"/><tt>reverse</tt> que pega uma lista como argumento e retorna uma lista dos mesmos elementos na ordem inversa:</p><p>
+
+</p><p/><p><tt>(reverse (list 1 4 9 16 25))<br/><i>(25 16 9 4 1)</i><br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_2.19" id="%_thm_2.19"/>
+<b>Exercício 2.19.</b> Considere o <a name="%_idx_1646" id="%_idx_1646"/>programa de contagem de trocado da seção <a href="book-Z-H-11.html#%_sec_1.2.2">1.2.2</a>. Seria bom poder alterar facilmente a moeda usada pelo programa, para que pudéssemos calcular o número de maneiras de alterar uma libra britânica, por exemplo. À medida que o programa é escrito, o conhecimento da moeda é distribuído parcialmente no procedimento <tt>first-denomination</tt> e parcialmente no procedimento <tt>count-change</tt> (que sabe que existem cinco tipos de moedas de dollar  Seria melhor poder fornecer uma lista de moedas a serem usadas para fazer alterações.</p><p>Queremos reescrever o procedimento <tt>cc</tt> para que seu segundo argumento seja uma lista dos valores das moedas a serem usadas, em vez de um número inteiro especificando quais moedas usar. Poderíamos então ter listas que definiam cada tipo de moeda:</p><p>
+
+</p><p/><p><tt>(define us-coins (list 50 25 10 5 1))<br/>
+(define uk-coins (list 100 50 20 10 5 2 1 0.5))<br/></tt></p><p/><p>Poderíamos então chamar <tt>cc</tt> da seguinte maneira:</p><p>
+
+</p><p/><p><tt>(cc 100 us-coins)<br/><i>292</i><br/></tt></p><p/><p>Para isso, será necessário alterar o programa <tt>cc</tt>. Ele ainda terá a mesma forma, mas acessará seu segundo argumento de maneira diferente, da seguinte maneira:</p><p>
+
+</p><p/><p><tt>(define (cc amount coin-values)<br/>
+  (cond ((= amount 0) 1)<br/>
+        ((or (&lt; amount 0) (no-more? coin-values)) 0)<br/>
+        (else<br/>
+         (+ (cc amount<br/>
+                (except-first-denomination coin-values))<br/>
+            (cc (- amount<br/>
+                   (first-denomination coin-values))<br/>
+                coin-values)))))<br/></tt></p><p/><p>Defina os procedimentos <tt>first-denomination</tt>, <tt>except-first-denomination</tt> e <tt>no-more?</tt> em termos de operações primitivas em estruturas de lista. A ordem da lista <tt>coin-values</tt> afeta a resposta produzida por <tt>cc</tt>? Por que ou por que não?</p><p/><p>
+
+
+</p><p><a name="%_thm_2.20" id="%_thm_2.20"/>
+<b>Exercício 2.20.</b> <a name="%_idx_1648" id="%_idx_1648"/> <a name="%_idx_1650" id="%_idx_1650"/><a name="%_idx_1652" id="%_idx_1652"/><a name="%_idx_1654" id="%_idx_1654"/>Os procedimentos <tt>+</tt>, <tt>*</tt>, e <tt>list</tt> aceitam números arbitrários de argumentos. Uma maneira de definir esses procedimentos é usar <tt>define</tt> com <em>notação de cauda pontilhada</em>. Em uma definição de procedimento, uma lista de parâmetros que possui um ponto antes do último nome do parâmetro indica que, quando o procedimento é chamado, os parâmetros iniciais (se houver) terão como valores os argumentos iniciais, como de costume, mas o valor do parâmetro final terá seja uma <em>lista</em> de todos os argumentos restantes. Por exemplo, dada a definição</p><p/><p><tt>(define (f x y . z) <em>&lt;body&gt;</em>)<br/></tt></p><p/><p>the procedure <tt>f</tt> can be called with two or more arguments. Se avaliarmos</p><p/><p><tt>(f 1 2 3 4 5 6)<br/></tt></p><p/><p>então, no corpo de <tt>f</tt>, <tt>x</tt> será 1, <tt>y</tt> será 2 e <tt>z</tt> será a lista <tt>(3 4 5 6)</tt>. Dada a definição</p><p/><p><tt>(define (g . w) <em>&lt;body&gt;</em>)<br/></tt></p><p/><p>o procedimento <tt>g</tt> pode ser chamado com zero ou mais argumentos. Se avaliarmos</p><p/><p><tt>(g 1 2 3 4 5 6)<br/></tt></p><p/><p>então, no corpo de <tt>g</tt>, <tt>w</tt> estará a lista <tt>(1 2 3 4 5 6)</tt>.<a name="call_footnote_Temp_164" href="#footnote_Temp_164" id="call_footnote_Temp_164"><sup><small>11</small></sup></a></p><p>Use esta notação para escrever um procedimento <tt>same-parity</tt> que use um ou mais números inteiros e retorne uma lista de todos os argumentos que possuem a mesma paridade ímpar que o primeiro argumento. Por exemplo,</p><p/><p><tt>(same-parity 1 2 3 4 5 6 7)<br/><i>(1 3 5 7)</i><br/><br/>
+(same-parity 2 3 4 5 6 7)<br/><i>(2 4 6)</i><br/></tt></p><p/><p>
+</p><p>
+
+<a name="%_sec_Temp_165" id="%_sec_Temp_165"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_165">Mapeando sobre listas</a></h4><p>
+
+<a name="%_idx_1658" id="%_idx_1658"/><a name="%_idx_1660" id="%_idx_1660"/>Uma operação extremamente útil é aplicar alguma transformação a cada elemento em uma lista e gerar a lista de resultados. Por exemplo, o procedimento a seguir dimensiona cada número em uma lista por um determinado fator:</p><p>
+
+</p><p/><p><tt><a name="%_idx_1662" id="%_idx_1662"/>(define (scale-list items factor)<br/>
+  (if (null? items)<br/>
+      nil<br/>
+      (cons (* (car items) factor)<br/>
+            (scale-list (cdr items) factor))))<br/>
+(scale-list (list 1 2 3 4 5) 10)<br/><i>(10 20 30 40 50)</i><br/></tt></p><p/><p/><p>Podemos abstrair essa ideia geral e capturá-la como um padrão comum expresso como um procedimento de ordem superior, assim como na seção <a href="book-Z-H-12.html#%_sec_1.3">1.3</a>. O procedimento de ordem superior aqui é chamado <tt>map</tt>. <tt>Map</tt> usa como argumento um procedimento de um argumento e uma lista e retorna uma lista dos resultados produzidos aplicando o procedimento a cada elemento da lista:<a name="call_footnote_Temp_166" href="#footnote_Temp_166" id="call_footnote_Temp_166"><sup><small>12</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_1666" id="%_idx_1666"/>(define (map proc items)<br/>
+  (if (null? items)<br/>
+      nil<br/>
+      (cons (proc (car items))<br/>
+            (map proc (cdr items)))))<br/>
+(map abs (list -10 2.5 -11.6 17))<br/><i>(10 2.5 11.6 17)</i><br/>
+(map (lambda (x) (* x x))<br/>
+     (list 1 2 3 4))<br/><i>(1 4 9 16)</i><br/></tt></p><p/><p>Agora podemos dar uma nova definição de <tt>scale-list</tt> em termos de <tt>map</tt>:</p><p/><p><tt><a name="%_idx_1668" id="%_idx_1668"/>(define (scale-list items factor)<br/>
+  (map (lambda (x) (* x factor))<br/>
+       items))<br/></tt></p><p/><p>
+</p><p>
+
+<tt>Map</tt> é uma construção importante, não apenas porque captura um padrão comum, mas porque estabelece um nível mais alto de abstração ao lidar com listas. Na definição original de <tt>scale-list</tt>, a estrutura recursiva do programa chama a atenção para o processamento elemento a elemento da lista. Definir <tt>scale-list</tt> em termos de <tt>map</tt> suprime esse nível de detalhe e enfatiza que o dimensionamento transforma uma lista de elementos em uma lista de resultados. A diferença entre as duas definições não é que o computador executasse um processo diferente (não é), mas que pensemos sobre o processo de maneira diferente. Com efeito, o <tt>map</tt> ajuda a estabelecer uma barreira de abstração que isola a implementação de procedimentos que transformam listas dos detalhes de como os elementos da lista são extraídos e combinados. Como as barreiras mostradas na figura <a href="book-Z-H-14.html#%_fig_2.1">2.1</a>, essa abstração nos dá a flexibilidade de alterar os detalhes de baixo nível de como as sequências são implementadas, preservando a estrutura conceitual das operações que transformam sequências em sequências. A seção <a href="#%_sec_2.2.3">2.2.3</a> expande esse uso de sequências como uma estrutura para organizar programas.</p><p>
+
+</p><p><a name="%_thm_2.21" id="%_thm_2.21"/>
+<b>Exercício 2.21.</b> O procedimento <tt>square-list</tt> pega uma lista de números como argumento e retorna uma lista dos quadrados desses números.</p><p>
+
+</p><p/><p><tt>(square-list (list 1 2 3 4))<br/><i>(1 4 9 16)</i><br/></tt></p><p/><p>Aqui estão duas definições diferentes de <tt>square-list</tt>. Complete os dois preenchendo as expressões ausentes:</p><p>
+
+</p><p/><p><tt>(define (square-list items)<br/>
+  (if (null? items)<br/>
+      nil<br/>
+      (cons &lt;<em>??</em>&gt; &lt;<em>??</em>&gt;)))<br/>
+(define (square-list items)<br/>
+  (map &lt;<em>??</em>&gt; &lt;<em>??</em>&gt;))<br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_2.22" id="%_thm_2.22"/>
+<b>Exercício 2.22.</b> Louis Reasoner tenta reescrever o primeiro <tt>square-list</tt> do exercício <a href="#%_thm_2.21">2.21</a> para que ele evolua um processo iterativo:</p><p>
+
+</p><p/><p><tt>(define (square-list items)<br/>
+  (define (iter things answer)<br/>
+    (if (null? things)<br/>
+        answer<br/>
+        (iter (cdr things) <br/>
+              (cons (square (car things))<br/>
+                    answer))))<br/>
+  (iter items nil))<br/></tt></p><p/><p>Infelizmente, definir <tt>square-list</tt> dessa maneira produz a lista de respostas na ordem inversa à desejada. Por quê?</p><p>Louis então tenta consertar seu erro trocando os argumentos por <tt>cons</tt>:</p><p>
+
+</p><p/><p><tt>(define (square-list items)<br/>
+  (define (iter things answer)<br/>
+    (if (null? things)<br/>
+        answer<br/>
+        (iter (cdr things)<br/>
+              (cons answer<br/>
+                    (square (car things))))))<br/>
+  (iter items nil))<br/></tt></p><p/><p>Isso também não funciona. Explique.</p><p/><p>
+
+</p><p><a name="%_thm_2.23" id="%_thm_2.23"/>
+<b>Exercício 2.23.</b> O procedimento <a name="%_idx_1670" id="%_idx_1670"/><tt>for-each</tt> é semelhante ao <tt>map</tt>. Toma como argumento um procedimento e uma lista de elementos. No entanto, em vez de formar uma lista dos resultados, <tt>for-each</tt> aplica o procedimento a cada um dos elementos, da esquerda para a direita. Os valores retornados aplicando o procedimento aos elementos não são usados ​​- <tt>for-each</tt> é usado com procedimentos que executam uma ação, como impressão. Por exemplo,</p><p/><p><tt>(for-each (lambda (x) (newline) (display x))<br/>
+          (list 57 321 88))<br/><i>57</i><br/><i>321</i><br/><i>88</i><br/></tt></p><p/><p>O valor retornado pela chamada para <tt>for-each</tt> (não ilustrado acima) pode ser algo arbitrário, como true. Forneça uma implementação de <tt>for-each</tt>.</p><p>
+</p><p>
+
+<a name="%_sec_2.2.2" id="%_sec_2.2.2"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_2.2.2">2.2.2 Estruturas hierárquicas</a></h3><p>
+
+
+<a name="%_idx_1672" id="%_idx_1672"/><a name="%_idx_1674" id="%_idx_1674"/><a name="%_idx_1676" id="%_idx_1676"/><a name="%_idx_1678" id="%_idx_1678"/>A representação de sequências em termos de listas generaliza-se naturalmente para representar sequências cujos elementos podem ser eles mesmos sequências. Por exemplo, podemos considerar o objeto <tt>((1 2) 3 4)</tt> construído por</p><p>
+
+</p><p/><p><tt>(cons (list 1 2) (list 3 4))<br/></tt></p><p/><p>como uma lista de três itens, o primeiro dos quais em si é uma lista, <tt>(1 2)</tt>. De fato, isso é sugerido pela forma em que o resultado é impresso pelo interpretador. A figura <a href="#%_fig_2.5">2.5</a> mostra a representação dessa estrutura em termos de pares.</p><p>
+
+<a name="%_fig_2.5" id="%_fig_2.5"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch2-Z-G-15.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.5:</b> Estrutura formada por <tt>(cons (list 1 2) (list 3 4))</tt>.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Outra maneira de pensar em sequências cujos elementos são sequências é como <em>árvores</em>. Os elementos da sequência são os galhos da árvore e os elementos que são sequências são subárvores. A figura <a href="#%_fig_2.6">2.6</a> mostra a estrutura na figura <a href="#%_fig_2.5">2.5</a> vista como uma árvore.</p><p>
+
+<a name="%_fig_2.6" id="%_fig_2.6"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch2-Z-G-16.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.6:</b> A estrutura da lista na figura <a href="#%_fig_2.5">2.5</a> vista como uma árvore.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>
+
+
+<a name="%_idx_1680" id="%_idx_1680"/>A recursão é uma ferramenta natural para lidar com estruturas de árvores, pois muitas vezes podemos reduzir operações nas árvores para operações em seus galhos, o que reduz, por sua vez, operações nos galhos dos galhos e assim por diante, até chegarmos às folhas da árvore. Como exemplo, compare o procedimento <tt>length</tt> da seção <a href="#%_sec_2.2.1">2.2.1</a> com o procedimento <a name="%_idx_1682" id="%_idx_1682"/><a name="%_idx_1684" id="%_idx_1684"/><tt>count-leaves</tt>, que retorna o número total de folhas de uma árvore:</p><p>
+
+
+</p><p/><p><tt>(define x (cons (list 1 2) (list 3 4)))<br/><br/>
+(length x)<br/><i>3</i><br/>
+(count-leaves x)<br/><i>4</i><br/><br/>
+(list x x)<br/><i>(((1 2) 3 4) ((1 2) 3 4))</i><br/><br/>
+(length (list x x))<br/><i>2</i><br/><br/>
+(count-leaves (list x x))<br/><i>8</i><br/></tt></p><p/><p/><p>Para implementar <tt>count-leaves</tt>, lembre-se do plano recursivo para calcular <tt>length</tt>:</p><p>
+
+
+</p><p/><ul><li><tt>Length</tt> de uma lista <tt>x</tt> é 1 mias <tt>length</tt> do <tt>cdr</tt> de <tt>x</tt>.<p>
+
+</p></li><li><tt>Length</tt> da lista vazia é 0.</li></ul><p/><p>
+
+<tt>Count-leaves</tt> é semelhante. O valor para a lista vazia é o mesmo:</p><p>
+
+
+</p><p/><ul><li><tt>Count-leaves</tt> da lista vazia são 0.</li></ul><p/><p>Mas na etapa de redução, onde retiramos o <tt>car</tt> da lista, devemos levar em conta que o <tt>car</tt> pode ser uma árvore cujas folhas precisamos contar. Assim, a etapa de redução apropriada é</p><p>
+
+
+</p><p/><ul><li><tt>Count-leaves</tt> de uma árvore <tt>x</tt> são <tt>count-leaves</tt> do <tt>car</tt> de <tt>x</tt> mais <tt>count-leaves</tt> do <tt>cdr</tt> de <tt>x</tt>.</li></ul><p/><p>Finalmente, ao pegar <tt>car</tt>, chegamos a folhas reais, então precisamos de outro caso básico:</p><p>
+
+
+</p><p/><ul><li><tt>Count-leaves</tt> de uma folha é 1.</li></ul><p/><p>Para ajudar a escrever procedimentos recursivos em árvores, o Scheme fornece o predicado primitivo <a name="%_idx_1686" id="%_idx_1686"/><a name="%_idx_1688" id="%_idx_1688"/><tt>pair?</tt>, que testa se seu argumento é um par. Aqui está o procedimento completo:<a name="call_footnote_Temp_170" href="#footnote_Temp_170" id="call_footnote_Temp_170"><sup><small>13</small></sup></a></p><p>
+
+
+</p><p/><p><tt><a name="%_idx_1690" id="%_idx_1690"/>(define (count-leaves x)<br/>
+  (cond ((null? x) 0)  <br/>
+        ((not (pair? x)) 1)<br/>
+        (else (+ (count-leaves (car x))<br/>
+                 (count-leaves (cdr x))))))<br/></tt></p><p/><p/><p>
+
+</p><p><a name="%_thm_2.24" id="%_thm_2.24"/>
+<b>Exercício 2.24.</b> Suponha que avaliamos a expressão <tt>(list 1 (list 2 (list 3 4)))</tt>. Forneça o resultado impresso pelo interpretador, a estrutura de caixa e ponteiro correspondente e a interpretação como uma árvore (como na figura <a href="#%_fig_2.6">2.6</a>).</p><p/><p>
+
+</p><p><a name="%_thm_2.25" id="%_thm_2.25"/>
+<b>Exercício 2.25.</b> Forneça combinações de <tt>car</tt> e <tt>cdr</tt> que escolherão 7 de cada uma das seguintes listas:</p><p>
+
+</p><p/><p><tt>(1 3 (5 7) 9)<br/><br/>
+((7))<br/><br/>
+(1 (2 (3 (4 (5 (6 7))))))<br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_2.26" id="%_thm_2.26"/>
+<b>Exercício 2.26.</b> Suponha que definimos <tt>x</tt> e <tt>y</tt> como duas listas:</p><p>
+
+</p><p/><p><tt>(define x (list 1 2 3))<br/>
+(define y (list 4 5 6))<br/></tt></p><p/><p>Qual resultado é impresso pelo interpretador em resposta à avaliação de cada uma das seguintes expressões:</p><p>
+
+</p><p/><p><tt>(append x y)<br/><br/>
+(cons x y)<br/><br/>
+(list x y)<br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_2.27" id="%_thm_2.27"/>
+<b>Exercício 2.27.</b> Modifique o procedimento <tt>reverse</tt> do exercício <a href="#%_thm_2.18">2.18</a> para produzir um procedimento <a name="%_idx_1692" id="%_idx_1692"/><a name="%_idx_1694" id="%_idx_1694"/><tt>deep-reverse</tt> que usa uma lista como argumento e retorna como valor a lista com seus elementos invertidos e com todas as sublistas também profundamente revertidas. Por exemplo,</p><p>
+
+</p><p/><p><tt>(define x (list (list 1 2) (list 3 4)))<br/><br/>
+x<br/><i>((1 2) (3 4))</i><br/><br/>
+(reverse x)<br/><i>((3 4) (1 2))</i><br/><br/>
+(deep-reverse x)<br/><i>((4 3) (2 1))</i><br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_2.28" id="%_thm_2.28"/>
+<b>Exercício 2.28.</b> Escreva um procedimento <a name="%_idx_1696" id="%_idx_1696"/><a name="%_idx_1698" id="%_idx_1698"/><tt>fringe</tt> que tome como argumento uma árvore (representada como uma lista) e retorne uma lista cujos elementos são todos as folhas da árvore organizadas em ordem da esquerda para a direita. Por exemplo,</p><p>
+
+</p><p/><p><tt>(define x (list (list 1 2) (list 3 4)))<br/><br/>
+(fringe x)<br/><i>(1 2 3 4)</i><br/><br/>
+(fringe (list x x))<br/><i>(1 2 3 4 1 2 3 4)</i><br/></tt></p><p/><p>
+</p><p/><p>
+
+
+</p><p><a name="%_thm_2.29" id="%_thm_2.29"/>
+<b>Exercício 2.29.</b> <a name="%_idx_1700" id="%_idx_1700"/> Um móbile binário consiste em dois ramos, um ramo esquerdo e um ramo direito. Cada ramo é uma haste de um determinado comprimento, da qual paira um peso ou outro móbile binário. Podemos representar um móbile binário, um tipo de escultura, usando dados compostos construindo-o a partir de duas ramificações (por exemplo, usando <tt>list</tt>):</p><p>
+
+
+</p><p/><p><tt>(define (make-mobile left right)<br/>
+  (list left right))<br/></tt></p><p/><p>Um ramo é construído a partir de um <tt>length</tt> (que deve ser um número) junto com uma <tt>structure</tt>, que pode ser um número (representando um peso simples) ou outro móbile:</p><p>
+
+
+</p><p/><p><tt>(define (make-branch length structure)<br/>
+  (list length structure))<br/></tt></p><p/><p/><p>a. Escreva os seletores correspondentes <tt>left-branch</tt> e <tt>right-branch</tt>, que retornam os ramos de um móbile, e <tt>branch-length</tt> e <tt>branch-structure</tt>, que retorna os componentes de uma ramificação.</p><p>b. Usando seus seletores, defina um procedimento <tt>total-weight</tt> que retorne o peso total de um móbile.</p><p>c. Diz-se que um móbile está <a name="%_idx_1702" id="%_idx_1702"/><em>equilibrado</em> se o torque aplicado pelo seu ramo superior esquerdo for igual ao aplicado pelo seu ramo superior direito (ou seja, se o comprimento da haste esquerda) multiplicado pelo peso pendurado nessa barra é igual ao produto correspondente do lado direito) e se cada um dos submóbiles pendurados em seus galhos estiver equilibrado. Projete um predicado que teste se um móbile binário está equilibrado.</p><p>d. Suponha que alteremos a representação dos móbiles para que os construtores sejam</p><p>
+
+
+</p><p/><p><tt>(define (make-mobile left right)<br/>
+  (cons left right))<br/>
+(define (make-branch length structure)<br/>
+  (cons length structure))<br/></tt></p><p/><p>Quanto você precisa alterar seus programas para converter para a nova representação?</p><p>
+</p><p>
+
+<a name="%_sec_Temp_177" id="%_sec_Temp_177"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_177">Mapeando sobre árvores</a></h4><p>
+
+<a name="%_idx_1704" id="%_idx_1704"/><a name="%_idx_1706" id="%_idx_1706"/>Assim como <tt>map</tt> é uma abstração poderosa para lidar com sequências, <tt>map</tt> junto com a recursão é uma abstração poderosa para lidar com árvores. Por exemplo, o procedimento <tt>scale-tree</tt>, análogo à <tt>scale-list</tt> da seção <a href="#%_sec_2.2.1">2.2.1</a>, toma como argumento um fator numérico e uma árvore cujas folhas são números. Retorna uma árvore da mesma forma, onde cada número é multiplicado pelo fator. O plano recursivo para a <tt>scale-tree</tt> é semelhante ao plano para <tt>count-leaves</tt>:</p><p>
+
+</p><p/><p><tt><a name="%_idx_1708" id="%_idx_1708"/>(define (scale-tree tree factor)<br/>
+  (cond ((null? tree) nil)<br/>
+        ((not (pair? tree)) (* tree factor))<br/>
+        (else (cons (scale-tree (car tree) factor)<br/>
+                    (scale-tree (cdr tree) factor)))))<br/>
+(scale-tree (list 1 (list 2 (list 3 4) 5) (list 6 7))<br/>
+            10)<br/><i>(10 (20 (30 40) 50) (60 70))</i><br/></tt></p><p/><p/><p>Outra maneira de implementar a <tt>scale-tree</tt> é considerar a árvore como uma sequência de subárvores e usar o <tt>map</tt>. Mapeamos a sequência, dimensionando cada subárvore por vez e retornamos a lista de resultados. No caso base, onde a árvore é uma folha, simplesmente multiplicamos pelo fator:</p><p>
+
+</p><p/><p><tt><a name="%_idx_1710" id="%_idx_1710"/>(define (scale-tree tree factor)<br/>
+  (map (lambda (sub-tree)<br/>
+         (if (pair? sub-tree)<br/>
+             (scale-tree sub-tree factor)<br/>
+             (* sub-tree factor)))<br/>
+       tree))<br/></tt></p><p/><p>Muitas operações em árvore podem ser implementadas por combinações semelhantes de operações de sequência e recursão.</p><p>
+
+</p><p><a name="%_thm_2.30" id="%_thm_2.30"/>
+<b>Exercício 2.30.</b> Defina um procedimento <tt>square-tree</tt> análogo ao procedimento <tt>square-list</tt> do exercício <a href="#%_thm_2.21">2.21</a>. Ou seja, a <tt>square-list</tt> deve se comportar da seguinte maneira:</p><p>
+
+</p><p/><p><tt>(square-tree<br/>
+ (list 1<br/>
+       (list 2 (list 3 4) 5)<br/>
+       (list 6 7)))<br/><i>(1 (4 (9 16) 25) (36 49))</i><br/></tt></p><p/><p>Defina <tt>square-tree</tt> diretamente (ou seja, sem usar procedimentos de ordem superior) e também usando <tt>map</tt> e recursão.</p><p/><p>
+
+</p><p><a name="%_thm_2.31" id="%_thm_2.31"/>
+<b>Exercício 2.31.</b> Abstraia sua resposta para o exercício <a href="#%_thm_2.30">2.30</a> para produzir um procedimento <a name="%_idx_1712" id="%_idx_1712"/><tt>tree-map</tt> com a propriedade que <tt>square-tree</tt> pode ser definida como</p><p>
+
+</p><p/><p><tt>(define (square-tree tree) (tree-map square tree))<br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_2.32" id="%_thm_2.32"/>
+<b>Exercício 2.32.</b> Podemos representar um conjunto <a name="%_idx_1714" id="%_idx_1714"/>como uma lista de elementos distintos e podemos representar o conjunto de todos os subconjuntos do conjunto como uma lista de listas. Por exemplo, se o conjunto for <tt>(1 2 3)</tt>, o conjunto de todos os subconjuntos será <tt>(() (3) (2) (2 3) (1) (1 3) (1 2) (1 2 3))</tt>. Conclua a seguinte definição de um procedimento que gera o conjunto de subconjuntos de um conjunto e forneça uma explicação clara de por que ele funciona:</p><p/><p><tt><a name="%_idx_1716" id="%_idx_1716"/>(define (subsets s)<br/>
+  (if (null? s)<br/>
+      (list nil)<br/>
+      (let ((rest (subsets (cdr s))))<br/>
+        (append rest (map &lt;<em>??</em>&gt; rest)))))<br/></tt></p><p/><p>
+</p><p>
+</p><p>
+
+<a name="%_sec_2.2.3" id="%_sec_2.2.3"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_2.2.3">2.2.3 Sequências como interfaces convencionais</a></h3><p>
+
+
+<a name="%_idx_1718" id="%_idx_1718"/><a name="%_idx_1720" id="%_idx_1720"/>Ao trabalhar com dados compostos, enfatizamos como a abstração de dados nos permite criar programas sem nos envolver nos detalhes das representações de dados e como a abstração nos preserva a flexibilidade de experimentar representações alternativas. Nesta seção, apresentamos outro poderoso princípio de projeto para trabalhar com estruturas de dados - o uso de <em>interfaces convencionais</em>.</p><p>Na seção <a href="book-Z-H-12.html#%_sec_1.3">1.3</a>, vimos como as abstrações de programas, implementadas como procedimentos de ordem superior, podem capturar padrões comuns em programas que lidam com dados numéricos. Nossa capacidade de formular operações análogas para trabalhar com dados compostos depende crucialmente do estilo em que manipulamos nossas estruturas de dados. Considere, por exemplo, o procedimento a seguir, análogo ao procedimento <tt>count-leaves</tt> da seção <a href="#%_sec_2.2.2">2.2.2</a>, que usa uma árvore como argumento e calcula a soma dos quadrados de as folhas que são ímpares:</p><p/><p><tt><a name="%_idx_1722" id="%_idx_1722"/>(define (sum-odd-squares tree)<br/>
+  (cond ((null? tree) 0)  <br/>
+        ((not (pair? tree))<br/>
+         (if (odd? tree) (square tree) 0))<br/>
+        (else (+ (sum-odd-squares (car tree))<br/>
+                 (sum-odd-squares (cdr tree))))))<br/></tt></p><p/><p>Na superfície, esse procedimento é muito diferente do seguinte, que constrói uma lista de todos os números pares de Fibonacci <em>F</em><em>i</em><em>b</em>(<em>k</em>), onde <em>k</em> é menor ou igual a um número inteiro <em>n</em>:</p><p/><p><tt><a name="%_idx_1724" id="%_idx_1724"/>(define (even-fibs n)<br/>
+  (define (next k)<br/>
+    (if (&gt; k n)<br/>
+        nil<br/>
+        (let ((f (fib k)))<br/>
+          (if (even? f)<br/>
+              (cons f (next (+ k 1)))<br/>
+              (next (+ k 1))))))<br/>
+  (next 0))<br/></tt></p><p/><p/><p>Apesar de esses dois procedimentos serem estruturalmente muito diferentes, uma descrição mais abstrata dos dois cálculos revela muitas semelhanças. O primeiro programa</p><p/><ul><li>enumera as folhas de uma árvore;</li><li>os filtra, selecionando os ímpares;</li><li>elevado ao quadrado cada um dos selecionados; e</li><li>acumula os resultados usando <tt>+</tt>, começando com 0.</li></ul><p>O segundo programa</p><p/><ul><li>enumera os números inteiros de 0 a <em>n</em>;</li><li>calcula o número de Fibonacci para cada número inteiro;</li><li>os filtra, selecionando os pares; e</li><li>acumula os resultados usando <tt>cons</tt>, começando com a lista vazia.</li></ul><p/><p>
+
+<a name="%_idx_1726" id="%_idx_1726"/><a name="%_idx_1728" id="%_idx_1728"/>Um engenheiro de processamento de sinais acharia natural conceituar esses processos em termos de sinais que fluem através de uma cascata de estágios, cada um dos quais implementa parte do plano do programa, conforme mostrado na figura <a href="#%_fig_2.7">2.7</a>. Em <tt>sum-odd-squares</tt>, começamos com um <a name="%_idx_1730" id="%_idx_1730"/><em>enumerador</em>, que gera um &quot;sinal&quot; que consiste nas folhas de uma determinada árvore. Este sinal é passado através de um <a name="%_idx_1732" id="%_idx_1732"/><em>filter</em>, que elimina todos, exceto os elementos ímpares. O sinal resultante, por sua vez, é passado através de um <a name="%_idx_1734" id="%_idx_1734"/><em>map</em>, que é um &quot;transdutor&quot; que aplica o procedimento <tt>square</tt> a cada elemento. A saída do mapa é então alimentada para um <a name="%_idx_1736" id="%_idx_1736"/><em>accumulator</em>, que combina os elementos usando <tt>+</tt>, iniciando a partir de um 0 inicial. O plano para <tt>even-fibs</tt> é análogo.</p><p>
+
+<a name="%_fig_2.7" id="%_fig_2.7"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch2-Z-G-17.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.7:</b> Os planos de fluxo de sinal para os procedimentos <tt>sum-odd-squares</tt> (acima) e <tt>even-fibs</tt> (abaixo) revelam a semelhança entre os dois programas.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Infelizmente, as duas definições de procedimento acima falham em exibir essa estrutura de fluxo de sinal. Por exemplo, se examinarmos o procedimento <tt>sum-odd-squares</tt>, descobrimos que a enumeração é implementada parcialmente pelos testes <tt>null?</tt> e <tt>pair?</tt> e em parte pela estrutura árvore-recursiva do procedimento. Da mesma forma, o acúmulo é encontrado em parte nos testes e em parte na adição usada na recursão. Em geral, não há partes distintas de qualquer procedimento que correspondam aos elementos na descrição do fluxo de sinal. Nossos dois procedimentos decompõem os cálculos de uma maneira diferente, espalhando a enumeração sobre o programa e misturando-o com o mapa, o filtro e a acumulação. Se pudéssemos organizar nossos programas para fazer a estrutura de fluxo de sinal manifestar nos procedimentos que escrevemos, isso aumentaria a clareza conceitual do código resultante.</p><p>
+
+<a name="%_sec_Temp_181" id="%_sec_Temp_181"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_181">Operações de sequência</a></h4><p>
+
+
+<a name="%_idx_1738" id="%_idx_1738"/>A chave para organizar os programas de modo a refletir mais claramente a estrutura de fluxo de sinal é concentrar-se nos &quot;sinais&quot; que fluem de um estágio no processo para o próximo. Se representamos esses sinais como listas, podemos usar operações de lista para implementar o processamento em cada um dos estágios. Por exemplo, podemos implementar os estágios de mapeamento dos diagramas de fluxo de sinal usando o procedimento <tt>map</tt> da seção <a href="#%_sec_2.2.1">2.2.1</a>:</p><p/><p><tt>(map square (list 1 2 3 4 5))<br/><i>(1 4 9 16 25)</i><br/></tt></p><p/><p/><p>A filtragem de uma sequência para selecionar apenas os elementos que satisfazem um determinado predicado é realizada por</p><p/><p><tt><a name="%_idx_1740" id="%_idx_1740"/>(define (filter predicate sequence)<br/>
+  (cond ((null? sequence) nil)<br/>
+        ((predicate (car sequence))<br/>
+         (cons (car sequence)<br/>
+               (filter predicate (cdr sequence))))<br/>
+        (else (filter predicate (cdr sequence)))))<br/></tt></p><p/><p>Por exemplo,</p><p/><p><tt>(filter odd? (list 1 2 3 4 5))<br/><i>(1 3 5)</i><br/></tt></p><p/><p/><p>Acumulações podem ser implementadas por</p><p/><p><tt><a name="%_idx_1742" id="%_idx_1742"/>(define (accumulate op initial sequence)<br/>
+  (if (null? sequence)<br/>
+      initial<br/>
+      (op (car sequence)<br/>
+          (accumulate op initial (cdr sequence)))))<br/>
+(accumulate + 0 (list 1 2 3 4 5))<br/><i>15</i><br/>
+(accumulate * 1 (list 1 2 3 4 5))<br/><i>120</i><br/>
+(accumulate cons nil (list 1 2 3 4 5))<br/><i>(1 2 3 4 5)</i><br/></tt></p><p/><p/><p>Tudo o que resta para implementar diagramas de fluxo de sinal é enumerar a sequência de elementos a serem processados. Para <tt>even-fibs</tt>, precisamos gerar a sequência de números inteiros em um determinado intervalo, o que podemos fazer da seguinte maneira:</p><p/><p><tt><a name="%_idx_1744" id="%_idx_1744"/>(define (enumerate-interval low high)<br/>
+  (if (&gt; low high)<br/>
+      nil<br/>
+      (cons low (enumerate-interval (+ low 1) high))))<br/>
+(enumerate-interval 2 7)<br/><i>(2 3 4 5 6 7)</i><br/></tt></p><p/><p>Para enumerar as folhas de uma árvore, podemos usar <a name="call_footnote_Temp_182" href="#footnote_Temp_182" id="call_footnote_Temp_182"><sup><small>14</small></sup></a>
+</p><p/><p><tt><a name="%_idx_1748" id="%_idx_1748"/><a name="%_idx_1750" id="%_idx_1750"/>(define (enumerate-tree tree)<br/>
+  (cond ((null? tree) nil)<br/>
+        ((not (pair? tree)) (list tree))<br/>
+        (else (append (enumerate-tree (car tree))<br/>
+                      (enumerate-tree (cdr tree))))))<br/>
+(enumerate-tree (list 1 (list 2 (list 3 4)) 5))<br/><i>(1 2 3 4 5)</i><br/></tt></p><p/><p/><p>Agora podemos reformular <tt>sum-odd-squares</tt> e <tt>even-fibs</tt> como nos diagramas de fluxo de sinal. Para <tt>sum-odd-squares</tt>, enumeramos a sequência de folhas da árvore, filtramos isso para manter apenas os números ímpares na sequência, elevamos ao quadrado cada elemento e somamos os resultados:</p><p/><p><tt><a name="%_idx_1752" id="%_idx_1752"/>(define (sum-odd-squares tree)<br/>
+  (accumulate +<br/>
+              0<br/>
+              (map square<br/>
+                   (filter odd?<br/>
+                           (enumerate-tree tree)))))<br/></tt></p><p/><p>Para <tt>even-fibs</tt>, enumeramos os números inteiros de 0 a <em>n</em>, geramos o número de Fibonacci para cada um desses números inteiros, filtramos a sequência resultante para manter apenas os elementos pares e acumulamos os resultados em uma lista:</p><p/><p><tt><a name="%_idx_1754" id="%_idx_1754"/>(define (even-fibs n)<br/>
+  (accumulate cons<br/>
+              nil<br/>
+              (filter even?<br/>
+                      (map fib<br/>
+                           (enumerate-interval 0 n)))))<br/></tt></p><p/><p/><p>O valor de expressar programas como operações de sequência é que isso nos ajuda a criar projetos de programas modulares, ou seja, projetos construídos pela combinação de peças relativamente independentes. Podemos incentivar o projeto modular, fornecendo uma biblioteca de componentes padrão com uma interface convencional para conectar os componentes de maneira flexível.</p><p>
+
+<a name="%_idx_1756" id="%_idx_1756"/><a name="%_idx_1758" id="%_idx_1758"/>A construção modular é uma estratégia poderosa para controlar a complexidade no projeto de engenharia. Em aplicações reais de processamento de sinal, por exemplo, os projetistas constroem sistemas regularmente em cascata de elementos selecionados de famílias padronizadas de filtros e transdutores. Da mesma forma, as operações de sequência fornecem uma biblioteca de elementos de programa padrão que podemos misturar e combinar. Por exemplo, podemos reutilizar peças dos procedimentos <tt>sum-odd-squares</tt> e <tt>even-fibs</tt> em um programa que constrói uma lista dos quadrados dos primeiros <em>n</em> + 1 número de Fibonacci:</p><p/><p><tt>(define (list-fib-squares n)<br/>
+  (accumulate cons<br/>
+              nil<br/>
+              (map square<br/>
+                   (map fib<br/>
+                        (enumerate-interval 0 n)))))<br/>
+(list-fib-squares 10)<br/><i>(0 1 1 4 9 25 64 169 441 1156 3025)</i><br/></tt></p><p/><p>Podemos reorganizar as peças e usá-las na computação do produto dos números inteiros ímpares em uma sequência:</p><p/><p><tt>(define (product-of-squares-of-odd-elements sequence)<br/>
+  (accumulate *<br/>
+              1<br/>
+              (map square<br/>
+                   (filter odd? sequence))))<br/>
+(product-of-squares-of-odd-elements (list 1 2 3 4 5))<br/><i>225</i><br/></tt></p><p/><p/><p>Também podemos formular aplicativos de processamento de dados convencionais em termos de operações de sequência. Suponha que tenhamos uma sequência de registradores de pessoal e queremos encontrar o salário do programador mais bem pago. Suponha que tenhamos um seletor <tt>salary</tt> que retorna o salário de um registrador e um predicado <tt>programmer?</tt> que testa se um registrador é para um programador. Então podemos escrever</p><p/><p><tt>(define (salary-of-highest-paid-programmer records)<br/>
+  (accumulate max<br/>
+              0<br/>
+              (map salary<br/>
+                   (filter programmer? records))))<br/></tt></p><p/><p>Esses exemplos dão apenas uma dica da vasta gama de operações que podem ser expressas como operações de sequência.<a name="call_footnote_Temp_183" href="#footnote_Temp_183" id="call_footnote_Temp_183"><sup><small>15</small></sup></a></p><p>Sequências, implementadas aqui como listas, servem como uma interface convencional que nos permite combinar módulos de processamento. Além disso, quando representamos estruturas como sequências de maneira uniforme, localizamos as dependências da estrutura de dados em nossos programas em um pequeno número de operações de sequência. Ao alterá-las, podemos experimentar representações alternativas de sequências, mantendo intacto o projeto geral de nossos programas. Exploraremos esse recurso na seção <a href="book-Z-H-24.html#%_sec_3.5">3.5</a>, quando generalizarmos o paradigma de processamento de sequência para admitir infinitas sequências.</p><p>
+
+</p><p><a name="%_thm_2.33" id="%_thm_2.33"/>
+<b>Exercício 2.33.</b> Preencha as expressões ausentes para concluir as seguintes definições de algumas operações básicas de manipulação de lista como acumulações:</p><p/><p><tt><a name="%_idx_1766" id="%_idx_1766"/>(define (map p sequence)<br/>
+  (accumulate (lambda (x y) &lt;<em>??</em>&gt;) nil sequence))<br/><a name="%_idx_1768" id="%_idx_1768"/>(define (append seq1 seq2)<br/>
+  (accumulate cons &lt;<em>??</em>&gt; &lt;<em>??</em>&gt;))<br/><a name="%_idx_1770" id="%_idx_1770"/>(define (length sequence)<br/>
+  (accumulate &lt;<em>??</em>&gt; 0 sequence))<br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_2.34" id="%_thm_2.34"/>
+<b>Exercício 2.34.</b> <a name="%_idx_1772" id="%_idx_1772"/> A avaliação de um polinômio em <em>x</em> dado um determinado valor de <em>x</em> pode ser formulada como uma acumulação. Avaliamos o polinômio</p><p/><div align="left"><img src="images/ch2-Z-G-18.gif" border="0"/></div><p>usando um algoritmo conhecido chamado <a name="%_idx_1774" id="%_idx_1774"/><em>esquema de Horner</em>, que estrutura a computação como</p><p/><div align="left"><img src="images/ch2-Z-G-19.gif" border="0"/></div><p>Em outras palavras, começamos com <em>a</em><sub><em>n</em></sub>, multiplicamos por <em>x</em>, adicionamos <em>a</em><sub><em>n</em>-1</sub>, multiplicamos por <em>x</em> e assim por diante, até chegarmos a <em>a</em><sub>0</sub>.<a name="call_footnote_Temp_186" href="#footnote_Temp_186" id="call_footnote_Temp_186"><sup><small>16</small></sup></a> Preencha o modelo a seguir para produzir um procedimento que avalie um polinômio usando o esquema de Horner. Suponha que os coeficientes do polinômio sejam arranjados em uma sequência, de <em>a</em><sub>0</sub> a <em>a</em><sub><em>n</em></sub>.</p><p/><p><tt>(define (horner-eval x coefficient-sequence)<br/>
+  (accumulate (lambda (this-coeff higher-terms) &lt;<em>??</em>&gt;)<br/>
+              0<br/>
+              coefficient-sequence))<br/></tt></p><p/><p>Por exemplo, para calcular 1 + 3<em>x</em> + 5<em>x</em><sup>3</sup> + <em>x</em><sup>5</sup> em <em>x</em> = 2 você avaliaria</p><p/><p><tt>(horner-eval 2 (list 1 3 0 5 0 1))<br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_2.35" id="%_thm_2.35"/>
+<b>Exercício 2.35.</b> Redefina <tt>count-leaves</tt> da seção <a href="#%_sec_2.2.2">2.2.2</a> como um acúmulo:</p><p/><p><tt><a name="%_idx_1792" id="%_idx_1792"/>(define (count-leaves t)<br/>
+  (accumulate &lt;<em>??</em>&gt; &lt;<em>??</em>&gt; (map &lt;<em>??</em>&gt; &lt;<em>??</em>&gt;)))<br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_2.36" id="%_thm_2.36"/>
+<b>Exercício 2.36.</b> O procedimento <tt>accumulate-n</tt> é semelhante ao <tt>accumulate</tt>, exceto que ele assume como terceiro argumento uma sequência de sequências, todas assumidas para ter o mesmo número de elementos. Ele aplica o procedimento de acumulação designado para combinar todos os primeiros elementos das sequências, todos os segundos elementos das sequências e assim por diante, e retorna uma sequência dos resultados. Por exemplo, se <tt>s</tt> for uma sequência contendo quatro sequências, <tt>((1 2 3) (4 5 6) (7 8 9) (10 11 12)),</tt> o valor de <tt>(accumulate-n + 0 s)</tt> deve ser a sequência <tt>(22 26 30)</tt>. Preencha as expressões ausentes na seguinte definição de <tt>accumulate-n</tt>:</p><p/><p><tt><a name="%_idx_1794" id="%_idx_1794"/>(define (accumulate-n op init seqs)<br/>
+  (if (null? (car seqs))<br/>
+      nil<br/>
+      (cons (accumulate op init &lt;<em>??</em>&gt;)<br/>
+            (accumulate-n op init &lt;<em>??</em>&gt;))))<br/></tt></p><p/><p>
+</p><p>
+</p><p><a name="%_thm_2.37" id="%_thm_2.37"/>
+<b>Exercício 2.37.</b> <a name="%_idx_1796" id="%_idx_1796"/> <a name="%_idx_1798" id="%_idx_1798"/><a name="%_idx_1800" id="%_idx_1800"/>Suponha que representemos vetores <em>v</em> = (<em>v</em><sub><em>i</em></sub>) como sequências de números e matrizes <em>m</em> = (<em>m</em><sub><em>i</em><em>j</em></sub>) como sequências de vetores (as linhas da matriz). Por exemplo, a matriz</p><p/><div align="left"><img src="images/ch2-Z-G-20.gif" border="0"/></div><p>é representada como a sequência <tt>((1 2 3 4) (4 5 6 6) (6 7 8 9))</tt>. Com essa representação, podemos usar operações de sequência para expressar de forma concisa as operações básicas de matriz e vetor. Essas operações (que são descritas em qualquer livro sobre álgebra matricial) são as seguintes:</p><p>
+
+</p><p/><div align="left"><img src="images/ch2-Z-G-21.gif" border="0"/></div><p/><p>Podemos definir o produto escalar como <a name="call_footnote_Temp_190" href="#footnote_Temp_190" id="call_footnote_Temp_190"><sup><small>17</small></sup></a>
+</p><p/><p><tt><a name="%_idx_1802" id="%_idx_1802"/>(define (dot-product v w)<br/>
+  (accumulate + 0 (map * v w)))<br/></tt></p><p/><p>
+Fill in the missing expressions in the following procedures for
+computing the other matrix operations.  (The procedure <tt>accumulate-n</tt> is
+defined in exercise <a href="#%_thm_2.36">2.36</a>.)
+</p><p/><p><tt><a name="%_idx_1804" id="%_idx_1804"/>(define (matrix-*-vector m v)<br/>
+  (map &lt;<em>??</em>&gt; m))<br/><a name="%_idx_1806" id="%_idx_1806"/>(define (transpose mat)<br/>
+  (accumulate-n &lt;<em>??</em>&gt; &lt;<em>??</em>&gt; mat))<br/><a name="%_idx_1808" id="%_idx_1808"/>(define (matrix-*-matrix m n)<br/>
+  (let ((cols (transpose n)))<br/>
+    (map &lt;<em>??</em>&gt; m)))<br/></tt></p><p/><p>
+</p><p>
+</p><p><a name="%_thm_2.38" id="%_thm_2.38"/>
+<b>Exercício 2.38.</b> <a name="%_idx_1810" id="%_idx_1810"/> <a name="%_idx_1812" id="%_idx_1812"/>O procedimento <tt>accumulate</tt> também é conhecido como <tt>fold-right</tt>, porque combina o primeiro elemento da sequência com o resultado da combinação de todos os elementos à direita. Também existe uma <tt>fold-left</tt>, que é semelhante a <tt>fold-right</tt>, exceto pelo fato de combinar elementos trabalhando na direção oposta:</p><p/><p><tt><a name="%_idx_1814" id="%_idx_1814"/>(define (fold-left op initial sequence)<br/>
+  (define (iter result rest)<br/>
+    (if (null? rest)<br/>
+        result<br/>
+        (iter (op result (car rest))<br/>
+              (cdr rest))))<br/>
+  (iter initial sequence))<br/></tt></p><p/><p>
+What are the values of
+</p><p/><p><tt>(fold-right / 1 (list 1 2 3))<br/>
+(fold-left / 1 (list 1 2 3))<br/>
+(fold-right list nil (list 1 2 3))<br/>
+(fold-left list nil (list 1 2 3))<br/></tt></p><p/><p>Dê uma propriedade que <tt>op</tt> deve satisfazer para garantir que <tt>fold-right</tt> e <tt>fold-left</tt> produzam os mesmos valores para qualquer sequência.</p><p/><p>
+
+</p><p><a name="%_thm_2.39" id="%_thm_2.39"/>
+<b>Exercício 2.39.</b> Complete as seguintes definições de <tt>reverse</tt> <a name="%_idx_1816" id="%_idx_1816"/>(exercício <a href="#%_thm_2.18">2.18</a>) em termos de <tt>fold-right</tt> e <tt>fold-left</tt> do exercício <a href="#%_thm_2.38">2.38</a>:</p><p/><p><tt>(define (reverse sequence)<br/>
+  (fold-right (lambda (x y) &lt;<em>??</em>&gt;) nil sequence))<br/>
+(define (reverse sequence)<br/>
+  (fold-left (lambda (x y) &lt;<em>??</em>&gt;) nil sequence))<br/></tt></p><p/><p>
+</p><p>
+
+<a name="%_sec_Temp_193" id="%_sec_Temp_193"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_193">Mapeamentos aninhados</a></h4><p>
+
+
+<a name="%_idx_1818" id="%_idx_1818"/>Podemos estender o paradigma de sequência para incluir muitos cálculos que são comumente expressos usando loops aninhados.<a name="call_footnote_Temp_194" href="#footnote_Temp_194" id="call_footnote_Temp_194"><sup><small>18</small></sup></a> Considere este problema: Dado um número inteiro positivo <em>n</em>, encontre todos os pares ordenados de números inteiros positivos distintos <em>i</em> e <em>j</em>, em que 1<u>&lt;</u> <em>j</em>&lt;<em>i</em><u>&lt;</u> <em>n</em>, de modo que <em>i</em> + <em>j</em> seja primo. Por exemplo, se <em>n</em> for 6, os pares serão os seguintes:</p><p/><div align="left"><img src="images/ch2-Z-G-22.gif" border="0"/></div><p>Uma maneira natural de organizar esse cálculo é gerar a sequência de todos os pares ordenados de números inteiros positivos menores ou iguais a <em>n</em>, filtrar para selecionar os pares cuja soma é prima e, em seguida, para cada par (<em>i</em>, <em>j</em>) que passa pelo filtro, produz a tripla (<em>i</em>,<em>j</em>,<em>i</em> + <em>j</em>).</p><p>Aqui está uma maneira de gerar a sequência de pares: Para cada número inteiro <em>i</em><u>&lt;</u> <em>n</em>, enumere os números inteiros <em>j</em>&lt;<em>i</em> e para cada um desses <em>i</em> e <em>j</em> gere o par (<em>i</em>,<em>j</em>). Em termos de operações de sequência, mapeamos ao longo da sequência <tt>(enumerate-interval 1 n)</tt>. Para cada <em>i</em> nesta sequência, mapeamos ao longo da sequência <tt>(enumerate-interval 1 (- i 1))</tt>. Para cada <em>j</em> nesta última sequência, geramos o par <tt>(list i j)</tt>. Isso nos dá uma sequência de pares para cada <em>i</em>. A combinação de todas as sequências para todos os <em>i</em> (acumulando com <tt>append</tt>) produz a sequência necessária de pares:<a name="call_footnote_Temp_195" href="#footnote_Temp_195" id="call_footnote_Temp_195"><sup><small>19</small></sup></a>
+</p><p/><p><tt>(accumulate append<br/>
+            nil<br/>
+            (map (lambda (i)<br/>
+                   (map (lambda (j) (list i j))<br/>
+                        (enumerate-interval 1 (- i 1))))<br/>
+                 (enumerate-interval 1 n)))<br/></tt></p><p/><p>A combinação de mapeamento e acumulação com <tt>append</tt> é tão comum nesse tipo de programa que o isolaremos como um procedimento separado:</p><p/><p><tt><a name="%_idx_1826" id="%_idx_1826"/>(define (flatmap proc seq)<br/>
+  (accumulate append nil (map proc seq)))<br/></tt></p><p/><p>Agora filtre essa sequência de pares para encontrar aqueles cuja soma é prima. O predicado de filtro é chamado para cada elemento da sequência; seu argumento é um par e deve extrair os números inteiros do par. Assim, o predicado a ser aplicado a cada elemento na sequência é</p><p/><p><tt>(define (prime-sum? pair)<br/>
+  (prime? (+ (car pair) (cadr pair))))<br/></tt></p><p/><p>Por fim, gere a sequência de resultados mapeando os pares filtrados usando o procedimento a seguir, que constrói uma tripla que consiste nos dois elementos do par junto com sua soma:</p><p/><p><tt>(define (make-pair-sum pair)<br/>
+  (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))<br/></tt></p><p/><p>A combinação de todas essas etapas produz o procedimento completo:</p><p/><p><tt><a name="%_idx_1828" id="%_idx_1828"/>(define (prime-sum-pairs n)<br/>
+  (map make-pair-sum<br/>
+       (filter prime-sum?<br/>
+               (flatmap<br/>
+                (lambda (i)<br/>
+                  (map (lambda (j) (list i j))<br/>
+                       (enumerate-interval 1 (- i 1))))<br/>
+                (enumerate-interval 1 n)))))<br/></tt></p><p/><p/><p>Os mapeamentos aninhados também são úteis para sequências diferentes daquelas que enumeram intervalos. Suponha que desejamos gerar todas as permutações <a name="%_idx_1830" id="%_idx_1830"/><a name="%_idx_1832" id="%_idx_1832"/>de um conjunto <em>S</em>; isto é, todas as maneiras de solicitar os itens no conjunto. Por exemplo, as permutações de {1,2,3} são {1,2,3}, {1,3,2}, {2,1,3}, {2,3,1}, {3,1, 2} e {3,2,1}. Aqui está um plano para gerar as permutações de <em>S</em>: Para cada item <em>x</em> em <em>S</em>, gere recursivamente a sequência de permutações de <em>S</em> - <em>x</em>,<a name="call_footnote_Temp_196" href="#footnote_Temp_196" id="call_footnote_Temp_196"><sup><small>20</small></sup></a> e coloque <em>x</em> na frente de cada um. Isso produz, para cada <em>x</em> em <em>S</em>, a sequência de permutações de <em>S</em> que começam com <em>x</em>. A combinação dessas sequências para todos os <em>x</em> fornece todas as permutações de <em>S</em>:<a name="call_footnote_Temp_197" href="#footnote_Temp_197" id="call_footnote_Temp_197"><sup><small>21</small></sup></a></p><p>
+
+
+</p><p/><p><tt><a name="%_idx_1840" id="%_idx_1840"/>(define (permutations s)<br/>
+  (if (null? s)                    <em>; empty set?</em><br/>
+      (list nil)                   <em>; sequence containing empty set</em><br/>
+      (flatmap (lambda (x)<br/>
+                 (map (lambda (p) (cons x p))<br/>
+                      (permutations (remove x s))))<br/>
+               s)))<br/></tt></p><p/><p>Observe como essa estratégia reduz o problema de gerar permutações de <em>S</em> ao problema de gerar permutações de conjuntos com menos elementos que <em>S</em>. No caso terminal, trabalhamos até a lista vazia, que representa um conjunto de nenhum elemento. Para isso, geramos <tt>(list nil)</tt>, que é uma sequência com um item, a saber, o conjunto sem elementos. O procedimento <tt>remove</tt> usado em <tt>permutations</tt> retorna todos os itens em uma determinada sequência, exceto um determinado item. Isso pode ser expresso como um filtro simples:</p><p/><p><tt><a name="%_idx_1842" id="%_idx_1842"/>(define (remove item sequence)<br/>
+  (filter (lambda (x) (not (= x item)))<br/>
+          sequence))<br/></tt></p><p/><p/><p>
+
+</p><p><a name="%_thm_2.40" id="%_thm_2.40"/>
+<b>Exercício 2.40.</b> Defina um procedimento <a name="%_idx_1844" id="%_idx_1844"/><tt>unique-pairs</tt> que, dado um número inteiro <em>n</em>, gere a sequência de pares (<em>i</em>,<em>j</em>) com 1<u>&lt;</u> <em>j</em>&lt;<em>i</em><u>&lt;</u> <em>n</em>. Use <tt>unique-pairs</tt> para simplificar a definição de <tt>prime-sum-pairs</tt> dada acima.</p><p/><p>
+
+</p><p><a name="%_thm_2.41" id="%_thm_2.41"/>
+<b>Exercício 2.41.</b> Escreva um procedimento para encontrar todos as triplas ordenadas de números inteiros positivos distintos <em>i</em>, <em>j</em> e <em>k</em> menor ou igual a um número inteiro <em>n</em> que soma um número inteiro <em>s</em>.</p><p/><p>
+
+
+</p><p><a name="%_thm_2.42" id="%_thm_2.42"/>
+<b>Exercício 2.42.</b>   <a name="%_fig_2.8" id="%_fig_2.8"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch2-Z-G-23.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.8:</b> Uma solução para o problema das oito rainhas.</div></caption><tr><td>
+
+</td></tr></table></div><p>O <a name="%_idx_1846" id="%_idx_1846"/><a name="%_idx_1848" id="%_idx_1848"/><a name="%_idx_1850" id="%_idx_1850"/>&quot;problema das oito rainhas&quot; pergunta como colocar oito rainhas em um tabuleiro de xadrez para que nenhuma rainha fique em xeque das outras (ou seja, não há duas rainhas na mesma fila, coluna ou diagonal). Uma solução possível é mostrada na figura <a href="#%_fig_2.8">2.8</a>. Uma maneira de resolver o quebra-cabeça é trabalhar através do tabuleiro, colocando uma dama em cada coluna. Depois de colocar <em>k</em> - 1 rainhas, devemos colocar a <em>k</em> ésima rainha em uma posição em que não verifique nenhuma das rainhas que já estão no tabuleiro. Podemos formular essa abordagem de forma recursiva: suponha que já geramos a sequência de todas as maneiras possíveis para colocar <em>k</em> - 1 rainhas nas primeiras colunas <em>k</em> - 1 do quadro. Para cada uma dessas maneiras, gere um conjunto estendido de posições colocando uma dama em cada linha da <em>k</em> ésima coluna. Agora filtre-as, mantendo apenas as posições para as quais a rainha na <em>k</em> ésima coluna é segura em relação às outras rainhas. Isso produz a sequência de todas as maneiras de colocar as <em>k</em> rainhas nas primeiras colunas <em>k</em>. Continuando esse processo, produziremos não apenas uma solução, mas todas as soluções para o quebra-cabeça.</p><p>Implementamos essa solução como um procedimento <tt>queens</tt>, que retorna uma sequência de todas as soluções para o problema de colocar <em>n</em> rainhas em uma <em>n</em>× <em>n</em> tabuleiro de xadrez. <tt>Queens</tt> possui um procedimento interno <tt>queen-cols</tt> que retorna a sequência de todas as maneiras de colocar rainhas nas primeiras <em>k</em> colunas do quadro.</p><p/><p><tt><a name="%_idx_1852" id="%_idx_1852"/>(define (queens board-size)<br/>
+  (define (queen-cols k)  <br/>
+    (if (= k 0)<br/>
+        (list empty-board)<br/>
+        (filter<br/>
+         (lambda (positions) (safe? k positions))<br/>
+         (flatmap<br/>
+          (lambda (rest-of-queens)<br/>
+            (map (lambda (new-row)<br/>
+                   (adjoin-position new-row k rest-of-queens))<br/>
+                 (enumerate-interval 1 board-size)))<br/>
+          (queen-cols (- k 1))))))<br/>
+  (queen-cols board-size))<br/></tt></p><p/><p>Neste procedimento, <tt>rest-of-queens</tt> é uma maneira de colocar <em>k</em> - 1 rainhas nas primeiras colunas <em>k</em> - 1 e <tt>new-row</tt> é uma linha proposta para colocar a rainha na <em>k</em> ésima coluna. Conclua o programa implementando a representação para conjuntos de posições do tabuleiro, incluindo o procedimento <tt>adjoin-position</tt>, que une uma nova posição de coluna de linha a um conjunto de posições e <tt>empty-board</tt>, que representa um conjunto vazio de posições. Você também deve escrever o procedimento <tt>safe?</tt>, que determina, para um conjunto de posições, se a rainha na <em>k</em> ésima coluna é segura em relação às outras. (Observe que precisamos apenas verificar se a nova rainha está segura - as outras rainhas já possuem garantia de segurança uma com a outra).</p><p/><p>
+
+</p><p><a name="%_thm_2.43" id="%_thm_2.43"/>
+<b>Exercício 2.43.</b> Louis Reasoner se diverte muito fazendo o exercício <a href="#%_thm_2.42">2.42</a>. O procedimento <tt>queens</tt> parece funcionar, mas é executado muito lentamente. (Louis nunca consegue esperar o tempo suficiente para resolver até o caso 6 × 6). Quando Louis pede ajuda a Eva Lu Ator, ela ressalta que ele trocou a ordem dos mapeamentos aninhados no <tt>flatmap</tt>, escrevendo como</p><p/><p><tt>(flatmap<br/>
+ (lambda (new-row)<br/>
+   (map (lambda (rest-of-queens)<br/>
+          (adjoin-position new-row k rest-of-queens))<br/>
+        (queen-cols (- k 1))))<br/>
+ (enumerate-interval 1 board-size))<br/></tt></p><p/><p>Explique por que essa mudança faz com que o programa seja executado lentamente. Estime quanto tempo o programa de Louis levará para resolver o quebra-cabeça das oito rainhas, assumindo que o programa no exercício <a href="#%_thm_2.42">2.42</a> resolva o problema no tempo <em>T</em>.</p><p/><p>
+
+<a name="%_sec_2.2.4" id="%_sec_2.2.4"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_2.2.4">2.2.4 Exemplo: uma linguagem de imagem</a></h3><p>
+
+
+<a name="%_idx_1854" id="%_idx_1854"/>Esta seção apresenta uma linguagem simples para desenhar figuras que ilustra o poder da abstração e fechamento de dados e também explora procedimentos de ordem superior de maneira essencial. A linguagem foi projetada para facilitar a experimentação de padrões como os da figura <a href="#%_fig_2.9">2.9</a>, compostos por elementos repetidos que são deslocados e redimensionados.<a name="call_footnote_Temp_202" href="#footnote_Temp_202" id="call_footnote_Temp_202"><sup><small>22</small></sup></a> Nessa linguagem, os objetos de dados que são combinados são representados como procedimentos, e não como estrutura de lista. Assim como os <tt>cons</tt>, que satisfazem a propriedade de fechamento<a name="%_idx_1860" id="%_idx_1860"/>, nos permitiram construir facilmente uma estrutura de lista arbitrariamente complicada, as operações nessa linguagem, que também satisfazem a propriedade de fechamento, permitem construir facilmente padrões complicados e arbitrários.</p><p>
+
+<a name="%_fig_2.9" id="%_fig_2.9"/></p><p/><div align="left"><table width="100%"><tr><td><div align="left"><img src="images/ch2-Z-G-24.gif" border="0"/>
+          
+<img src="images/ch2-Z-G-25.gif" border="0"/> </div>
+
+</td></tr><caption align="bottom"><div align="left"><b>Figura 2.9:</b> Projetos gerados com a linguagem de imagem.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>
+
+<a name="%_sec_Temp_203" id="%_sec_Temp_203"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_203">A linguagem da imagem</a></h4><p>Quando começamos o estudo da programação na seção <a href="book-Z-H-10.html#%_sec_1.1">1.1</a>, enfatizamos a importância de descrever uma linguagem, concentrando-nos nas primitivas da linguagem, seus meios de combinação e seus meios de abstração. Seguiremos essa estrutura aqui.</p><p>Parte da elegância dessa linguagem de imagem é que existe apenas um tipo de elemento, chamado <a name="%_idx_1862" id="%_idx_1862"/><em>painter</em>. Um pintor desenha uma imagem que é deslocada e redimensionada para caber em um quadro designado em forma de paralelogramo<a name="%_idx_1864" id="%_idx_1864"/>. Por exemplo, há um pintor primitivo que chamaremos de <tt>wave</tt> que faz um desenho de linha bruto, como mostra a figura <a href="#%_fig_2.10">2.10</a>. A forma real do desenho depende do quadro - todas as quatro imagens na figura <a href="#%_fig_2.10">2.10</a> são produzidas pelo mesmo pintor <tt>wave</tt>, mas com relação a quatro quadros diferentes. Os pintores podem ser mais elaborados do que isso: o pintor primitivo chamado <tt>rogers</tt> pinta uma imagem do fundador do MIT, William Barton Rogers, como mostra a figura <a href="#%_fig_2.11">2.11</a>.<a name="call_footnote_Temp_204" href="#footnote_Temp_204" id="call_footnote_Temp_204"><sup><small>23</small></sup></a> As quatro imagens na figura <a href="#%_fig_2.11">2.11</a> são desenhadas com relação aos mesmos quatro quadros que as imagens <tt>wave</tt> na figura <a href="#%_fig_2.10">2.10</a>.</p><p>
+
+
+<a name="%_idx_1876" id="%_idx_1876"/>Para combinar imagens, usamos várias operações que constroem novos pintores a partir de determinados pintores. Por exemplo, a operação <a name="%_idx_1878" id="%_idx_1878"/><tt>beside</tt> pega dois pintores e produz um novo pintor composto que desenha a primeira imagem do pintor na metade esquerda do quadro e a segunda imagem do pintor na metade direita do a moldura. Da mesma forma, <a name="%_idx_1880" id="%_idx_1880"/><tt>below</tt> pega dois pintores e produz um pintor composto que desenha a primeira imagem do pintor abaixo da imagem do segundo pintor. Algumas operações transformam um único pintor para produzir um novo pintor. Por exemplo, <a name="%_idx_1882" id="%_idx_1882"/><tt>flip-vert</tt> pega um pintor e produz um pintor que desenha sua imagem de cabeça para baixo e <a name="%_idx_1884" id="%_idx_1884"/><tt>flip-horiz</tt> produz um pintor que desenha a imagem do pintor original da esquerda para a direita invertida.</p><p>
+
+<a name="%_fig_2.10" id="%_fig_2.10"/></p><p/><div align="left"><table width="100%"><tr><td><div align="left"><img src="images/ch2-Z-G-26.gif" border="0"/>
+          
+<img src="images/ch2-Z-G-27.gif" border="0"/> </div>
+
+<div align="left"><img src="images/ch2-Z-G-28.gif" border="0"/>
+          
+<img src="images/ch2-Z-G-29.gif" border="0"/> </div>
+
+</td></tr><caption align="bottom"><div align="left"><b>Figura 2.10:</b> Imagens produzidas pelo pintor <tt>wave</tt>, com relação a quatro quadros diferentes. Os quadros, mostrados com linhas pontilhadas, não fazem parte das imagens.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>
+
+<a name="%_fig_2.11" id="%_fig_2.11"/></p><p/><div align="left"><table width="100%"><tr><td><div align="left"><img src="images/ch2-Z-G-30.gif" border="0"/>
+          
+<img src="images/ch2-Z-G-31.gif" border="0"/> </div>
+
+<div align="left"><img src="images/ch2-Z-G-32.gif" border="0"/>
+          
+<img src="images/ch2-Z-G-33.gif" border="0"/> </div>
+
+</td></tr><caption align="bottom"><div align="left"><b>Figura 2.11:</b> Imagens de William Barton Rogers, fundador e primeiro presidente do MIT, pintadas em relação aos mesmos quatro quadros da figura <a href="#%_fig_2.10">2.10</a> (imagem original reimpressa com a permissão de Museu do MIT).</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>A figura <a href="#%_fig_2.12">2.12</a> mostra o desenho de um pintor chamado <tt>wave4</tt> que é construído em dois estágios a partir de <tt>wave</tt>:</p><p/><p><tt>(define wave2 (beside wave (flip-vert wave)))<br/>
+(define wave4 (below wave2 wave2))<br/></tt></p><p/><p/><p>
+
+<a name="%_fig_2.12" id="%_fig_2.12"/></p><p/><div align="left"><table width="100%"><tr><td><div align="left"><img src="images/ch2-Z-G-34.gif" border="0"/>
+          
+<img src="images/ch2-Z-G-35.gif" border="0"/> </div>
+
+<p/><p><tt>(define wave2                         (define wave4<br/>
+  (beside wave (flip-vert wave)))       (below wave2 wave2))<br/></tt></p><p/><p>
+</p><p/><p/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.12:</b> Criando uma figura complexa, a partir do pintor <tt>wave</tt> da figura <a href="#%_fig_2.10">2.10</a>.</div></caption><tr><td>
+
+</td></tr></table></div><p> </p><p>
+
+<a name="%_idx_1886" id="%_idx_1886"/>Ao construir uma imagem complexa dessa maneira, exploramos o fato de que os pintores são fechados sob os meios de combinação da linguagem. O <tt>beside</tt> ou <tt>below</tt> de dois pintores é ele próprio um pintor; portanto, podemos usá-lo como um elemento para criar pintores mais complexos. Assim como na construção da estrutura da lista usando <tt>cons</tt>, o fechamento de nossos dados sob os meios de combinação é crucial para a capacidade de criar estruturas complexas, usando apenas algumas operações.</p><p>Uma vez que possamos combinar pintores, gostaríamos de poder abstrair padrões típicos de combinar pintores. Implementaremos as operações do pintor como procedimentos do Scheme. Isso significa que não precisamos de um mecanismo de abstração especial na linguagem de imagem: Como os meios de combinação são procedimentos comuns do Scheme, automaticamente temos a capacidade de fazer algo com as operações do pintor que podemos fazer com os procedimentos. Por exemplo, podemos abstrair o padrão em <tt>wave4</tt> como</p><p>
+
+
+</p><p/><p><tt><a name="%_idx_1888" id="%_idx_1888"/>(define (flipped-pairs painter)<br/>
+  (let ((painter2 (beside painter (flip-vert painter))))<br/>
+    (below painter2 painter2)))<br/></tt></p><p/><p>e definir <tt>wave4</tt> como uma instância deste padrão:</p><p>
+
+
+</p><p/><p><tt>(define wave4 (flipped-pairs wave))<br/></tt></p><p/><p/><p>Também podemos definir operações recursivas. Aqui está um que faz os pintores se dividirem e se ramificarem para a direita, como mostrado nas figuras <a href="#%_fig_2.13">2.13</a> e <a href="#%_fig_2.14">2.14</a>:</p><p/><p><tt><a name="%_idx_1890" id="%_idx_1890"/>(define (right-split painter n)<br/>
+  (if (= n 0)<br/>
+      painter<br/>
+      (let ((smaller (right-split painter (- n 1))))<br/>
+        (beside painter (below smaller smaller)))))<br/></tt></p><p/><p/><p>
+
+<a name="%_fig_2.13" id="%_fig_2.13"/></p><p/><div align="left"><table width="100%"><tr><td><div align="left"><img src="images/ch2-Z-G-36.gif" border="0"/>
+                   
+<img src="images/ch2-Z-G-37.gif" border="0"/> </div>
+
+<p/><p><tt>     right-split <em>n</em>                   corner-split <em>n</em><br/></tt></p><p/><p>
+</p><p/><p/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.13:</b> Planos recursivos para <tt>right-split</tt> e <tt>corner-split</tt>.</div></caption><tr><td>
+
+</td></tr></table></div><p> </p><p>Podemos produzir padrões equilibrados, ramificando-se para cima e para a direita (veja o exercício <a href="#%_thm_2.44">2.44</a> e as figuras <a href="#%_fig_2.13">2.13</a> e <a href="#%_fig_2.14">2.14</a>):</p><p>
+
+</p><p/><p><tt><a name="%_idx_1892" id="%_idx_1892"/>(define (corner-split painter n)<br/>
+  (if (= n 0)<br/>
+      painter<br/>
+      (let ((up (up-split painter (- n 1)))<br/>
+            (right (right-split painter (- n 1))))<br/>
+        (let ((top-left (beside up up))<br/>
+              (bottom-right (below right right))<br/>
+              (corner (corner-split painter (- n 1))))<br/>
+          (beside (below painter top-left)<br/>
+                  (below bottom-right corner))))))<br/></tt></p><p/><p/><p>
+
+<a name="%_fig_2.14" id="%_fig_2.14"/></p><p/><div align="left"><table width="100%"><tr><td><div align="left"><img src="images/ch2-Z-G-38.gif" border="0"/>
+          
+<img src="images/ch2-Z-G-39.gif" border="0"/> </div>
+
+<p/><p><tt>     (right-split wave 4)         (right-split rogers 4)<br/></tt></p><p/><p>
+</p><p/><p/><div align="left"><img src="images/ch2-Z-G-40.gif" border="0"/>
+          
+<img src="images/ch2-Z-G-41.gif" border="0"/> </div>
+
+<p/><p><tt>    (corner-split wave 4)         (corner-split rogers 4)<br/></tt></p><p/><p>
+</p><p/><p/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.14:</b> As operações recursivas <tt>right-split</tt> e <tt>corner-split</tt> aplicadas aos pintores <tt>wave</tt> e <tt>rogers</tt>. A combinação de quatro figuras <tt>corner-split</tt> produz desenhos simétricos <tt>square-limit</tt>, como mostrado na figura <a href="#%_fig_2.9">2.9</a>.</div></caption><tr><td>
+
+</td></tr></table></div><p> </p><p>Ao colocar quatro cópias de <tt>corner-split</tt> adequadamente, obtemos um padrão chamado <tt>square-limit</tt>, cuja aplicação a <tt>wave</tt> e <tt>rogers</tt> é mostrado na figura <a href="#%_fig_2.9">2.9</a>:</p><p/><p><tt><a name="%_idx_1894" id="%_idx_1894"/>(define (square-limit painter n)<br/>
+  (let ((quarter (corner-split painter n)))<br/>
+    (let ((half (beside (flip-horiz quarter) quarter)))<br/>
+      (below (flip-vert half) half))))<br/></tt></p><p/><p/><p>
+
+</p><p><a name="%_thm_2.44" id="%_thm_2.44"/>
+<b>Exercício 2.44.</b> Defina o procedimento <a name="%_idx_1896" id="%_idx_1896"/><tt>up-split</tt> usado por <tt>corner-split</tt>. É semelhante à <tt>right-split</tt>, exceto que alterna as funções de <tt>below</tt> e <tt>beside</tt>.</p><p/><p>
+
+
+<a name="%_sec_Temp_206" id="%_sec_Temp_206"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_206">Operações de ordem superior</a></h4><p>
+
+<a name="%_idx_1898" id="%_idx_1898"/>Além de abstrair padrões de combinação de pintores, podemos trabalhar em um nível superior, abstraindo padrões de combinação de operações de pintor. Ou seja, podemos ver as operações do pintor como elementos a serem manipuladas e escrever meios de combinação para esses elementos - procedimentos que tomam as operações do pintor como argumentos e criam novas operações do pintor.</p><p>Por exemplo, <tt>flipped-pairs</tt> e <tt>square-limit</tt> organizam quatro cópias da imagem de um pintor em um padrão quadrado; eles diferem apenas em como orientam as cópias. Uma maneira de abstrair esse padrão de combinação de pintor é com o procedimento a seguir, que realiza quatro operações de um único argumento e produz uma operação de pintor que transforma um determinado pintor nessas quatro operações e organiza os resultados em um quadrado. <tt>Tl</tt>, <tt>tr</tt>, <tt>bl</tt> e <tt>br</tt> são as transformações a serem aplicadas à cópia superior esquerda, à cópia superior direita cópia, à cópia inferior esquerda e à cópia inferior direita, respectivamente.</p><p>
+
+</p><p/><p><tt><a name="%_idx_1900" id="%_idx_1900"/>(define (square-of-four tl tr bl br)<br/>
+  (lambda (painter)<br/>
+    (let ((top (beside (tl painter) (tr painter)))<br/>
+          (bottom (beside (bl painter) (br painter))))<br/>
+      (below bottom top))))<br/></tt></p><p/><p>Em seguida, <tt>flipped-pairs</tt> podem ser definidos em termos de <tt>square-of-four</tt> da seguinte maneira:<a name="call_footnote_Temp_207" href="#footnote_Temp_207" id="call_footnote_Temp_207"><sup><small>24</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_1904" id="%_idx_1904"/>(define (flipped-pairs painter)<br/>
+  (let ((combine4 (square-of-four identity flip-vert<br/>
+                                  identity flip-vert)))<br/>
+    (combine4 painter)))<br/></tt></p><p/><p>e <tt>square-limit</tt> pode ser expresso como <a name="call_footnote_Temp_208" href="#footnote_Temp_208" id="call_footnote_Temp_208"><sup><small>25</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_1906" id="%_idx_1906"/>(define (square-limit painter n)<br/>
+  (let ((combine4 (square-of-four flip-horiz identity<br/>
+                                  rotate180 flip-vert)))<br/>
+    (combine4 (corner-split painter n))))<br/></tt></p><p/><p/><p>
+
+</p><p><a name="%_thm_2.45" id="%_thm_2.45"/>
+<b>Exercício 2.45.</b> <tt>Right-split</tt> e <tt>up-split</tt> pode ser expresso como instâncias de uma operação de divisão geral. Defina um procedimento <a name="%_idx_1908" id="%_idx_1908"/><tt>split</tt> com a propriedade que avalia</p><p/><p><tt>(define right-split (split beside below))<br/>
+(define up-split (split below beside))<br/></tt></p><p/><p>produz procedimentos <tt>right-split</tt> e <tt>up-split</tt> com os mesmos comportamentos dos já definidos.</p><p/><p>
+
+<a name="%_sec_Temp_210" id="%_sec_Temp_210"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_210">Quadros</a></h4><p>
+
+<a name="%_idx_1910" id="%_idx_1910"/>Antes de mostrarmos como implementar pintores e seus meios de combinação, devemos primeiro considerar os quadros<a name="%_idx_1912" id="%_idx_1912"/>. Um quadro pode ser descrito por três vetores - um vetor de origem e dois vetores de aresta. O vetor de origem especifica o deslocamento da origem do quadro de alguma origem absoluta no plano, e os vetores de aresta especificam os deslocamentos dos cantos do quadro de sua origem. Se as arestas forem perpendiculares, o quadro será retangular. Caso contrário, o quadro será um paralelogramo mais geral.</p><p>A figura <a href="#%_fig_2.15">2.15</a> mostra um quadro e seus vetores associados. De acordo com a abstração de dados, ainda não precisamos ser específicos sobre como os quadros são representados, exceto para dizer que existe um construtor <a name="%_idx_1914" id="%_idx_1914"/><tt>make-frame</tt>, que pega três vetores e produz um quadro e três seletores correspondentes <a name="%_idx_1916" id="%_idx_1916"/><tt>origin-frame</tt>, <a name="%_idx_1918" id="%_idx_1918"/><tt>edge1-frame</tt> e <a name="%_idx_1920" id="%_idx_1920"/><tt>edge2-frame</tt> (consulte o exercício <a href="#%_thm_2.47">2.47</a>).</p><p>
+
+<a name="%_fig_2.15" id="%_fig_2.15"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch2-Z-G-42.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.15:</b> Um quadro é descrito por três vetores - uma origem e duas arestas.</div></caption><tr><td>
+
+</td></tr></table></div><p> </p><p>
+
+<a name="%_idx_1922" id="%_idx_1922"/>Usaremos coordenadas no quadrado da unidade (0<u>&lt;</u> <em>x</em>,<em>y</em><u>&lt;</u> 1) para especificar imagens. Em cada quadro, associamos um <a name="%_idx_1924" id="%_idx_1924"/><em>frame coordinate map</em>, que será usado para mudar e dimensionar as imagens para caber no quadro. O mapa transforma a unidade quadrada no quadro mapeando o vetor <strong><em>v</em></strong> = (<em>x</em>,<em>y</em>) para o soma do vetor</p><p/><div align="left"><img src="images/ch2-Z-G-43.gif" border="0"/></div><p>Por exemplo, (0,0) é mapeado para a origem do quadro, (1,1) para o vértice na diagonal oposta à origem e (0.5,0.5) para o centro do quadro. Podemos criar o mapa de coordenadas de um quadro com o seguinte procedimento:<a name="call_footnote_Temp_211" href="#footnote_Temp_211" id="call_footnote_Temp_211"><sup><small>26</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_1926" id="%_idx_1926"/>(define (frame-coord-map frame)<br/>
+  (lambda (v)<br/>
+    (add-vect<br/>
+     (origin-frame frame)<br/>
+     (add-vect (scale-vect (xcor-vect v)<br/>
+                           (edge1-frame frame))<br/>
+               (scale-vect (ycor-vect v)<br/>
+                           (edge2-frame frame))))))<br/></tt></p><p/><p>Observe que a aplicação de <tt>frame-coord-map</tt> a um quadro retorna um procedimento que, dado um vetor, retorna um vetor. Se o vetor de argumento estiver no quadrado da unidade, o vetor de resultado estará no quadro. Por exemplo,</p><p/><p><tt>((frame-coord-map a-frame) (make-vect 0 0))<br/></tt></p><p/><p>retorna o mesmo vetor que</p><p/><p><tt>(origin-frame a-frame)<br/></tt></p><p/><p/><p>
+
+</p><p><a name="%_thm_2.46" id="%_thm_2.46"/>
+<b>Exercício 2.46.</b> <a name="%_idx_1928" id="%_idx_1928"/> <a name="%_idx_1930" id="%_idx_1930"/>Um vetor bidimensional <strong>v</strong> que vai da origem até um ponto pode ser representado como um par que consiste em uma coordenada <em>x</em> e uma coordenada <em>y</em>. Implemente uma abstração de dados para vetores, fornecendo um construtor <a name="%_idx_1932" id="%_idx_1932"/><tt>make-vect</tt> e os seletores correspondentes <a name="%_idx_1934" id="%_idx_1934"/><tt>xcor-vect</tt> e <a name="%_idx_1936" id="%_idx_1936"/><tt>ycor-vect</tt>. Em termos de seletores e construtor, implemente os procedimentos <a name="%_idx_1938" id="%_idx_1938"/><tt>add-vect</tt>, <a name="%_idx_1940" id="%_idx_1940"/><tt>sub-vect</tt> e <a name="%_idx_1942" id="%_idx_1942"/><tt>scale-vect</tt> que executa a adição do vetor de operações, a subtração do vetor e a multiplicação de um vetor por um escalar:</p><p/><div align="left"><img src="images/ch2-Z-G-44.gif" border="0"/></div><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_2.47" id="%_thm_2.47"/>
+<b>Exercício 2.47.</b> Aqui estão dois construtores possíveis para quadros:</p><p/><p><tt><a name="%_idx_1944" id="%_idx_1944"/>(define (make-frame origin edge1 edge2)<br/>
+  (list origin edge1 edge2))<br/><br/>
+(define (make-frame origin edge1 edge2)<br/>
+  (cons origin (cons edge1 edge2)))<br/></tt></p><p/><p>Para cada construtor, forneça os seletores apropriados para produzir uma implementação para quadros.</p><p/><p>
+
+<a name="%_sec_Temp_214" id="%_sec_Temp_214"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_214">Pintores</a></h4><p>
+
+<a name="%_idx_1946" id="%_idx_1946"/>Um pintor é representado como um procedimento que, dado um quadro como argumento, desenha uma imagem específica deslocada e dimensionada para se ajustar ao quadro. Ou seja, se <tt>p</tt> é um pintor e <tt>f</tt> é um quadro, produzimos a imagem de <tt>p</tt> em <tt>f</tt> chamando <tt>p</tt> com <tt>f</tt> como argumento.</p><p>Os detalhes de como os pintores primitivos são implementados dependem das características particulares do sistema gráfico e do tipo de imagem a ser desenhada. Por exemplo, suponha que tenhamos um procedimento <a name="%_idx_1948" id="%_idx_1948"/><tt>draw-line</tt> que desenha uma linha na tela entre dois pontos especificados. Em seguida, podemos criar pintores para desenhos de linhas, como o pintor <tt>wave</tt> na figura <a href="#%_fig_2.10">2.10</a>, a partir de listas de segmentos de linhas, como a seguir:<a name="call_footnote_Temp_215" href="#footnote_Temp_215" id="call_footnote_Temp_215"><sup><small>27</small></sup></a></p><p/><p><tt><a name="%_idx_1950" id="%_idx_1950"/>(define (segments-&gt;painter segment-list)<br/>
+  (lambda (frame)<br/>
+    (for-each<br/>
+     (lambda (segment)<br/>
+       (draw-line<br/>
+        ((frame-coord-map frame) (start-segment segment))<br/>
+        ((frame-coord-map frame) (end-segment segment))))<br/>
+     segment-list)))<br/></tt></p><p/><p>Os segmentos são dados usando coordenadas em relação ao quadrado da unidade. Para cada segmento da lista, o pintor transforma os pontos finais do segmento com o mapa de coordenadas do quadro e desenha uma linha entre os pontos transformados.</p><p>Representar pintores como procedimentos ergue uma poderosa barreira de abstração na linguagem da imagem. Podemos criar e misturar todos os tipos de pintores primitivos, com base em uma variedade de recursos gráficos. Os detalhes de sua implementação não importam. Qualquer procedimento pode servir como pintor, desde que considere um quadro como argumento e desenhe algo dimensionado para se ajustar ao quadro.<a name="call_footnote_Temp_216" href="#footnote_Temp_216" id="call_footnote_Temp_216"><sup><small>28</small></sup></a>
+
+</p><p><a name="%_thm_2.48" id="%_thm_2.48"/>
+<b>Exercício 2.48.</b> <a name="%_idx_1952" id="%_idx_1952"/> Um segmento de linha direcionado no plano pode ser representado como um par de vetores - o vetor que vai da origem ao ponto inicial do segmento e o vetor que corre de a origem para o ponto final do segmento. Use sua representação vetorial do exercício <a href="#%_thm_2.46">2.46</a> para definir uma representação para segmentos com um construtor <a name="%_idx_1954" id="%_idx_1954"/><tt>make-segment</tt> e seletores <a name="%_idx_1956" id="%_idx_1956"/><tt>start-segment</tt> e <a name="%_idx_1958" id="%_idx_1958"/><tt>end-segment</tt>.</p><p/><p>
+
+</p><p><a name="%_thm_2.49" id="%_thm_2.49"/>
+<b>Exercício 2.49.</b> Use <tt>segments-&gt;painter</tt> para definir os seguintes pintores primitivos:</p><p>a. O pintor que desenha o contorno do quadro designado.</p><p>b. O pintor que desenha um &quot;X&quot; conectando cantos opostos do quadro.</p><p>c. O pintor que desenha uma forma de diamante conectando os pontos médios dos lados do quadro.</p><p>d. O pintor <tt>wave</tt>.</p><p/><p>
+
+<a name="%_sec_Temp_219" id="%_sec_Temp_219"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_219">Transformando e combinando pintores</a></h4><p>
+
+<a name="%_idx_1960" id="%_idx_1960"/>Uma operação em pintores (como <tt>flip-vert</tt> ou <tt>beside</tt>) funciona criando um pintor que chama os pintores originais em relação aos quadros derivados do quadro de argumentos. Assim, por exemplo, <tt>flip-vert</tt> não precisa saber como um pintor funciona para invertê-lo - ele só precisa saber como virar um quadro de cabeça para baixo: O pintor invertido usa apenas o pintor original, mas no quadro invertido.</p><p>As operações do pintor são baseadas no procedimento <tt>transform-painter</tt>, que usa como argumento um pintor e informações sobre como transformar um quadro e produz um novo pintor. O pintor transformado, quando chamado em um quadro, transforma o quadro e chama o pintor original no quadro transformado. Os argumentos para <tt>transform-painter</tt> são pontos (representados como vetores) que especificam os cantos do novo quadro: Quando mapeados no quadro, o primeiro ponto especifica a origem do novo quadro e os outros dois especificam as extremidades de seus vetores de aresta. Assim, argumentos dentro do quadrado da unidade especificam um quadro contido no quadro original.</p><p>
+
+</p><p/><p><tt><a name="%_idx_1962" id="%_idx_1962"/>(define (transform-painter painter origin corner1 corner2)<br/>
+  (lambda (frame)<br/>
+    (let ((m (frame-coord-map frame)))<br/>
+      (let ((new-origin (m origin)))<br/>
+        (painter<br/>
+         (make-frame new-origin<br/>
+                     (sub-vect (m corner1) new-origin)<br/>
+                     (sub-vect (m corner2) new-origin)))))))<br/></tt></p><p/><p/><p>Veja como virar as imagens do pintor verticalmente:</p><p/><p><tt><a name="%_idx_1964" id="%_idx_1964"/>(define (flip-vert painter)<br/>
+  (transform-painter painter<br/>
+                     (make-vect 0.0 1.0)   <em>; new <tt>origin</tt></em><br/>
+                     (make-vect 1.0 1.0)   <em>; new end of <tt>edge1</tt></em><br/>
+                     (make-vect 0.0 0.0))) <em>; new end of <tt>edge2</tt></em><br/></tt></p><p/><p>Usando <tt>transform-painter</tt>, podemos definir facilmente novas transformações. Por exemplo, podemos definir um pintor que reduz sua imagem para o quarto superior direito do quadro que é dado:</p><p/><p><tt><a name="%_idx_1966" id="%_idx_1966"/>(define (shrink-to-upper-right painter)<br/>
+  (transform-painter painter<br/>
+                     (make-vect 0.5 0.5)<br/>
+                     (make-vect 1.0 0.5)<br/>
+                     (make-vect 0.5 1.0)))<br/></tt></p><p/><p>Outras transformações giram as imagens no sentido anti-horário em 90 graus <a name="call_footnote_Temp_220" href="#footnote_Temp_220" id="call_footnote_Temp_220"><sup><small>29</small></sup></a>
+</p><p/><p><tt><a name="%_idx_1968" id="%_idx_1968"/>(define (rotate90 painter)<br/>
+  (transform-painter painter<br/>
+                     (make-vect 1.0 0.0)<br/>
+                     (make-vect 1.0 1.0)<br/>
+                     (make-vect 0.0 0.0)))<br/></tt></p><p/><p>ou esmagam as imagens em direção ao centro do quadro:<a name="call_footnote_Temp_221" href="#footnote_Temp_221" id="call_footnote_Temp_221"><sup><small>30</small></sup></a>
+</p><p/><p><tt><a name="%_idx_1970" id="%_idx_1970"/>(define (squash-inwards painter)<br/>
+  (transform-painter painter<br/>
+                     (make-vect 0.0 0.0)<br/>
+                     (make-vect 0.65 0.35)<br/>
+                     (make-vect 0.35 0.65)))<br/></tt></p><p/><p/><p>A transformação de quadros também é a chave para definir meios de combinar dois ou mais pintores. O procedimento <tt>beside</tt>, por exemplo, pega dois pintores, os transforma para pintar nas metades esquerda e direita de um quadro de argumento, respectivamente, e produz um novo pintor composto. Quando o pintor composto recebe um quadro, ele chama o primeiro pintor transformado para pintar na metade esquerda da moldura e chama o segundo pintor transformado para pintar na metade direita da moldura:</p><p/><p><tt><a name="%_idx_1972" id="%_idx_1972"/>(define (beside painter1 painter2)<br/>
+  (let ((split-point (make-vect 0.5 0.0)))<br/>
+    (let ((paint-left<br/>
+           (transform-painter painter1<br/>
+                              (make-vect 0.0 0.0)<br/>
+                              split-point<br/>
+                              (make-vect 0.0 1.0)))<br/>
+          (paint-right<br/>
+           (transform-painter painter2<br/>
+                              split-point<br/>
+                              (make-vect 1.0 0.0)<br/>
+                              (make-vect 0.5 1.0))))<br/>
+      (lambda (frame)<br/>
+        (paint-left frame)<br/>
+        (paint-right frame)))))<br/></tt></p><p/><p/><p>Observe como a abstração de dados do pintor, e em particular a representação dos pintores como procedimentos, torna <tt>beside</tt> fácil de implementar. O procedimento <tt>beside</tt> não precisa saber nada sobre os detalhes dos pintores de componentes, a não ser que cada pintor desenhe algo em seu quadro designado.</p><p>
+
+</p><p><a name="%_thm_2.50" id="%_thm_2.50"/>
+<b>Exercício 2.50.</b> Defina a transformação <a name="%_idx_1974" id="%_idx_1974"/><tt>flip-horiz</tt>, que inverte os pintores horizontalmente, e transformações que giram os pintores no sentido anti-horário em 180 graus e 270 graus.</p><p/><p>
+
+</p><p><a name="%_thm_2.51" id="%_thm_2.51"/>
+<b>Exercício 2.51.</b> Defina a operação <a name="%_idx_1976" id="%_idx_1976"/><tt>below</tt> para pintores. <tt>Below</tt> leva dois pintores como argumentos. O pintor resultante, com um quadro, desenha com o primeiro pintor na parte inferior da moldura e com o segundo pintor na parte superior. Defina <tt>below</tt> de duas maneiras diferentes - primeiro escrevendo um procedimento que seja análogo ao <tt>beside</tt> do procedimento acima, e novamente em termos de <tt>beside</tt> e operações de rotação adequadas (do exercício <a href="#%_thm_2.50">2.50</a>).</p><p/><p>
+
+<a name="%_sec_Temp_224" id="%_sec_Temp_224"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_224">Níveis de linguagem para projeto robusto</a></h4><p>A linguagem da imagem exercita algumas das ideias críticas que introduzimos sobre abstração com procedimentos e dados. As abstrações de dados fundamentais, pintores, são implementadas usando representações processuais, o que permite à linguagem lidar com diferentes recursos básicos de desenho de maneira uniforme. Os meios de combinação satisfazem a propriedade de fechamento, o que nos permite construir facilmente projetos complexos. Finalmente, todas as ferramentas para abstrair os procedimentos estão disponíveis para abstrair os meios de combinação dos pintores.</p><p>Também tivemos um vislumbre de outra ideia crucial sobre linguagens e projeto de programas. Essa é a abordagem do <a name="%_idx_1978" id="%_idx_1978"/><a name="%_idx_1980" id="%_idx_1980"/><em>projeto estratificado</em>, a noção de que um sistema complexo deve ser estruturado como uma sequência de níveis descritos usando uma sequência de linguagens. Cada nível é construído combinando partes que são consideradas primitivas nesse nível, e as partes construídas em cada nível são usadas como primitivas no próximo nível. A linguagem usada em cada nível de um projeto estratificado possui primitivas, meios de combinação e meios de abstração apropriados para esse nível de detalhe.</p><p>O projeto estratificado permeia a engenharia de sistemas complexos. Por exemplo, na engenharia de computadores, resistores e transistores são combinados (e descritos usando uma linguagem de circuitos analógicos) para produzir peças como portas and e portas or, que formam as primitivas de uma linguagem para o projeto de circuitos digitais.<a name="call_footnote_Temp_225" href="#footnote_Temp_225" id="call_footnote_Temp_225"><sup><small>31</small></sup></a> Essas partes são combinadas para criar processadores, estruturas de barramento e sistemas de memória, que por sua vez são combinados para formar computadores, usando linguagens apropriadas para a arquitetura de computadores. Os computadores são combinados para formar sistemas distribuídos, usando linguagens apropriadas para descrever interconexões de rede e assim por diante.</p><p>Como um pequeno exemplo de estratificação, nossa linguagem de imagem usa elementos primitivos (pintores primitivos) criados usando uma linguagem que especifica pontos e linhas para fornecer as listas de segmentos de linha para <tt>segments-&gt;painter</tt> ou o detalhes de sombreamento para um pintor como <tt>rogers</tt>. A maior parte de nossa descrição da linguagem da imagem se concentrou em combinar essas primitivas, usando combinadores geométricos como <tt>beside</tt> e <tt>below</tt>. Também trabalhamos em um nível superior, considerando <tt>beside</tt> e <tt>below</tt> como primitivos a serem manipulados em uma linguagem cujas operações, como <tt>square-of-four</tt>, capture padrões comuns de combinação de combinadores geométricos.</p><p>
+
+<a name="%_idx_1982" id="%_idx_1982"/>O projeto estratificado ajuda a tornar os programas <em>robustos</em>, ou seja, torna provável que pequenas alterações em uma especificação exijam correspondentemente pequenas alterações no programa. Por exemplo, suponha que desejássemos alterar a imagem com base na <tt>wave</tt> mostrada na figura <a href="#%_fig_2.9">2.9</a>. Poderíamos trabalhar no nível mais baixo para alterar a aparência detalhada do elemento <tt>wave</tt>; poderíamos trabalhar no nível intermediário para mudar a maneira como a <tt>corner-split</tt> replica a <tt>wave</tt>; poderíamos trabalhar no nível mais alto para alterar a forma como o <tt>square-limit</tt> organiza as quatro cópias do canto. Em geral, cada nível de um projeto estratificado fornece um vocabulário diferente para expressar as características do sistema e um tipo diferente de habilidade para alterá-lo.</p><p>
+
+</p><p><a name="%_thm_2.52" id="%_thm_2.52"/>
+<b>Exercício 2.52.</b> Faça alterações no limite quadrado de <tt>wave</tt> mostrado na figura <a href="#%_fig_2.9">2.9</a> trabalhando em cada um dos níveis descritos acima. Em particular:</p><p>a. Adicione alguns segmentos ao pintor primitivo <tt>wave</tt> do exercício <a href="#%_thm_2.49">2.49</a> (para adicionar um sorriso, por exemplo).</p><p>b. Altere o padrão construído por <tt>corner-split</tt> (por exemplo, usando apenas uma cópia das imagens <tt>up-split</tt> e <tt>right-split</tt> em vez de dois).</p><p>c. Modifique a versão do <tt>square-limit</tt> que usa <tt>square-of-four</tt> para montar os cantos em um padrão diferente. (Por exemplo, você pode fazer o grande Sr. Rogers olhar para fora de cada canto do quadrado).</p><p>
+
+</p><p/><div class="smallprint"><hr/></div><p>
+</p><div class="footnote"><p><a name="footnote_Temp_154" href="#call_footnote_Temp_154" id="footnote_Temp_154"><sup><small>6</small></sup></a> O uso da palavra <a name="%_idx_1536" id="%_idx_1536"/>&quot;fechamento&quot; aqui vem da álgebra abstrata, onde se diz que um conjunto de elementos está fechado em uma operação, se a aplicação da operação aos elementos do conjunto produzir um elemento que é novamente um elemento do conjunto. A comunidade Lisp também (infelizmente) usa a palavra “fechamento” para descrever um conceito totalmente não relacionado: Um fechamento é uma técnica de implementação para representar procedimentos com variáveis ​​livres. Não usamos a palavra &quot;fechamento&quot; neste segundo sentido neste livro.</p><p><a name="footnote_Temp_155" href="#call_footnote_Temp_155" id="footnote_Temp_155"><sup><small>7</small></sup></a> A noção de que um meio de combinação <a name="%_idx_1542" id="%_idx_1542"/>deve satisfazer o fechamento é uma ideia direta. Infelizmente, os combinadores de dados fornecidos em muitas linguagens de programação populares não satisfazem o fechamento ou tornam o fechamento difícil de explorar. No <a name="%_idx_1544" id="%_idx_1544"/>Fortran ou no <a name="%_idx_1546" id="%_idx_1546"/>Basic, normalmente se combina elementos de dados reunindo-os em matrizes - mas não é possível formar matrizes cujos elementos são eles próprios matrizes. <a name="%_idx_1548" id="%_idx_1548"/> Pascal e <a name="%_idx_1550" id="%_idx_1550"/>C admitem estruturas cujos elementos são estruturas. No entanto, isso requer que o programador manipule explicitamente os ponteiros e siga a restrição de que cada campo de uma estrutura possa conter apenas elementos de uma forma pré-especificada. Ao contrário do Lisp com seus pares, essas linguagens não possuem cola de uso geral integrada que facilita a manipulação de dados compostos de maneira uniforme. Essa limitação está por trás do comentário de Alan <a name="%_idx_1552" id="%_idx_1552"/>Perlis em seu prefácio a este livro: “Em Pascal, a infinidade de estruturas de dados declaráveis ​​induz uma especialização em funções que inibe e penaliza a cooperação casual. É melhor ter 100 funções operando em uma estrutura de dados do que 10 funções operando em 10 estruturas de dados.”</p><p><a name="footnote_Temp_156" href="#call_footnote_Temp_156" id="footnote_Temp_156"><sup><small>8</small></sup></a> Neste livro, usamos <em>list</em> para significar uma cadeia de pares terminada pelo fim da lista marcador. Por outro lado, o termo <a name="%_idx_1572" id="%_idx_1572"/><a name="%_idx_1574" id="%_idx_1574"/><em>estrutura de lista</em> refere-se a qualquer estrutura de dados composta por pares, não apenas a listas.</p><p><a name="footnote_Temp_157" href="#call_footnote_Temp_157" id="footnote_Temp_157"><sup><small>9</small></sup></a> Como aplicações aninhados de <tt>car</tt> e <tt>cdr</tt> são difíceis de escrever, dialetos Lisp fornecer abreviações para eles - por exemplo,<a name="%_idx_1584" id="%_idx_1584"/><a name="%_idx_1586" id="%_idx_1586"/></p><p/><div align="left"><img src="images/ch2-Z-G-14.gif" border="0"/></div><p>Os nomes de todos esses procedimentos começam com <tt>c</tt> e terminam com <tt>r</tt>. Cada <tt>a</tt> entre eles representa uma operação <a name="%_idx_1588" id="%_idx_1588"/><a name="%_idx_1590" id="%_idx_1590"/><tt>car</tt> e cada <tt>d</tt> para uma operação <tt>cdr</tt> a ser aplicada na mesma ordem em que aparecem no nome. Os nomes <tt>car</tt> e <tt>cdr</tt> persistem porque combinações simples como <tt>cadr</tt> são pronunciáveis.</p><p><a name="footnote_Temp_158" href="#call_footnote_Temp_158" id="footnote_Temp_158"><sup><small>10</small></sup></a> É notável quanta energia na padronização dos dialetos Lisp foi dissipada em argumentos literalmente sobre nada: deveria <tt>nil</tt> ser um nome comum? O valor de <tt>nil</tt> deve ser um símbolo? Deveria ser uma lista? Deveria ser um par? <a name="%_idx_1598" id="%_idx_1598"/> No Scheme, <tt>nil</tt> é um nome comum, que usamos nesta seção como uma variável cujo valor é o marcador de fim de lista (assim como <tt>true</tt> é uma variável comum que possui um valor verdadeiro). Outros dialetos do Lisp, incluindo Common Lisp, tratam <tt>nil</tt> como um símbolo especial. Os <a name="%_idx_1600" id="%_idx_1600"/>autores deste livro, que sofreram muitas brigas de padronização de linguagens, gostariam de evitar o problema inteiro. Depois de introduzirmos a citação na seção <a href="book-Z-H-16.html#%_sec_2.3">2.3</a>, denotaremos a lista vazia como <tt>'()</tt> e dispensaremos a variável <tt>nil</tt> inteiramente.</p><p><a name="footnote_Temp_164" href="#call_footnote_Temp_164" id="footnote_Temp_164"><sup><small>11</small></sup></a> Para definir <tt>f</tt> e <tt>g</tt> usando <a name="%_idx_1656" id="%_idx_1656"/><tt>lambda</tt> escreveríamos</p><p/><p><tt>(define f (lambda (x y . z) &lt;<em>body</em>&gt;))<br/>
+(define g (lambda w &lt;<em>body</em>&gt;))<br/></tt></p><p/><p>
+
+</p><p>Scheme <a name="footnote_Temp_166" href="#call_footnote_Temp_166" id="footnote_Temp_166"><sup><small>12</small></sup></a> fornece normalmente um procedimento <a name="%_idx_1664" id="%_idx_1664"/><tt>map</tt> que é mais geral do que o descrito aqui. Este <tt>map</tt> mais geral utiliza um procedimento de <em>n</em> argumentos, com <em>n</em> listas, e aplica o procedimento a todos os primeiros elementos das listas, todos os segundos elementos das listas e assim por diante, retornando uma lista dos resultados. Por exemplo:</p><p/><p><tt>(map + (list 1 2 3) (list 40 50 60) (list 700 800 900))<br/><i>(741 852 963)</i><br/><br/>
+(map (lambda (x y) (+ x (* 2 y)))<br/>
+     (list 1 2 3)<br/>
+     (list 4 5 6))<br/><i>(9 12 15)</i><br/></tt></p><p/><p>
+
+
+
+</p><p><a name="footnote_Temp_170" href="#call_footnote_Temp_170" id="footnote_Temp_170"><sup><small>13</small></sup></a> A ordem das duas primeiras cláusulas no <tt>cond</tt> importa, pois a lista vazia satisfaz <tt>null?</tt> e também não é um par.</p><p><a name="footnote_Temp_182" href="#call_footnote_Temp_182" id="footnote_Temp_182"><sup><small>14</small></sup></a> Este é, de fato, precisamente o procedimento <a name="%_idx_1746" id="%_idx_1746"/><tt>fringe</tt> do exercício <a href="#%_thm_2.28">2.28</a>. Aqui, renomeamos para enfatizar que faz parte de uma família de procedimentos gerais de manipulação de sequência.</p><p><a name="footnote_Temp_183" href="#call_footnote_Temp_183" id="footnote_Temp_183"><sup><small>15</small></sup></a> <a name="%_idx_1760" id="%_idx_1760"/>Richard Waters (1979) desenvolveu um programa que analisa automaticamente programas tradicionais <a name="%_idx_1762" id="%_idx_1762"/>em Fortran, visualizando-os em termos de mapas, filtros e acumulações. Ele descobriu que 90% do código no pacote de sub-rotinas científicas da Fortran se encaixa perfeitamente nesse paradigma. Uma das razões para o sucesso do Lisp como linguagem de programação é que as listas fornecem um meio padrão para expressar coleções ordenadas, para que possam ser manipuladas usando operações de ordem superior. A linguagem de programação <a name="%_idx_1764" id="%_idx_1764"/>APL deve muito de seu poder e apela a uma escolha semelhante. No APL, todos os dados são representados como matrizes, e há um conjunto universal e conveniente de operadores genéricos para todos os tipos de operações de matriz.</p><p><a name="footnote_Temp_186" href="#call_footnote_Temp_186" id="footnote_Temp_186"><sup><small>16</small></sup></a> De acordo com <a name="%_idx_1776" id="%_idx_1776"/>Knuth (1981), esta regra foi formulada por <a name="%_idx_1778" id="%_idx_1778"/>W. G. Horner, no início do século XIX, mas o método foi realmente usado por Newton mais de cem anos antes. O esquema de Horner avalia o polinômio usando menos adições e multiplicações do que o método direto do primeiro cálculo <em>a</em><sub><em>n</em></sub><em>x</em><sup><em>n</em></sup>, adicionando <em>a</em><sub><em>n</em>-1</sub><em>x</em><sup><em>n</em>-1</sup> e assim por diante. De fato, é possível provar que qualquer algoritmo para avaliar polinômios arbitrários deve usar, pelo menos, tantas adições e multiplicações quanto o esquema de Horner e, portanto, a regra de Horner é um algoritmo ideal para avaliação polinomial<a name="%_idx_1780" id="%_idx_1780"/><a name="%_idx_1782" id="%_idx_1782"/>. Isto foi provado (para o número de adições) por <a name="%_idx_1784" id="%_idx_1784"/>A. M. Ostrowski em um artigo de 1954 que essencialmente fundou o estudo moderno de algoritmos ótimos. A afirmação análoga para multiplicações foi comprovada por <a name="%_idx_1786" id="%_idx_1786"/>V. Y. Pan em 1966. O livro de <a name="%_idx_1788" id="%_idx_1788"/>Borodin e <a name="%_idx_1790" id="%_idx_1790"/>Munro (1975) fornece uma visão geral desses e de outros resultados sobre algoritmos ótimos.</p><p><a name="footnote_Temp_190" href="#call_footnote_Temp_190" id="footnote_Temp_190"><sup><small>17</small></sup></a> Esta definição usa a versão estendida do <tt>map</tt> descrita na nota de rodapé<a href="#footnote_Temp_166">12</a>.</p><p><a name="footnote_Temp_194" href="#call_footnote_Temp_194" id="footnote_Temp_194"><sup><small>18</small></sup></a> Essa abordagem para mapeamentos aninhados nos foi mostrada por <a name="%_idx_1820" id="%_idx_1820"/>David Turner, cujas linguagens <a name="%_idx_1822" id="%_idx_1822"/>KRC e <a name="%_idx_1824" id="%_idx_1824"/>Miranda fornece formalismos elegantes para lidar com essas construções. Os exemplos nesta seção (veja também o exercício <a href="#%_thm_2.42">2.42</a>) são adaptados de Turner 1981. Na seção <a href="book-Z-H-24.html#%_sec_3.5.3">3.5.3</a>, veremos como essa abordagem se generaliza em sequências infinitas.</p><p><a name="footnote_Temp_195" href="#call_footnote_Temp_195" id="footnote_Temp_195"><sup><small>19</small></sup></a> representamos um par aqui como uma lista de dois elementos, e não como um par Lisp. Assim, o &quot;par&quot; (<em>i</em>,<em>j</em>) é representado como <tt>(list i j)</tt>, não <tt>(cons i j)</tt>.</p><p><a name="footnote_Temp_196" href="#call_footnote_Temp_196" id="footnote_Temp_196"><sup><small>20</small></sup></a> O conjunto <em>S</em> - <em>x</em> é o conjunto de todos os elementos de <em>S</em>, excluindo <em>x</em>.</p><p><a name="footnote_Temp_197" href="#call_footnote_Temp_197" id="footnote_Temp_197"><sup><small>21</small></sup></a> <a name="%_idx_1834" id="%_idx_1834"/><a name="%_idx_1836" id="%_idx_1836"/><a name="%_idx_1838" id="%_idx_1838"/>Ponto e vírgula no código em Scheme são usados ​​para introduzir <em>comentários</em>. Tudo, desde o ponto-e-vírgula até o final da linha, é ignorado pelo interpretador. Neste livro, não usamos muitos comentários; tentamos tornar nossos programas auto-documentados usando nomes descritivos.</p><p><a name="footnote_Temp_202" href="#call_footnote_Temp_202" id="footnote_Temp_202"><sup><small>22</small></sup></a> A linguagem da imagem é baseada na linguagem que <a name="%_idx_1856" id="%_idx_1856"/>Peter Henderson criou para construir imagens como <a name="%_idx_1858" id="%_idx_1858"/>M. C. Xilogravura &quot;Square Limit&quot; de Escher (ver Henderson 1982). A xilogravura incorpora um padrão de escala repetido, semelhante às disposições desenhadas usando o procedimento <tt>square-limit</tt> nesta seção.</p><p><a name="footnote_Temp_204" href="#call_footnote_Temp_204" id="footnote_Temp_204"><sup><small>23</small></sup></a> <a name="%_idx_1866" id="%_idx_1866"/><a name="%_idx_1868" id="%_idx_1868"/>William Barton Rogers (1804-1882) foi o fundador e o primeiro presidente do MIT. Geólogo e professor talentoso, lecionou no William and Mary College e na University of Virginia. Em 1859, mudou-se para Boston, onde havia mais tempo para pesquisas, trabalhou em um plano para estabelecer um &quot;instituto politécnico&quot; e serviu como o primeiro Inspetor Estadual de Medidores de Gás de Massachusetts.</p><p>Quando o MIT foi fundado em 1861, Rogers foi eleito seu primeiro presidente. Rogers defendia um ideal de &quot;aprendizado útil&quot; que era diferente da educação universitária da época, com ênfase excessiva nos clássicos, que, como ele escreveu, &quot;impedem a instrução e a disciplina mais amplas, práticas e práticas. as ciências naturais e sociais &quot;. Da mesma forma, essa educação era diferente da educação restrita das escolas de comércio. Nas palavras de Rogers:</p><blockquote>
+<p>A distinção imposta pelo mundo entre o trabalhador prático e o cientista é totalmente fútil, e toda a experiência dos tempos modernos demonstrou sua total inutilidade.</p></blockquote><p>Rogers serviu como presidente do MIT até 1870, quando ele renunciou devido a problemas de saúde. Em 1878, o segundo presidente do MIT, <a name="%_idx_1870" id="%_idx_1870"/>John Runkle, renunciou sob a pressão de uma crise financeira provocada pelo pânico de 1873 e de uma tentativa de Harvard de assumir o MIT. Rogers voltou a ocupar o cargo de presidente até 1881.</p><p>Rogers entrou em colapso e morreu enquanto se dirigia à turma de formandos do MIT na graduação de 1882. Runkle citou as últimas palavras de Rogers em um discurso em memória entregue no mesmo ano:</p><blockquote>
+<p>“Enquanto estou aqui hoje e vejo o que é o Instituto, <tt>…</tt> lembro os primórdios da ciência. Lembro-me de cento e cinquenta anos atrás, Stephen Hales publicou um panfleto sobre o gás iluminante, no qual afirmava que suas pesquisas haviam demonstrado que 128 grãos de carvão betuminoso - ”<a name="%_idx_1872" id="%_idx_1872"/></p><p>&quot;Carvão betuminoso&quot;, essas foram suas últimas palavras na terra. Aqui ele se inclinou para a frente, como se consultasse algumas anotações sobre a mesa diante dele, depois recuperando lentamente uma posição ereta, ergueu as mãos e foi traduzido da cena de seus trabalhos e triunfos terrestres para o &quot;amanhã da morte&quot;, onde os mistérios da vida são resolvidos, e o espírito desencarnado encontra uma satisfação sem fim ao contemplar os novos e ainda insondáveis ​​mistérios do futuro infinito.</p></blockquote>Nas palavras de Francis A. Walker <a name="%_idx_1874" id="%_idx_1874"/>(terceiro presidente do MIT):<blockquote>
+<p>Durante toda a sua vida, ele se sustentou com maior fidelidade e heroicidade, e morreu como um cavaleiro tão bom, certamente desejaria, em seu posto e na própria parte e ato de dever público.</p></blockquote>
+
+<p><a name="footnote_Temp_207" href="#call_footnote_Temp_207" id="footnote_Temp_207"><sup><small>24</small></sup></a> Equivalentemente, poderíamos escrever</p><p/><p><tt><a name="%_idx_1902" id="%_idx_1902"/>(define flipped-pairs<br/>
+  (square-of-four identity flip-vert identity flip-vert))<br/></tt></p><p/><p>
+
+
+</p><p><a name="footnote_Temp_208" href="#call_footnote_Temp_208" id="footnote_Temp_208"><sup><small>25</small></sup></a> <tt>Rotate180</tt> gira um pintor em 180 graus (consulte o exercício <a href="#%_thm_2.50">2.50</a>). Em vez de <tt>rotate180</tt>, poderíamos dizer <tt>(compose flip-vert flip-horiz)</tt>, usando o procedimento <tt>compose</tt> do exercício <a href="book-Z-H-12.html#%_thm_1.42">1.42</a>.</p><p><a name="footnote_Temp_211" href="#call_footnote_Temp_211" id="footnote_Temp_211"><sup><small>26</small></sup></a> <tt>Frame-coord-map</tt> usa as operações de vetor descritas no exercício <a href="#%_thm_2.46">2.46</a> abaixo, que assumimos ter sido implementado usando alguma representação para vetores. Por causa da abstração de dados, não importa qual seja essa representação vetorial, desde que as operações vetoriais se comportem corretamente.</p><p><a name="footnote_Temp_215" href="#call_footnote_Temp_215" id="footnote_Temp_215"><sup><small>27</small></sup></a> <tt>Segments-&gt;painter</tt> usa a representação para segmentos de linha descritos no exercício <a href="#%_thm_2.48">2.48</a> abaixo. Ele também usa o procedimento <tt>for-each</tt> descrito no exercício <a href="#%_thm_2.23">2.23</a>.</p><p><a name="footnote_Temp_216" href="#call_footnote_Temp_216" id="footnote_Temp_216"><sup><small>28</small></sup></a> Por exemplo, o pintor <tt>rogers</tt> da figura <a href="#%_fig_2.11">2.11</a> foi construído a partir de uma imagem de tons de cinza. Para cada ponto em um determinado quadro, o pintor <tt>rogers</tt> determina o ponto na imagem que é mapeada para ele sob o mapa de coordenadas do quadro e o sombreia de acordo. Ao permitir diferentes tipos de pintores, capitalizamos a ideia de dados abstratos discutida na seção <a href="book-Z-H-14.html#%_sec_2.1.3">2.1.3</a>, na qual argumentamos que uma representação numérica racional pode ser algo que satisfaça uma condição apropriada. Aqui, usamos o fato de que um pintor pode ser implementado de qualquer maneira, desde que desenhe algo no quadro designado. A seção <a href="book-Z-H-14.html#%_sec_2.1.3">2.1.3</a> também mostrou como os pares podem ser implementados como procedimentos. Os pintores são o nosso segundo exemplo de representação processual para dados.</p><p><a name="footnote_Temp_220" href="#call_footnote_Temp_220" id="footnote_Temp_220"><sup><small>29</small></sup></a> <tt>Rotate90</tt> é uma rotação pura apenas para quadros quadrados, porque também estica e reduz a imagem para caber em o quadro girado.</p><p><a name="footnote_Temp_221" href="#call_footnote_Temp_221" id="footnote_Temp_221"><sup><small>30</small></sup></a> As imagens em forma de diamante nas figuras <a href="#%_fig_2.10">2.10</a> e <a href="#%_fig_2.11">2.11</a> foram criadas com <tt>squash-inwards</tt> aplicado a <tt>wave</tt> e <tt>rogers</tt>.</p><p><a name="footnote_Temp_225" href="#call_footnote_Temp_225" id="footnote_Temp_225"><sup><small>31</small></sup></a> A seção <a href="book-Z-H-22.html#%_sec_3.3.4">3.3.4</a> descreve um dessas linguagens.</p></div>
+
+
+
+</body>
+</html>

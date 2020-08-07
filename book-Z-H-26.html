@@ -1,0 +1,806 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops">
+<!-- Generated from TeX source by tex2page, v 4o,
+     (c) Dorai Sitaram, http://www.cs.rice.edu/~dorai/tex2page -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type: text/html; charset=utf-8"/>
+    <title>Estrutura e Interpretação de Programas de Computador</title>
+    <link rel="stylesheet" type="text/css" href="book-Z-C.css" title="default"/>
+  </head>
+  <body>
+
+
+
+<a name="%_sec_4.1" id="%_sec_4.1"/>
+<h2><a href="book-Z-H-4.html#%_toc_%_sec_4.1">4.1 O avaliador metacircular</a></h2><p>
+
+
+<a name="%_idx_4210" id="%_idx_4210"/>Nosso avaliador para Lisp será implementado como um programa Lisp. Pode parecer circular pensar em avaliar os programas Lisp usando um avaliador que é implementado no Lisp. No entanto, a avaliação é um processo, portanto, é apropriado descrever o processo de avaliação usando o Lisp, que, afinal, é a nossa ferramenta para descrever processos.<a name="call_footnote_Temp_510" href="#footnote_Temp_510" id="call_footnote_Temp_510"><sup><small>3</small></sup></a> Um avaliador escrito na mesma linguagem <a name="%_idx_4212" id="%_idx_4212"/><a name="%_idx_4214" id="%_idx_4214"/>que avalia é dito ser <em>metacircular</em>.</p><p>
+
+
+<a name="%_idx_4216" id="%_idx_4216"/><a name="%_idx_4218" id="%_idx_4218"/>O avaliador metacircular é essencialmente uma formulação do Scheme do modelo de avaliação do ambiental descrito na seção <a href="book-Z-H-21.html#%_sec_3.2">3.2.</a>. Lembre-se de que o modelo possui duas partes básicas:</p><p>
+
+</p><blockquote>
+<p>1. Para avaliar uma combinação (uma expressão composta diferente de uma forma especial), avalie as subexpressões e aplique o valor da subexpressão do operador aos valores das subexpressões do operando.</p><p>
+
+</p><p>2. Para aplicar um procedimento composto a um conjunto de argumentos, avalie o corpo do procedimento em um novo ambiente. Para construir esse ambiente, estenda a parte do ambiente do objeto de procedimento por um quadro no qual os parâmetros formais do procedimento estejam ligados aos argumentos aos quais o procedimento é aplicado.</p></blockquote><p>
+
+<a name="%_idx_4220" id="%_idx_4220"/>Essas duas regras descrevem a essência do processo de avaliação, um ciclo básico no qual as expressões a serem avaliadas em ambientes são reduzidas a procedimentos a serem aplicados aos argumentos, que por sua vez são reduzidas a novas expressões a serem avaliadas em novos ambientes e assim por diante, até chegarmos aos símbolos, cujos valores são pesquisados no ambiente, e aos procedimentos primitivos, que são aplicados diretamente (consulte a figura <a href="#%_fig_4.1">4.1</a>). <a name="call_footnote_Temp_511" href="#footnote_Temp_511" id="call_footnote_Temp_511"><sup><small>4</small></sup></a> Esse ciclo de avaliação será incorporado pela interação entre os dois procedimentos críticos no avaliador, <tt>eval</tt> e <tt>apply</tt>, que são descritos na seção <a href="#%_sec_4.1.1">4.1.1</a> (veja a figura <a href="#%_fig_4.1">4.1</a>)</p><p>A implementação do avaliador dependerá de procedimentos que definem a <em>sintaxe</em> das expressões a serem avaliadas. Usaremos <a name="%_idx_4224" id="%_idx_4224"/>abstração de dados para tornar o avaliador independente da representação da linguagem. Por exemplo, em vez de comprometer-se com a escolha de que uma atribuição seja representada por uma lista que começa com o símbolo <tt>set!</tt> usamos um predicado abstrato <tt>assignment?</tt> para testar uma atribuição e usamos seletores abstratos <tt>assignment-variable</tt> e <tt>assignment-value</tt> para acessar as partes de uma atribuição. A implementação de expressões será descrita em detalhes na seção <a href="#%_sec_4.1.2">4.1.2</a>. Existem também operações, descritas na seção <a href="#%_sec_4.1.3">4.1.3</a>, que especificam a representação de procedimentos e ambientes. Por exemplo, <tt>make-procedure</tt> constrói procedimentos compostos, <tt>lookup-variable-value</tt> acessa os valores das variáveis e <tt>apply-primitive-procedure</tt> aplica um procedimento primitivo a uma determinada lista de argumentos.</p><p>
+
+<a name="%_sec_4.1.1" id="%_sec_4.1.1"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_4.1.1">4.1.1 O núcleo do avaliador</a></h3><p>
+
+
+<a name="%_idx_4226" id="%_idx_4226"/>
+<a name="%_fig_4.1" id="%_fig_4.1"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch4-Z-G-1.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 4.1:</b> O <tt>eval</tt>-<tt>apply</tt> ciclo expõe a essência de uma linguagem de computador.</div></caption><tr><td>
+<a name="%_idx_4228" id="%_idx_4228"/>
+</td></tr></table></div><p/><p>O processo de avaliação pode ser descrito como a interação entre dois procedimentos: <tt>eval</tt> e <tt>apply</tt>.</p><p>
+
+<a name="%_sec_Temp_512" id="%_sec_Temp_512"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_512">Eval</a></h4><p>
+
+<a name="%_idx_4230" id="%_idx_4230"/><tt>Eval</tt> toma como argumento uma expressão e um ambiente. Classifica a expressão e direciona sua avaliação. <tt>Eval</tt> está estruturado como uma análise de caso do tipo sintático da expressão a ser avaliada. Para manter o procedimento geral, expressamos a determinação do tipo de uma expressão de maneira abstrata, sem comprometer nenhuma a uma <a name="%_idx_4232" id="%_idx_4232"/>representação específica para os vários tipos de expressões. Cada tipo de expressão possui um predicado que a testa e um meio abstrato para selecionar suas partes. Esta <a name="%_idx_4234" id="%_idx_4234"/><a name="%_idx_4236" id="%_idx_4236"/><em>sintaxe abstrata</em> facilita ver como podemos alterar a sintaxe da linguagem usando o mesmo avaliador, mas com uma coleção diferente de procedimentos de sintaxe.</p><p>
+
+<a name="%_sec_Temp_513" id="%_sec_Temp_513"/>
+</p><h5><a href="book-Z-H-4.html#%_toc_%_sec_Temp_513">Expressões primitivas</a></h5><p>
+
+</p><p/><ul><li><a name="%_idx_4238" id="%_idx_4238"/><a name="%_idx_4240" id="%_idx_4240"/>Para expressões de autoavaliação, como números, <tt>eval</tt> retorna a própria expressão.<p>
+
+</p></li><li><tt>Eval</tt> deve procurar variáveis no ambiente para encontrar seus valores.</li></ul><p/><p>
+
+<a name="%_sec_Temp_514" id="%_sec_Temp_514"/>
+</p><h5><a href="book-Z-H-4.html#%_toc_%_sec_Temp_514">Formas especiais</a></h5><p>
+
+</p><p/><ul><p>
+
+</p><li>Para expressões citadas, <tt>eval</tt> retorna a expressão que foi citada.<p>
+
+</p></li><li>Uma atribuição a (ou uma definição de) uma variável deve chamar recursivamente <tt>eval</tt> para calcular o novo valor a ser associado à variável. O ambiente deve ser modificado para alterar (ou criar) a ligação da variável.<p>
+
+</p></li><li>Uma expressão <tt>if</tt> requer processamento especial de suas partes, para avaliar o consequente se o predicado é verdadeiro e, de outro modo, avaliar a alternativa.<p>
+
+</p></li><li>Uma expressão <tt>lambda</tt> deve ser transformada em um procedimento aplicável, agrupando os parâmetros e o corpo especificados pela expressão <tt>lambda</tt> com o ambiente da avaliação.<p>
+
+</p></li><li>Uma expressão <tt>begin</tt> requer avaliar sua sequência de expressões na ordem em que aparecem.<p>
+
+</p></li><li>Uma análise de caso (<tt>cond</tt>) é transformada em um aninhamento de expressões <tt>if</tt> e depois avaliadas.</li></ul><p/><p>
+
+
+<a name="%_sec_Temp_515" id="%_sec_Temp_515"/>
+</p><h5><a href="book-Z-H-4.html#%_toc_%_sec_Temp_515">Combinações</a></h5><p>
+
+</p><p/><ul><li>Para uma aplicação de procedimento, <tt>eval</tt> deve avaliar recursivamente a parte do operador e os operandos da combinação. O procedimento e os argumentos resultantes são passados para <tt>apply</tt>, que lida com a aplicação de procedimento real.</li></ul><p/><p>
+
+</p><p/><p><a name="%_idx_4242" id="%_idx_4242"/>Aqui está a definição de <tt>eval</tt>:</p><p>
+
+
+</p><p/><p><tt>(define (eval exp env)<br/>
+  (cond ((self-evaluating? exp) exp)<br/>
+        ((variable? exp) (lookup-variable-value exp env))<br/>
+        ((quoted? exp) (text-of-quotation exp))<br/>
+        ((assignment? exp) (eval-assignment exp env))<br/>
+        ((definition? exp) (eval-definition exp env))<br/>
+        ((if? exp) (eval-if exp env))<br/>
+        ((lambda? exp)<br/>
+         (make-procedure (lambda-parameters exp)<br/>
+                         (lambda-body exp)<br/>
+                         env))<br/>
+        ((begin? exp) <br/>
+         (eval-sequence (begin-actions exp) env))<br/>
+        ((cond? exp) (eval (cond-&gt;if exp) env))<br/>
+        ((application? exp)<br/>
+         (apply (eval (operator exp) env)<br/>
+                (list-of-values (operands exp) env)))<br/>
+        (else<br/>
+         (error &quot;Unknown expression type -- EVAL&quot; exp))))<br/></tt></p><p/><p>
+</p><p>
+
+<a name="%_idx_4244" id="%_idx_4244"/><a name="%_idx_4246" id="%_idx_4246"/>Para maior clareza, <tt>eval</tt> foi implementado como uma análise de caso usando <tt>cond</tt>. A desvantagem disso é que nosso procedimento lida com apenas alguns tipos de expressões distinguíveis e nenhum novo pode ser definido sem editar a definição de <tt>eval</tt>. Na maioria das implementações do Lisp, o envio do tipo de expressão é feito em um estilo orientado a dados. Isso permite que um usuário adicione novos tipos de expressões que <tt>eval</tt> podem distinguir, sem modificar a definição de <tt>eval</tt> em si. (Veja exercício <a href="#%_thm_4.3">4.3.</a>).</p><p>
+
+<a name="%_sec_Temp_516" id="%_sec_Temp_516"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_516">Apply</a></h4><p>
+
+<tt>Apply</tt> usa dois argumentos, um procedimento e uma lista de argumentos aos quais o procedimento deve ser aplicado. <tt>Apply</tt> classifica os procedimentos em dois tipos: chama <a name="%_idx_4248" id="%_idx_4248"/><tt>apply-primitive-procedure</tt> para aplicar primitivas; aplica procedimentos compostos avaliando sequencialmente as expressões que compõem o corpo do procedimento. O ambiente para a avaliação do corpo de um procedimento composto é construído estendendo o ambiente base realizado pelo procedimento para incluir um quadro que liga os parâmetros do procedimento aos argumentos aos quais o procedimento deve ser aplicado. Aqui está a definição de <tt>apply</tt>:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4250" id="%_idx_4250"/>(define (apply procedure arguments)<br/>
+  (cond ((primitive-procedure? procedure)<br/>
+         (apply-primitive-procedure procedure arguments))<br/>
+        ((compound-procedure? procedure)<br/>
+         (eval-sequence<br/>
+           (procedure-body procedure)<br/>
+           (extend-environment<br/>
+             (procedure-parameters procedure)<br/>
+             arguments<br/>
+             (procedure-environment procedure))))<br/>
+        (else<br/>
+         (error<br/>
+          &quot;Unknown procedure type -- APPLY&quot; procedure))))<br/></tt></p><p/><p/><p>
+
+
+<a name="%_sec_Temp_517" id="%_sec_Temp_517"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_517">Argumentos de procedimento</a></h4><p>Quando <tt>eval</tt> processa uma aplicação de procedimento, ele usa <tt>list-of-values</tt> para produzir a lista de argumentos aos quais o procedimento deve ser aplicado. <tt>List-of-values</tt> toma como argumento os operandos da combinação. Ele avalia cada operando e retorna uma lista dos valores correspondentes:<a name="call_footnote_Temp_518" href="#footnote_Temp_518" id="call_footnote_Temp_518"><sup><small>5</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_4256" id="%_idx_4256"/>(define (list-of-values exps env)<br/>
+  (if (no-operands? exps)<br/>
+      '()<br/>
+      (cons (eval (first-operand exps) env)<br/>
+            (list-of-values (rest-operands exps) env))))<br/></tt></p><p/><p/><p>
+
+<a name="%_sec_Temp_519" id="%_sec_Temp_519"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_519">Condicionais</a></h4><p>
+
+<tt>Eval-if</tt> avalia a parte predicada de uma expressão <tt>if</tt> no ambiente fornecido. Se o resultado for verdadeiro, <tt>eval-if</tt> avalia o consequente; caso contrário, avalia a alternativa:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4258" id="%_idx_4258"/>(define (eval-if exp env)<br/>
+  (if (true? (eval (if-predicate exp) env))<br/>
+      (eval (if-consequent exp) env)<br/>
+      (eval (if-alternative exp) env)))<br/></tt></p><p/><p/><p>
+
+<a name="%_idx_4260" id="%_idx_4260"/>O uso de <tt>true?</tt> no <tt>eval-if</tt> destaca a questão da conexão entre uma linguagem implementada e uma linguagem de implementação. O <tt>if-predicate</tt> é avaliado na linguagem que é implementado e, portanto, gera um valor nessa linguagem. O predicado do interpretador <tt>true?</tt> converte esse valor em um valor que pode ser testado pelo <tt>if</tt> na linguagem de implementação: A representação metacircular da verdade pode não ser a mesma do Scheme subjacente???.<a name="call_footnote_Temp_520" href="#footnote_Temp_520" id="call_footnote_Temp_520"><sup><small>6</small></sup></a></p><p>
+
+<a name="%_sec_Temp_521" id="%_sec_Temp_521"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_521">Sequências</a></h4><p>
+
+<tt>Eval-sequence</tt> é usado por <tt>apply</tt> para avaliar a sequência de expressões em um corpo de procedimento e por <tt>eval</tt> para avaliar a sequência de expressões em uma expressão <tt>begin</tt> . Ele toma como argumento uma sequência de expressões e um ambiente e avalia as expressões na ordem em que elas ocorrem. O valor retornado é o valor da expressão final.</p><p>
+
+</p><p/><p><tt><a name="%_idx_4264" id="%_idx_4264"/>(define (eval-sequence exps env)<br/>
+  (cond ((last-exp? exps) (eval (first-exp exps) env))<br/>
+        (else (eval (first-exp exps) env)<br/>
+              (eval-sequence (rest-exps exps) env))))<br/></tt></p><p/><p/><p>
+
+<a name="%_sec_Temp_522" id="%_sec_Temp_522"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_522">Atribuições e definições</a></h4><p>O procedimento a seguir trata das atribuições para variáveis. Ele chama <tt>eval</tt> para encontrar o valor a ser atribuído e transmite a variável e o valor resultante para <tt>set-variable-value!</tt> para ser instalado no ambiente designado.</p><p>
+
+</p><p/><p><tt><a name="%_idx_4266" id="%_idx_4266"/>(define (eval-assignment exp env)<br/>
+  (set-variable-value! (assignment-variable exp)<br/>
+                       (eval (assignment-value exp) env)<br/>
+                       env)<br/>
+  'ok)<br/></tt></p><p/><p>Definições de variáveis são tratadas de maneira semelhante.<a name="call_footnote_Temp_523" href="#footnote_Temp_523" id="call_footnote_Temp_523"><sup><small>7</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_4268" id="%_idx_4268"/>(define (eval-definition exp env)<br/>
+  (define-variable! (definition-variable exp)<br/>
+                    (eval (definition-value exp) env)<br/>
+                    env)<br/>
+  'ok)<br/></tt></p><p/><p>Escolhemos aqui retornar o símbolo <tt>ok</tt> como o valor de uma atribuição ou definição.<a name="call_footnote_Temp_524" href="#footnote_Temp_524" id="call_footnote_Temp_524"><sup><small>8</small></sup></a></p><p>
+
+</p><p><a name="%_thm_4.1" id="%_thm_4.1"/>
+<b>Exercício 4.1.</b> <a name="%_idx_4270" id="%_idx_4270"/><a name="%_idx_4272" id="%_idx_4272"/>Observe que não podemos dizer se o avaliador metacircular avalia operandos da esquerda para a direita ou da direita para a esquerda. Sua ordem de avaliação é herdada do Lisp subjacente: se os argumentos para <tt>cons</tt> no <tt>list-of-values</tt> forem avaliados da esquerda para a direita, <tt>list-of-values</tt> avaliará operandos da esquerda para a direita; e se os argumentos para <tt>cons</tt> são avaliados da direita para a esquerda, <tt>list-of-values</tt> avaliará operandos da direita para a esquerda.</p><p>Escreva uma versão de <tt>list-of-values</tt> que avalia operandos da esquerda para a direita, independentemente da ordem de avaliação no Lisp subjacente. Escreva também uma versão de <tt>list-of-values</tt> que avalia operandos da direita para a esquerda.</p><p/><p>
+
+<a name="%_sec_4.1.2" id="%_sec_4.1.2"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_4.1.2">4.1.2 Representando expressões</a></h3><p>
+
+
+<a name="%_idx_4274" id="%_idx_4274"/><a name="%_idx_4276" id="%_idx_4276"/>
+<a name="%_idx_4278" id="%_idx_4278"/>O avaliador lembra o programa de diferenciação simbólica discutido na seção <a href="book-Z-H-16.html#%_sec_2.3.2">2.3.2</a>. Ambos os programas operam em expressões simbólicas. Nos dois programas, o resultado da operação em uma expressão composta é determinado operando recursivamente nas partes da expressão e combinando os resultados de uma maneira que depende do tipo da expressão. Nos dois programas usamos <a name="%_idx_4280" id="%_idx_4280"/>abstração de dados para dissociar as regras gerais de operação dos detalhes de como as expressões são representadas. No programa de diferenciação, isso significava que o mesmo procedimento de diferenciação poderia lidar com expressões algébricas na forma de prefixo, na forma de infixo ou de alguma outra forma. Para o avaliador, isso significa que a sintaxe da linguagem que é avaliada é determinada apenas pelos procedimentos que classificam e extraem partes de expressões.</p><p>
+
+</p><p/><p>Aqui está a especificação da sintaxe da nossa linguagem:</p><p/><p/><p>¤ Os únicos itens de autoavaliação são números e sequências de caracteres:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4282" id="%_idx_4282"/>(define (self-evaluating? exp)<br/>
+  (cond ((number? exp) true)<br/>
+        ((string? exp) true)<br/>
+        (else false)))<br/></tt></p><p/><p>¤ Variáveis são representadas por símbolos:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4284" id="%_idx_4284"/>(define (variable? exp) (symbol? exp))<br/></tt></p><p/><p>¤ As citações??? possuem a forma <tt>(quote &lt;<em>text-of-quotation</em>&gt;)</tt>:<a name="call_footnote_Temp_526" href="#footnote_Temp_526" id="call_footnote_Temp_526"><sup><small>9</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_4286" id="%_idx_4286"/>(define (quoted? exp)<br/>
+  (tagged-list? exp 'quote))<br/><br/><a name="%_idx_4288" id="%_idx_4288"/>(define (text-of-quotation exp) (cadr exp))<br/></tt></p><p/><p>
+<tt>Quoted?</tt> é definido em termos do procedimento <tt>tagged-list?</tt>, que identifica listas que começam com um símbolo designado:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4290" id="%_idx_4290"/>(define (tagged-list? exp tag)<br/>
+  (if (pair? exp)<br/>
+      (eq? (car exp) tag)<br/>
+      false))<br/></tt></p><p/><p>¤ As atribuições possuem a forma <tt>(set! &lt;<em>var</em>&gt; &lt;<em>value</em>&gt;)</tt>:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4292" id="%_idx_4292"/>(define (assignment? exp)<br/>
+  (tagged-list? exp 'set!))<br/><a name="%_idx_4294" id="%_idx_4294"/>(define (assignment-variable exp) (cadr exp))<br/><a name="%_idx_4296" id="%_idx_4296"/>(define (assignment-value exp) (caddr exp))<br/></tt></p><p/><p>¤ As definições possuem a forma</p><p>
+
+</p><p/><p><tt>(define &lt;<em>var</em>&gt; &lt;<em>value</em>&gt;)<br/></tt></p><p/><p>ou a forma</p><p>
+
+</p><p/><p><tt>(define (&lt;<em>var</em>&gt; &lt;<em>parameter<sub>1</sub></em>&gt; <tt>...</tt> &lt;<em>parameter<sub><em>n</em></sub></em>&gt;)<br/>
+  &lt;<em>body</em>&gt;)<br/></tt></p><p/><p>
+<a name="%_idx_4298" id="%_idx_4298"/><a name="%_idx_4300" id="%_idx_4300"/>A última forma (definição de procedimento padrão) é o açúcar sintático para</p><p>
+
+</p><p/><p><tt>(define &lt;<em>var</em>&gt;<br/>
+  (lambda (&lt;<em>parameter<sub>1</sub></em>&gt; <tt>...</tt> &lt;<em>parameter<sub><em>n</em></sub></em>&gt;)<br/>
+    &lt;<em>body</em>&gt;))<br/></tt></p><p/><p>Os procedimentos de sintaxe correspondentes são os seguintes:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4302" id="%_idx_4302"/>(define (definition? exp)<br/>
+  (tagged-list? exp 'define))<br/><a name="%_idx_4304" id="%_idx_4304"/>(define (definition-variable exp)<br/>
+  (if (symbol? (cadr exp))<br/>
+      (cadr exp)<br/>
+      (caadr exp)))<br/><a name="%_idx_4306" id="%_idx_4306"/>(define (definition-value exp)<br/>
+  (if (symbol? (cadr exp))<br/>
+      (caddr exp)<br/>
+      (make-lambda (cdadr exp)   <em>; formal parameters</em><br/>
+                   (cddr exp)))) <em>; body</em><br/></tt></p><p/><p>¤ Expressões <tt>lambda</tt> são listas que começam com o símbolo <tt>lambda</tt>:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4308" id="%_idx_4308"/>(define (lambda? exp) (tagged-list? exp 'lambda))<br/><a name="%_idx_4310" id="%_idx_4310"/>(define (lambda-parameters exp) (cadr exp))<br/><a name="%_idx_4312" id="%_idx_4312"/>(define (lambda-body exp) (cddr exp))<br/></tt></p><p/><p>Também fornecemos um construtor para as expressões <tt>lambda</tt>, que é usado por <tt>definition-value</tt>, acima:</p><p/><p><tt><a name="%_idx_4314" id="%_idx_4314"/>(define (make-lambda parameters body)<br/>
+  (cons 'lambda (cons parameters body)))<br/></tt></p><p/><p>¤ Os condicionais começam com <tt>if</tt> e ter um predicado, uma consequente??? e uma alternativa (opcional). Se a expressão não tiver parte alternativa, forneceremos <tt>false</tt> como alternativa.<a name="call_footnote_Temp_527" href="#footnote_Temp_527" id="call_footnote_Temp_527"><sup><small>10</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_4316" id="%_idx_4316"/>(define (if? exp) (tagged-list? exp 'if))<br/><a name="%_idx_4318" id="%_idx_4318"/>(define (if-predicate exp) (cadr exp))<br/><a name="%_idx_4320" id="%_idx_4320"/>(define (if-consequent exp) (caddr exp))<br/><a name="%_idx_4322" id="%_idx_4322"/>(define (if-alternative exp)<br/>
+  (if (not (null? (cdddr exp)))<br/>
+      (cadddr exp)<br/>
+      'false))<br/></tt></p><p/><p>Também fornecemos um construtor para expressões <tt>if</tt>, a serem usadas por <tt>cond-&gt;if</tt> para transformar expressões <tt>cond</tt> em expressões <tt>if</tt>:</p><p/><p><tt><a name="%_idx_4324" id="%_idx_4324"/>(define (make-if predicate consequent alternative)<br/>
+  (list 'if predicate consequent alternative))<br/></tt></p><p/><p>¤ <tt>Begin</tt> empacota uma sequência de expressões em uma única expressão. Incluímos operações de sintaxe em expressões <tt>begin</tt> para extrair a sequência real da expressão <tt>begin</tt>, bem como seletores que retornam a primeira expressão e o restante das expressões na sequência.<a name="call_footnote_Temp_528" href="#footnote_Temp_528" id="call_footnote_Temp_528"><sup><small>11</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_4326" id="%_idx_4326"/>(define (begin? exp) (tagged-list? exp 'begin))<br/><a name="%_idx_4328" id="%_idx_4328"/>(define (begin-actions exp) (cdr exp))<br/><a name="%_idx_4330" id="%_idx_4330"/>(define (last-exp? seq) (null? (cdr seq)))<br/><a name="%_idx_4332" id="%_idx_4332"/>(define (first-exp seq) (car seq))<br/><a name="%_idx_4334" id="%_idx_4334"/>(define (rest-exps seq) (cdr seq))<br/></tt></p><p/><p>Também incluímos um construtor <tt>sequence-&gt;exp</tt> (para uso por <tt>cond-&gt;if</tt>) que transforma uma sequência em uma única expressão, usando <tt>begin</tt> se necessário:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4336" id="%_idx_4336"/>(define (sequence-&gt;exp seq)<br/>
+  (cond ((null? seq) seq)<br/>
+        ((last-exp? seq) (first-exp seq))<br/>
+        (else (make-begin seq))))<br/><a name="%_idx_4338" id="%_idx_4338"/>(define (make-begin seq) (cons 'begin seq))<br/></tt></p><p/><p>¤ Uma aplicação de procedimento é qualquer expressão composta que não seja um dos tipos de expressão acima. O <tt>car</tt> da expressão é o operador, e o <tt>cdr</tt> é a lista de operandos:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4340" id="%_idx_4340"/>(define (application? exp) (pair? exp))<br/><a name="%_idx_4342" id="%_idx_4342"/>(define (operator exp) (car exp))<br/><a name="%_idx_4344" id="%_idx_4344"/>(define (operands exp) (cdr exp))<br/><a name="%_idx_4346" id="%_idx_4346"/>(define (no-operands? ops) (null? ops))<br/><a name="%_idx_4348" id="%_idx_4348"/>(define (first-operand ops) (car ops))<br/><a name="%_idx_4350" id="%_idx_4350"/>(define (rest-operands ops) (cdr ops))<br/></tt></p><p/><p/><p>
+
+
+<a name="%_sec_Temp_529" id="%_sec_Temp_529"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_529">Expressões derivadas</a></h4><p>
+
+<a name="%_idx_4352" id="%_idx_4352"/><a name="%_idx_4354" id="%_idx_4354"/><a name="%_idx_4356" id="%_idx_4356"/><a name="%_idx_4358" id="%_idx_4358"/>Algumas formas especiais em nossa linguagem podem ser definidas em termos de expressões envolvendo outras formas especiais, em vez de serem implementadas diretamente. Um exemplo é <tt>cond</tt>, que pode ser implementado como um aninhamento de expressões <tt>if</tt>. Por exemplo, podemos reduzir o problema de avaliar a expressão</p><p>
+
+</p><p/><p><tt>(cond ((&gt; x 0) x)<br/>
+      ((= x 0) (display 'zero) 0)<br/>
+      (else (- x)))<br/></tt></p><p/><p>ao problema de avaliar a seguinte expressão envolvendo as expressões <tt>if</tt> e <tt>begin</tt> :</p><p>
+
+</p><p/><p><tt>(if (&gt; x 0)<br/>
+    x<br/>
+    (if (= x 0)<br/>
+        (begin (display 'zero)<br/>
+               0)<br/>
+        (- x)))<br/></tt></p><p/><p>Implementando a avaliação de <tt>cond</tt> dessa maneira, simplifica o avaliador porque reduz o número de formas especiais para as quais o processo de avaliação deve ser especificado explicitamente.</p><p>Incluímos procedimentos de sintaxe que extraem as partes de uma expressão <tt>cond</tt> e um procedimento <tt>cond-&gt;if</tt> que transforma expressões <tt>cond</tt> em expressões <tt>if</tt>. Uma análise de caso começa com <tt>cond</tt> e possui uma lista de cláusulas de ação de predicado. Uma cláusula é uma <tt>else</tt> cláusula se seu predicado é o símbolo <tt>else</tt>.<a name="call_footnote_Temp_530" href="#footnote_Temp_530" id="call_footnote_Temp_530"><sup><small>12</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_4360" id="%_idx_4360"/>(define (cond? exp) (tagged-list? exp 'cond))<br/><a name="%_idx_4362" id="%_idx_4362"/>(define (cond-clauses exp) (cdr exp))<br/><a name="%_idx_4364" id="%_idx_4364"/>(define (cond-else-clause? clause)<br/>
+  (eq? (cond-predicate clause) 'else))<br/><a name="%_idx_4366" id="%_idx_4366"/>(define (cond-predicate clause) (car clause))<br/><a name="%_idx_4368" id="%_idx_4368"/>(define (cond-actions clause) (cdr clause))<br/><a name="%_idx_4370" id="%_idx_4370"/>(define (cond-&gt;if exp)<br/>
+  (expand-clauses (cond-clauses exp)))<br/><br/><a name="%_idx_4372" id="%_idx_4372"/>(define (expand-clauses clauses)<br/>
+  (if (null? clauses)<br/>
+      'false                          <em>; no <tt>else</tt> clause</em><br/>
+      (let ((first (car clauses))<br/>
+            (rest (cdr clauses)))<br/>
+        (if (cond-else-clause? first)<br/>
+            (if (null? rest)<br/>
+                (sequence-&gt;exp (cond-actions first))<br/>
+                (error &quot;ELSE clause isn't last -- COND-&gt;IF&quot;<br/>
+                       clauses))<br/>
+            (make-if (cond-predicate first)<br/>
+                     (sequence-&gt;exp (cond-actions first))<br/>
+                     (expand-clauses rest))))))<br/></tt></p><p/><p/><p>Expressões (como <tt>cond</tt>) que escolhemos implementar como transformações sintáticas são chamadas <em>expressões derivadas</em>. Expressões <tt>let</tt> também são expressões derivadas (consulte o exercício <a href="#%_thm_4.6">4.6</a>)<a name="call_footnote_Temp_531" href="#footnote_Temp_531" id="call_footnote_Temp_531"><sup><small>13</small></sup></a></p><p>
+
+</p><p><a name="%_thm_4.2" id="%_thm_4.2"/>
+<b>Exercício 4.2.</b> <a name="%_idx_4384" id="%_idx_4384"/>Louis Reasoner planeja reordenar o <tt>cond</tt> cláusulas em <tt>eval</tt> para que a cláusula para aplicações de procedimento apareça antes da cláusula para atribuições. Ele argumenta que isso tornará o interpretador mais eficiente: como os programas geralmente contêm mais aplicações do que atribuições, definições etc. <tt>eval</tt> normalmente verifica menos cláusulas que o original <tt>eval</tt> antes de identificar o tipo de uma expressão.</p><p>
+
+</p><p/><p>a. O que há de errado com o plano de Louis? (Dica: O que o avaliador de Louis fará com a expressão <tt>(define x 3)</tt>?)</p><p>
+
+</p><p/><p><a name="%_idx_4386" id="%_idx_4386"/>b. Louis está chateado que seu plano não funcionou. Ele está disposto a fazer tudo para que seu avaliador reconheça as aplicações de procedimentos antes de verificar a maioria dos outros tipos de expressões. Ajude-o alterando a sintaxe da linguagem avaliada para que as aplicações de procedimento comecem com <tt>call</tt>. Por exemplo, em vez de <tt>(factorial 3)</tt> agora teremos que escrever <tt>(call factorial 3)</tt> e em vez de <tt>(+ 1 2)</tt> teremos que escrever <tt>(call + 1 2)</tt>.</p><p/><p>
+
+</p><p><a name="%_thm_4.3" id="%_thm_4.3"/>
+<b>Exercício 4.3.</b> <a name="%_idx_4388" id="%_idx_4388"/><a name="%_idx_4390" id="%_idx_4390"/><a name="%_idx_4392" id="%_idx_4392"/>Reescrever <tt>eval</tt> para que o envio seja feito no estilo orientado a dados. Compare isso com o procedimento de diferenciação orientada a dados do exercício <a href="book-Z-H-17.html#%_thm_2.73">2.73</a>. (Você pode usar o <tt>car</tt> de uma expressão composta como o tipo da expressão, conforme apropriado para a sintaxe implementada nesta seção)..</p><p/><p>
+
+</p><p><a name="%_thm_4.4" id="%_thm_4.4"/>
+<b>Exercício 4.4.</b> <a name="%_idx_4394" id="%_idx_4394"/><a name="%_idx_4396" id="%_idx_4396"/><a name="%_idx_4398" id="%_idx_4398"/>Lembre-se das definições dos formas especiais <tt>and</tt> e <tt>or</tt> do capítulo 1:</p><p/><ul><li><tt>and</tt>: As expressões são avaliadas da esquerda para a direita. Se qualquer expressão for avaliada como false, false será retornado; quaisquer expressões restantes não são avaliadas. Se todas as expressões avaliarem como valores verdadeiros, o valor da última expressão será retornado. Se não houver expressões, true será retornado.<p>
+
+</p></li><li><tt>or</tt>: As expressões são avaliadas da esquerda para a direita. Se qualquer expressão for avaliada como um valor verdadeiro, esse valor será retornado; quaisquer expressões restantes não são avaliadas. Se todas as expressões forem avaliadas como falsas ou se não houver expressões, retornará false.</li></ul><p>Instalar <tt>and</tt> e <tt>or</tt> como novas formas especiais para o avaliador, definindo procedimentos de sintaxe e procedimentos de avaliação adequados <tt>eval-and</tt> e <tt>eval-or</tt>. Como alternativa, mostre como implementar <tt>and</tt> e <tt>or</tt> como expressões derivadas.</p><p/><p>
+
+
+</p><p><a name="%_thm_4.5" id="%_thm_4.5"/>
+<b>Exercício 4.5.</b> <a name="%_idx_4400" id="%_idx_4400"/><a name="%_idx_4402" id="%_idx_4402"/><a name="%_idx_4404" id="%_idx_4404"/>O Scheme permite uma sintaxe adicional para <tt>cond</tt> cláusulas, <tt>(&lt;<em>test</em>&gt; =&gt; &lt;<em>recipient</em>&gt;)</tt>. Se &lt;<em>test</em>&gt; é avaliado como um valor verdadeiro e, em seguida, &lt;<em>recipient</em>&gt; é avaliado. Seu valor deve ser um procedimento de um argumento; esse procedimento é chamado no valor do &lt;<em>test</em>&gt;, e o resultado é retornado como o valor da expressão <tt>cond</tt>. Por exemplo</p><p>
+
+</p><p/><p><tt>(cond ((assoc 'b '((a 1) (b 2))) =&gt; cadr)<br/>
+      (else false))<br/></tt></p><p/><p>returns 2. Modifique o manuseio de <tt>cond</tt> para que ele suporte essa sintaxe estendida.</p><p/><p>
+
+</p><p><a name="%_thm_4.6" id="%_thm_4.6"/>
+<b>Exercício 4.6.</b> Expressões <a name="%_idx_4406" id="%_idx_4406"/><tt>Let</tt> são expressões derivadas, porque</p><p>
+
+</p><p/><p><tt>(let ((&lt;<em>var<sub>1</sub></em>&gt; &lt;<em>exp<sub>1</sub></em>&gt;) <tt>...</tt> (&lt;<em>var<sub><em>n</em></sub></em>&gt; &lt;<em>exp<sub><em>n</em></sub></em>&gt;))<br/>
+  &lt;<em>body</em>&gt;)<br/></tt></p><p/><p>é equivalente a</p><p>
+
+</p><p/><p><tt>((lambda (&lt;<em>var<sub>1</sub></em>&gt; <tt>...</tt> &lt;<em>var<sub><em>n</em></sub></em>&gt;)<br/>
+   &lt;<em>body</em>&gt;)<br/>
+ &lt;<em>exp<sub>1</sub></em>&gt;<br/>
+ ⋮<br/>
+ &lt;<em>exp<sub><em>n</em></sub></em>&gt;)<br/></tt></p><p/><p>Implementar uma transformação sintática <tt>let-&gt;combination</tt> que reduz a avaliação de expressões <tt>let</tt> para avaliar combinações do tipo mostrado acima e adicione a cláusula apropriada às expressões <tt>eval</tt>para lidar com <tt>let</tt>.</p><p/><p>
+
+</p><p><a name="%_thm_4.7" id="%_thm_4.7"/>
+<b>Exercício 4.7.</b> <a name="%_idx_4408" id="%_idx_4408"/><a name="%_idx_4410" id="%_idx_4410"/><a name="%_idx_4412" id="%_idx_4412"/><tt>Let*</tt> é similar a <tt>let</tt>, exceto que as ligações do <tt>let</tt> variáveis são executadas sequencialmente da esquerda para a direita e cada ligação é feita em um ambiente no qual todas as ligações anteriores são visíveis. Por exemplo</p><p/><p><tt>(let* ((x 3)<br/>
+       (y (+ x 2))<br/>
+       (z (+ x y 5)))<br/>
+  (* x z))<br/></tt></p><p/><p>retorna 39. Explique como uma expressão <tt>let*</tt> pode ser reescrita como um conjunto de expressões <tt>let</tt> e escreva um procedimento <tt>let*-&gt;nested-lets</tt> que realiza essa transformação. Se já implementamos <tt>let</tt> (exercício <a href="#%_thm_4.6">4.6</a>) e queremos estender o avaliador para lidar com <tt>let*</tt>, é suficiente adicionar uma cláusula a <tt>eval</tt> cuja ação é</p><p/><p><tt>(eval (let*-&gt;nested-lets exp) env)<br/></tt></p><p/><p>ou devemos expandir explicitamente <tt>let*</tt> em termos de expressões não derivadas?</p><p/><p>
+
+</p><p><a name="%_thm_4.8" id="%_thm_4.8"/>
+<b>Exercício 4.8.</b> <a name="%_idx_4414" id="%_idx_4414"/><a name="%_idx_4416" id="%_idx_4416"/><a name="%_idx_4418" id="%_idx_4418"/><a name="%_idx_4420" id="%_idx_4420"/>&quot;Nomeado <tt>let</tt>&quot;É uma variante de <tt>let</tt> que possui a forma</p><p/><p><tt>(let &lt;<em>var</em>&gt; &lt;<em>bindings</em>&gt; &lt;<em>body</em>&gt;)<br/></tt></p><p/><p>O &lt;<em>bindings</em>&gt; e &lt;<em>body</em>&gt; são tão comuns <tt>let</tt>, exceto que &lt;<em>var</em>&gt; está ligado dentro de &lt;<em>body</em>&gt; a um procedimento cujo corpo é &lt;<em>body</em>&gt; e cujos parâmetros são as variáveis no &lt;<em>bindings</em>&gt;. Assim, pode-se executar repetidamente o &lt;<em>body</em>&gt; chamando o procedimento chamado &lt;<em>var</em>&gt;. Por exemplo, o procedimento iterativo de Fibonacci (seção <a href="book-Z-H-11.html#%_sec_1.2.2">1.2.2</a>) pode ser reescrito usando o nome <tt>let</tt> do seguinte modo:</p><p/><p><tt><a name="%_idx_4422" id="%_idx_4422"/>(define (fib n)<br/>
+  (let fib-iter ((a 1)<br/>
+                 (b 0)<br/>
+                 (count n))<br/>
+    (if (= count 0)<br/>
+        b<br/>
+        (fib-iter (+ a b) a (- count 1)))))<br/></tt></p><p/><p>Modificar <tt>let-&gt;combination</tt> de exercício <a href="#%_thm_4.6">4.6</a> para também apoiar nomeado <tt>let</tt>???.</p><p/><p>
+
+</p><p><a name="%_thm_4.9" id="%_thm_4.9"/>
+<b>Exercício 4.9.</b> <a name="%_idx_4424" id="%_idx_4424"/><a name="%_idx_4426" id="%_idx_4426"/>Muitas linguagens suportam uma variedade de construções de iteração, como <tt>do</tt>, <tt>for</tt>, <tt>while</tt> e <tt>until</tt>. No Scheme, os processos iterativos podem ser expressos em termos de chamadas de procedimentos comuns; portanto, construções especiais de iteração não fornecem ganho essencial em potência computacional. Por outro lado, essas construções são frequentemente convenientes. Projete algumas construções de iteração, dê exemplos de seu uso e mostre como implementá-las como expressões derivadas.</p><p/><p>
+
+</p><p><a name="%_thm_4.10" id="%_thm_4.10"/>
+<b>Exercício 4.10.</b> <a name="%_idx_4428" id="%_idx_4428"/><a name="%_idx_4430" id="%_idx_4430"/>Usando a abstração de dados, conseguimos escrever um procedimento <tt>eval</tt> independente da sintaxe específica da linguagem a ser avaliado. Para ilustrar isso, projete e implemente uma nova sintaxe para o Scheme modificando os procedimentos nesta seção, sem alterar <tt>eval</tt> ou <tt>apply</tt>.</p><p/><p>
+
+<a name="%_sec_4.1.3" id="%_sec_4.1.3"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_4.1.3">4.1.3 Estruturas de dados do avaliador</a></h3><p>
+
+</p><p>Além de definir a sintaxe externa das expressões, a implementação do avaliador também deve definir as estruturas de dados que o avaliador manipula internamente, como parte da execução de um programa, como a representação de procedimentos e ambientes e a representação de verdadeiro e falso.</p><p>
+
+<a name="%_sec_Temp_541" id="%_sec_Temp_541"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_541">Teste de predicados</a></h4><p>
+
+<a name="%_idx_4432" id="%_idx_4432"/>Para condicionais, aceitamos que algo seja verdadeira que não seja a explícita <tt>false</tt> objeto.</p><p>
+
+</p><p/><p><tt><a name="%_idx_4434" id="%_idx_4434"/>(define (true? x)<br/>
+  (not (eq? x false)))<br/><a name="%_idx_4436" id="%_idx_4436"/>(define (false? x)<br/>
+  (eq? x false))<br/></tt></p><p/><p/><p>
+
+<a name="%_sec_Temp_542" id="%_sec_Temp_542"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_542">Representando procedimentos</a></h4><p>
+
+<a name="%_idx_4438" id="%_idx_4438"/>Para lidar com primitivos, assumimos que temos disponíveis os seguintes procedimentos:</p><p>
+
+</p><p/><ul><li><a name="%_idx_4440" id="%_idx_4440"/><tt>(apply-primitive-procedure &lt;<em>proc</em>&gt; &lt;<em>args</em>&gt;)</tt><br/> aplica o procedimento primitivo fornecido aos valores do argumento na lista &lt;<em>args</em>&gt; e retorna o resultado da aplicação.<p>
+
+</p></li><li><a name="%_idx_4442" id="%_idx_4442"/><tt>(primitive-procedure? &lt;<em>proc</em>&gt;)</tt><br/> testa se &lt;<em>proc</em>&gt; é um procedimento primitivo.</li></ul><p/><p>Esses mecanismos para lidar com primitivas são descritos mais detalhadamente na seção <a href="#%_sec_4.1.4">4.1.4</a>.</p><p>Procedimentos compostos são construídos a partir de parâmetros, corpos de procedimentos e ambientes usando o construtor <tt>make-procedure</tt>:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4444" id="%_idx_4444"/>(define (make-procedure parameters body env)<br/>
+  (list 'procedure parameters body env))<br/><a name="%_idx_4446" id="%_idx_4446"/>(define (compound-procedure? p)<br/>
+  (tagged-list? p 'procedure))<br/><a name="%_idx_4448" id="%_idx_4448"/>(define (procedure-parameters p) (cadr p))<br/><a name="%_idx_4450" id="%_idx_4450"/>(define (procedure-body p) (caddr p))<br/><a name="%_idx_4452" id="%_idx_4452"/>(define (procedure-environment p) (cadddr p))<br/></tt></p><p/><p/><p>
+
+<a name="%_sec_Temp_543" id="%_sec_Temp_543"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_543">Operações em Ambientes</a></h4><p>
+
+
+<a name="%_idx_4454" id="%_idx_4454"/>O avaliador precisa de operações para manipular ambientes. Conforme explicado na seção <a href="book-Z-H-21.html#%_sec_3.2">3.2.</a>, um ambiente é uma sequência de quadros, em que cada quadro é uma tabela de ligações que associa variáveis a seus valores correspondentes. Usamos as seguintes operações para manipular ambientes:</p><p>
+
+</p><p/><ul><a name="%_idx_4456" id="%_idx_4456"/><li><tt>(lookup-variable-value &lt;<em>var</em>&gt; &lt;<em>env</em>&gt;)</tt><br/> retorna o valor que está ligado ao símbolo &lt;<em>var</em>&gt; no ambiente &lt;<em>env</em>&gt; ou sinaliza um erro se a variável não estiver ligada.<p>
+
+</p></li><li><a name="%_idx_4458" id="%_idx_4458"/><tt>(extend-environment &lt;<em>variables</em>&gt; &lt;<em>values</em>&gt; &lt;<em>base-env</em>&gt;)</tt><br/> retorna um novo ambiente, consistindo em um novo quadro no qual os símbolos na lista &lt;<em>variables</em>&gt; são ligados aos elementos correspondentes na lista &lt;<em>values</em>&gt;, em que o ambiente anexo é o ambiente &lt;<em>env-base</em>&gt;.<p>
+
+</p></li><li><a name="%_idx_4460" id="%_idx_4460"/><tt>(define-variable! &lt;<em>var</em>&gt; &lt;<em>value</em>&gt; &lt;<em>env</em>&gt;)</tt><br/> adiciona ao primeiro quadro no ambiente &lt;<em>env</em>&gt; uma nova ligação que associa a variável &lt;<em>var</em>&gt; com o valor &lt;<em>valor</em>&gt;.<p>
+
+</p></li><li><a name="%_idx_4462" id="%_idx_4462"/><tt>(set-variable-value! &lt;<em>var</em>&gt; &lt;<em>value</em>&gt; &lt;<em>env</em>&gt;)</tt><br/> altera a ligação da variável &lt;<em>var</em>&gt; no ambiente &lt;<em>env</em>&gt; para que a variável agora esteja ligada ao valor &lt;<em>value</em>&gt; ou sinaliza um erro se a variável não estiver ligada.</li></ul><p/><p>
+
+<a name="%_idx_4464" id="%_idx_4464"/>Para implementar essas operações, representamos um ambiente como uma lista de quadros. O ambiente fechado de um ambiente é o <tt>cdr</tt> da lista. O ambiente vazio é simplesmente a lista vazia.</p><p>
+
+</p><p/><p><tt><a name="%_idx_4466" id="%_idx_4466"/>(define (enclosing-environment env) (cdr env))<br/><a name="%_idx_4468" id="%_idx_4468"/>(define (first-frame env) (car env))<br/>
+(define the-empty-environment '())<br/></tt></p><p/><p>Cada quadro de um ambiente é representado como um par de listas: uma lista das variáveis ligadas nesse quadro e uma lista dos valores associados.<a name="call_footnote_Temp_544" href="#footnote_Temp_544" id="call_footnote_Temp_544"><sup><small>14</small></sup></a>
+</p><p/><p><tt><a name="%_idx_4470" id="%_idx_4470"/>(define (make-frame variables values)<br/>
+  (cons variables values))<br/><a name="%_idx_4472" id="%_idx_4472"/>(define (frame-variables frame) (car frame))<br/><a name="%_idx_4474" id="%_idx_4474"/>(define (frame-values frame) (cdr frame))<br/><a name="%_idx_4476" id="%_idx_4476"/>(define (add-binding-to-frame! var val frame)<br/>
+  (set-car! frame (cons var (car frame)))<br/>
+  (set-cdr! frame (cons val (cdr frame))))<br/></tt></p><p/><p/><p>Para estender um ambiente por um novo quadro que associa variáveis a valores, criamos um quadro que consiste na lista de variáveis e na lista de valores, e associamos isso ao ambiente. Sinalizamos um erro se o número de variáveis não corresponder ao número de valores.</p><p>
+
+
+</p><p/><p><tt><a name="%_idx_4478" id="%_idx_4478"/>(define (extend-environment vars vals base-env)<br/>
+  (if (= (length vars) (length vals))<br/>
+      (cons (make-frame vars vals) base-env)<br/>
+      (if (&lt; (length vars) (length vals))<br/>
+          (error &quot;Too many arguments supplied&quot; vars vals)<br/>
+          (error &quot;Too few arguments supplied&quot; vars vals))))<br/></tt></p><p/><p/><p>Para procurar uma variável em um ambiente, examinamos a lista de variáveis no primeiro quadro. Se encontrarmos a variável desejada, retornamos o elemento correspondente na lista de valores. Se não encontrarmos a variável no quadro atual, pesquisaremos o ambiente anexo e assim por diante. Se atingirmos o ambiente vazio, sinalizamos um erro de &quot;unbound variable&quot;.</p><p>
+
+
+</p><p/><p><tt><a name="%_idx_4480" id="%_idx_4480"/>(define (lookup-variable-value var env)<br/>
+  (define (env-loop env)<br/>
+    (define (scan vars vals)<br/>
+      (cond ((null? vars)<br/>
+             (env-loop (enclosing-environment env)))<br/>
+            ((eq? var (car vars))<br/>
+             (car vals))<br/>
+            (else (scan (cdr vars) (cdr vals)))))<br/>
+    (if (eq? env the-empty-environment)<br/>
+        (error &quot;Unbound variable&quot; var)<br/>
+        (let ((frame (first-frame env)))<br/>
+          (scan (frame-variables frame)<br/>
+                (frame-values frame)))))<br/>
+  (env-loop env))<br/></tt></p><p/><p/><p>Para definir uma variável para um novo valor em um ambiente especificado, procuramos a variável, assim como em <tt>lookup-variable-value</tt> e altere o valor correspondente quando o encontrarmos.</p><p>
+
+
+</p><p/><p><tt><a name="%_idx_4482" id="%_idx_4482"/>(define (set-variable-value! var val env)<br/>
+  (define (env-loop env)<br/>
+    (define (scan vars vals)<br/>
+      (cond ((null? vars)<br/>
+             (env-loop (enclosing-environment env)))<br/>
+            ((eq? var (car vars))<br/>
+             (set-car! vals val))<br/>
+            (else (scan (cdr vars) (cdr vals)))))<br/>
+    (if (eq? env the-empty-environment)<br/>
+        (error &quot;Unbound variable -- SET!&quot; var)<br/>
+        (let ((frame (first-frame env)))<br/>
+          (scan (frame-variables frame)<br/>
+                (frame-values frame)))))<br/>
+  (env-loop env))<br/></tt></p><p/><p/><p>Para definir uma variável, procuramos no primeiro quadro uma ligação para a variável e alteramos a ligação, se ela existir (assim como em <tt>set-variable-value!</tt>) Se não existir essa ligação, anexamos um ao primeiro quadro.</p><p>
+
+</p><p/><p><tt><a name="%_idx_4484" id="%_idx_4484"/>(define (define-variable! var val env)<br/>
+  (let ((frame (first-frame env)))<br/>
+    (define (scan vars vals)<br/>
+      (cond ((null? vars)<br/>
+             (add-binding-to-frame! var val frame))<br/>
+            ((eq? var (car vars))<br/>
+             (set-car! vals val))<br/>
+            (else (scan (cdr vars) (cdr vals)))))<br/>
+    (scan (frame-variables frame)<br/>
+          (frame-values frame))))<br/></tt></p><p/><p/><p>
+
+<a name="%_idx_4486" id="%_idx_4486"/>O método descrito aqui é apenas uma das muitas maneiras plausíveis de representar ambientes. Como usamos a abstração de dados para isolar o restante do avaliador da escolha detalhada da representação, poderíamos alterar a representação do ambiente, se quiséssemos. (Ver exercício <a href="#%_thm_4.11">4.11</a>). Em um sistema Lisp com qualidade de produção, a velocidade das operações do ambiente do avaliador - especialmente a de pesquisa variável - possui um grande impacto no desempenho do sistema. A representação descrita aqui, apesar de conceitualmente simples, não é eficiente e normalmente não seria usada em um sistema de produção.<a name="call_footnote_Temp_545" href="#footnote_Temp_545" id="call_footnote_Temp_545"><sup><small>15</small></sup></a></p><p>
+
+</p><p><a name="%_thm_4.11" id="%_thm_4.11"/>
+<b>Exercício 4.11.</b> Em vez de representar um quadro como um par de listas, podemos representar um quadro como uma lista de ligações, em que cada ligação é um par nome-valor. Reescreva as operações do ambiente para usar essa representação alternativa.</p><p/><p>
+
+</p><p><a name="%_thm_4.12" id="%_thm_4.12"/>
+<b>Exercício 4.12.</b> Os procedimentos <tt>set-variable-value!</tt>, <tt>define-variable!</tt> e <tt>lookup-variable-value</tt> pode ser expresso em termos de procedimentos mais abstratos para percorrer a estrutura do ambiente. Defina abstrações que capturam os padrões comuns e redefine os três procedimentos em termos dessas abstrações.</p><p/><p>
+
+</p><p><a name="%_thm_4.13" id="%_thm_4.13"/>
+<b>Exercício 4.13.</b> O Scheme permite criar novas ligações para variáveis por meio de <tt>define</tt>, mas não fornece nenhuma maneira de se livrar de ligações. Implementar para o avaliador uma forma especial <tt>make-unbound!</tt> que remove a ligação de um determinado símbolo do ambiente em que a expressão <tt>make-unbound!</tt> é avaliada. Este problema não está completamente especificado. Por exemplo, devemos remover apenas a ligação no primeiro quadro do ambiente? Complete a especificação e justifique as escolhas que fizer.</p><p/><p>
+
+<a name="%_sec_4.1.4" id="%_sec_4.1.4"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_4.1.4">4.1.4 Executando o avaliador como um programa</a></h3><p>
+
+
+<a name="%_idx_4492" id="%_idx_4492"/>Dado o avaliador, temos em nossas mãos uma descrição (expressa em Lisp) do processo pelo qual as expressões Lisp são avaliadas. Uma vantagem de expressar o avaliador como um programa é que podemos executá-lo. Isso nos fornece, executando no Lisp, um modelo de trabalho de como o próprio Lisp avalia expressões. Isso pode servir como uma estrutura para experimentar as regras de avaliação, como faremos mais adiante neste capítulo.</p><p>
+
+<a name="%_idx_4494" id="%_idx_4494"/>Nosso programa avaliador reduz expressões, em última análise, à aplicação de procedimentos primitivos. Portanto, tudo o que precisamos para executar o avaliador é criar um mecanismo que chame o sistema Lisp subjacente para modelar a aplicação de procedimentos primitivos.</p><p>Deve haver uma ligação para cada nome de procedimento primitivo, para que, quando <tt>eval</tt> avalia o operador de uma aplicação de uma primitiva, ele encontrará um objeto para o qual passar <tt>apply</tt>. Montamos assim um <a name="%_idx_4496" id="%_idx_4496"/><a name="%_idx_4498" id="%_idx_4498"/>ambiente global que associa objetos exclusivos aos nomes dos procedimentos primitivos que podem aparecer nas expressões que avaliaremos. O ambiente global também inclui ligações para os símbolos <a name="%_idx_4500" id="%_idx_4500"/><tt>true</tt> e <tt>false</tt>, para que eles possam ser usados como variáveis nas expressões a serem avaliadas.</p><p>
+
+</p><p/><p><tt><a name="%_idx_4502" id="%_idx_4502"/>(define (setup-environment)<br/>
+  (let ((initial-env<br/>
+         (extend-environment (primitive-procedure-names)<br/>
+                             (primitive-procedure-objects)<br/>
+                             the-empty-environment)))<br/>
+    (define-variable! 'true true initial-env)<br/>
+    (define-variable! 'false false initial-env)<br/>
+    initial-env))<br/><a name="%_idx_4504" id="%_idx_4504"/>(define the-global-environment (setup-environment))<br/></tt></p><p/><p/><p>Não importa como representamos os objetos do procedimento primitivo, desde que <tt>apply</tt> pode identificá-los e aplicá-los usando os procedimentos <tt>primitive-procedure?</tt> e <tt>apply-primitive-procedure</tt>. Optamos por representar um procedimento primitivo como uma lista que começa com o símbolo <tt>primitive</tt> e contendo um procedimento no Lisp subjacente que implementa essa primitiva.</p><p>
+
+</p><p/><p><tt><a name="%_idx_4506" id="%_idx_4506"/>(define (primitive-procedure? proc)<br/>
+  (tagged-list? proc 'primitive))<br/><br/><a name="%_idx_4508" id="%_idx_4508"/>(define (primitive-implementation proc) (cadr proc))<br/></tt></p><p/><p/><p>
+
+<tt>Setup-environment</tt> will get the primitive names and implementation
+procedures from a list:<a name="call_footnote_Temp_549" href="#footnote_Temp_549" id="call_footnote_Temp_549"><sup><small>16</small></sup></a></p><p>
+
+</p><p/><p><tt>(define primitive-procedures<br/>
+  (list (list 'car car)<br/>
+        (list 'cdr cdr)<br/>
+        (list 'cons cons)<br/>
+        (list 'null? null?)<br/>
+        &lt;<em>more primitives</em>&gt;<br/>
+        ))<br/><a name="%_idx_4510" id="%_idx_4510"/>(define (primitive-procedure-names)<br/>
+  (map car<br/>
+       primitive-procedures))<br/><br/>
+(define (primitive-procedure-objects)<br/><a name="%_idx_4512" id="%_idx_4512"/>  (map (lambda (proc) (list 'primitive (cadr proc)))<br/>
+       primitive-procedures))<br/></tt></p><p/><p/><p>Para aplicar um procedimento primitivo, simplesmente aplicamos o procedimento de implementação aos argumentos, usando o sistema Lisp subjacente:<a name="call_footnote_Temp_550" href="#footnote_Temp_550" id="call_footnote_Temp_550"><sup><small>17</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_4514" id="%_idx_4514"/>(define (apply-primitive-procedure proc args)<br/>
+  (apply-in-underlying-scheme<br/>
+   (primitive-implementation proc) args))<br/></tt></p><p/><p/><p>
+
+<a name="%_idx_4516" id="%_idx_4516"/><a name="%_idx_4518" id="%_idx_4518"/>Por conveniência na execução do avaliador metacircular, fornecemos uma <em>loop do driver</em> que modela o loop read-eval-print do sistema Lisp subjacente. Ele imprime um <a name="%_idx_4520" id="%_idx_4520"/><em>prompt</em>, lê uma expressão de entrada, avalia essa expressão no ambiente global e imprime o resultado. Precedemos cada resultado impresso por um <em>prompt de saída</em> para distinguir o valor da expressão de outra saída que pode ser impressa.<a name="call_footnote_Temp_551" href="#footnote_Temp_551" id="call_footnote_Temp_551"><sup><small>18</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_4530" id="%_idx_4530"/>(define input-prompt &quot;;;; M-Eval input:&quot;)<br/>
+(define output-prompt &quot;;;; M-Eval value:&quot;)<br/><a name="%_idx_4532" id="%_idx_4532"/>(define (driver-loop)<br/>
+  (prompt-for-input input-prompt)<br/>
+  (let ((input (read)))<br/>
+    (let ((output (eval input the-global-environment)))<br/>
+      (announce-output output-prompt)<br/>
+      (user-print output)))<br/>
+  (driver-loop))<br/><a name="%_idx_4534" id="%_idx_4534"/>(define (prompt-for-input string)<br/>
+  (newline) (newline) (display string) (newline))<br/><br/><a name="%_idx_4536" id="%_idx_4536"/>(define (announce-output string)<br/>
+  (newline) (display string) (newline))<br/></tt></p><p/><p>Utilizamos um procedimento de impressão especial, <tt>user-print</tt>, para evitar a impressão do ambiente como parte de um procedimento composto, que pode ser uma lista muito longa (ou até conter ciclos).</p><p>
+
+</p><p/><p><tt><a name="%_idx_4538" id="%_idx_4538"/>(define (user-print object)<br/>
+  (if (compound-procedure? object)<br/>
+      (display (list 'compound-procedure<br/>
+                     (procedure-parameters object)<br/>
+                     (procedure-body object)<br/>
+                     '&lt;procedure-env&gt;))<br/>
+      (display object)))<br/></tt></p><p/><p/><p>Agora, tudo o que precisamos fazer para executar o avaliador é inicializar o ambiente global e iniciar o loop do driver. Aqui está uma amostra de interação:</p><p>
+
+</p><p/><p><tt>(define the-global-environment (setup-environment))<br/>
+(driver-loop)<br/><i>;;; M-Eval input:</i><br/>
+(define (append x y)<br/>
+  (if (null? x)<br/>
+      y<br/>
+      (cons (car x)<br/>
+            (append (cdr x) y))))<br/><i>;;; M-Eval value:</i><br/><i>ok</i><br/><i>;;; M-Eval input:</i><br/>
+(append '(a b c) '(d e f))<br/><i>;;; M-Eval value:</i><br/><i>(a b c d e f)</i><br/></tt></p><p/><p/><p>
+
+</p><p><a name="%_thm_4.14" id="%_thm_4.14"/>
+<b>Exercício 4.14.</b> Eva Lu Ator e Louis Reasoner estão fazendo experimentos com o avaliador metacircular. Eva digita na definição de <tt>map</tt>, e executa alguns programas de teste que o utilizam. Eles funcionam bem. Louis, por outro lado, instalou a versão do sistema do <tt>map</tt> como uma primitiva para o avaliador metacircular. Quando ele tenta, tudo dá muito errado. Explique por que Louis <tt>map</tt> falha, apesar do trabalho de Eva.</p><p/><p>
+
+<a name="%_sec_4.1.5" id="%_sec_4.1.5"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_4.1.5">4.1.5 Dados como programas</a></h3><p>
+
+
+<a name="%_idx_4540" id="%_idx_4540"/><a name="%_idx_4542" id="%_idx_4542"/>Ao pensar em um programa Lisp que avalia expressões de Lisp, uma analogia pode ser útil. Uma visão operacional do significado de um programa é que um <a name="%_idx_4544" id="%_idx_4544"/>programa é uma descrição de uma máquina abstrata (talvez infinitamente grande). Por exemplo, considere o programa familiar para calcular fatoriais:</p><p>
+
+</p><p/><p><tt>(define (factorial n)<br/>
+  (if (= n 1)<br/>
+      1<br/>
+      (* (factorial (- n 1)) n)))<br/></tt></p><p/><p>
+<a name="%_idx_4546" id="%_idx_4546"/>Podemos considerar esse programa como a descrição de uma máquina que contém peças que diminuem, multiplicam e testam a igualdade, com uma chave de duas posições e outra máquina fatorial. (A máquina fatorial é infinita porque contém outra máquina fatorial dentro dela). Figura <a href="#%_fig_4.2">4.2</a> é um diagrama de fluxo para a máquina fatorial, mostrando como as peças são conectadas.</p><p>
+
+<a name="%_fig_4.2" id="%_fig_4.2"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch4-Z-G-2.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 4.2:</b> O programa fatorial, visto como uma máquina abstrata.</div></caption><tr><td>
+
+</td></tr></table></div><p>              </p><p>
+
+
+<a name="%_idx_4548" id="%_idx_4548"/>De maneira semelhante, podemos considerar o avaliador como uma máquina muito especial que usa como entrada uma descrição de uma máquina. Dada essa entrada, o avaliador se configura para emular a máquina descrita. Por exemplo, se alimentarmos nosso avaliador, a definição de <tt>factorial</tt>, como mostrado na figura <a href="#%_fig_4.3">4.3.</a>, o avaliador poderá calcular os fatoriais.</p><p>
+
+<a name="%_fig_4.3" id="%_fig_4.3"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch4-Z-G-3.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 4.3:</b> O avaliador emulando uma máquina fatorial.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>
+
+<a name="%_idx_4550" id="%_idx_4550"/><a name="%_idx_4552" id="%_idx_4552"/>Nessa perspectiva, nosso avaliador é visto como uma <em>máquina universal</em>. Imita outras máquinas quando estas são descritas como programas Lisp.<a name="call_footnote_Temp_553" href="#footnote_Temp_553" id="call_footnote_Temp_553"><sup><small>19</small></sup></a> Isso é impressionante. Tente imaginar um avaliador análogo para circuitos elétricos. Este seria um circuito que recebe como entrada um sinal que codifica os planos para algum outro circuito, como um filtro. Dada essa entrada, o avaliador de circuito se comportaria como um filtro com a mesma descrição. Tal circuito elétrico universal é quase inimaginavelmente complexo. É notável que o avaliador do programa seja um programa bastante simples.<a name="call_footnote_Temp_554" href="#footnote_Temp_554" id="call_footnote_Temp_554"><sup><small>20</small></sup></a></p><p>Outro aspecto marcante do avaliador é que ele atua como uma ponte entre os objetos de dados que são manipulados por nossa linguagem de programação e a própria linguagem de programação. Imagine que o programa avaliador (implementado no Lisp) esteja em execução e que um usuário digitaria expressões no avaliador e observando os resultados. Da perspectiva do usuário, uma expressão de entrada como <tt>(* x x)</tt> é uma expressão na linguagem de programação que o avaliador deve executar. Da perspectiva do avaliador, no entanto, a expressão é simplesmente uma lista (nesse caso, uma lista de três símbolos: <tt>*</tt>, <tt>x</tt> e <tt>x</tt>) que deve ser manipulado de acordo com um conjunto de regras bem definido.</p><p>O fato de os programas do usuário serem os dados do avaliador não precisa ser uma fonte de confusão. De fato, às vezes é conveniente ignorar essa distinção e dar ao usuário a capacidade de avaliar explicitamente um objeto de dados como uma expressão Lisp, criando <tt>eval</tt> disponível para uso em programas. Muitos dialetos Lisp fornecem um procedimento <a name="%_idx_4572" id="%_idx_4572"/><a name="%_idx_4574" id="%_idx_4574"/>primitivo <tt>eval</tt> que usa como argumento uma expressão e um ambiente e avalia a expressão relativa ao ambiente.<a name="call_footnote_Temp_555" href="#footnote_Temp_555" id="call_footnote_Temp_555"><sup><small>21</small></sup></a> Portanto,</p><p>
+
+</p><p/><p><tt>(eval '(* 5 5) user-initial-environment)<br/></tt></p><p/><p>e</p><p/><p><tt>(eval (cons '* (list 5 5)) user-initial-environment)<br/></tt></p><p/><p>ambos retornarão 25.<a name="call_footnote_Temp_556" href="#footnote_Temp_556" id="call_footnote_Temp_556"><sup><small>22</small></sup></a></p><p>
+
+
+</p><p><a name="%_thm_4.15" id="%_thm_4.15"/>
+<b>Exercício 4.15.</b> <a name="%_idx_4588" id="%_idx_4588"/>Dado um procedimento de um argumento <tt>p</tt> e um objeto <tt>a</tt>, <tt>p</tt> é dito &quot;parar&quot; em <tt>a</tt> se avaliasse a expressão <tt>(p a)</tt> retorna um valor (em vez de terminar com uma mensagem de erro ou em execução para sempre). Mostre que é impossível escrever um procedimento <tt>halts?</tt> que determina corretamente se <tt>p</tt> para <tt>a</tt> para qualquer procedimento <tt>p</tt> e objeto <tt>a</tt>. Use o seguinte raciocínio: Se você teve esse procedimento <tt>halts?</tt>, você pode implementar o seguinte programa:</p><p/><p><tt>(define (run-forever) (run-forever))<br/><br/>
+(define (try p)<br/>
+  (if (halts? p p)<br/>
+      (run-forever)<br/>
+      'halted))<br/></tt></p><p/><p>Agora considere avaliar a expressão <tt>(try try)</tt> e mostre que qualquer resultado possível (parar ou correr para sempre) viola o comportamento pretendido <tt>halts?</tt>.<a name="call_footnote_Temp_558" href="#footnote_Temp_558" id="call_footnote_Temp_558"><sup><small>23</small></sup></a>
+
+</p><p/><p>
+
+<a name="%_sec_4.1.6" id="%_sec_4.1.6"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_4.1.6">4.1.6 Definições internas</a></h3><p>
+
+
+<a name="%_idx_4598" id="%_idx_4598"/><a name="%_idx_4600" id="%_idx_4600"/>
+<a name="%_idx_4602" id="%_idx_4602"/>Nosso modelo de avaliação do ambiente e nosso avaliador metacircular executam as definições em sequência, estendendo o ambiente a uma definição por vez. Isso é particularmente conveniente para o desenvolvimento de programas interativos, nos quais o programador precisa misturar livremente a aplicação de procedimentos com a definição de novos procedimentos. No entanto, se pensarmos cuidadosamente nas definições internas usadas para implementar a estrutura de blocos (introduzida na seção <a href="book-Z-H-10.html#%_sec_1.1.8">1.1.8</a>), descobriremos que a extensão nome-a-nome do ambiente pode não ser a melhor maneira de definir variáveis locais.</p><p>Considere um procedimento com definições internas, como</p><p>
+
+</p><p/><p><tt>(define (f x)<br/>
+  (define (even? n)<br/>
+    (if (= n 0)<br/>
+        true<br/>
+        (odd? (- n 1))))<br/>
+  (define (odd? n)<br/>
+    (if (= n 0)<br/>
+        false<br/>
+        (even? (- n 1))))<br/>
+  &lt;<em>rest of body of <tt>f</tt></em>&gt;)<br/></tt></p><p/><p>Nossa intenção aqui é que o nome <tt>odd?</tt> no corpo do procedimento <tt>even?</tt> deve se referir ao procedimento <tt>odd?</tt> que é definido depois <tt>even?</tt>. O escopo do nome <tt>odd?</tt> é todo o corpo de <tt>f</tt>, não apenas a parte do corpo de <tt>f</tt> começando no ponto em que o <tt>define</tt> para <tt>odd?</tt> ocorre. De fato, quando consideramos que <tt>odd?</tt> é definido em termos de <tt>even?</tt> - de modo que <tt>even?</tt> e <tt>odd?</tt> são procedimentos mutuamente recursivos - vemos que a única interpretação satisfatória dos dois <tt>define</tt> s é considerá-los como se os nomes <tt>even?</tt> e <tt>odd?</tt> sejam adicionados ao ambiente simultaneamente. De maneira mais geral, na estrutura de blocos, o escopo de um nome local é todo o corpo do procedimento no qual o <tt>define</tt> é avaliada.</p><p>Por acaso, nosso interpretador avaliará as chamadas para <tt>f</tt> corretamente, mas por um motivo “acidental”: Como as definições dos procedimentos internos são as primeiras, nenhuma chamada para esses procedimentos será avaliada até que todos eles tenham sido definidos. Consequentemente, <tt>odd?</tt> terá sido definido pelo tempo <tt>even?</tt> é executado. De fato, nosso mecanismo de avaliação sequencial fornecerá o mesmo resultado que um mecanismo que implemente diretamente a definição simultânea para qualquer procedimento no qual <a name="%_idx_4604" id="%_idx_4604"/>as definições internas são as primeiras em um corpo e a avaliação das expressões de valor para as variáveis definidas não usa realmente nenhuma das variáveis definidas. (Para um exemplo de um procedimento que não obedece a essas restrições, para que a definição sequencial não seja equivalente à definição simultânea, consulte o exercício <a href="#%_thm_4.19">4.19</a>).<a name="call_footnote_Temp_559" href="#footnote_Temp_559" id="call_footnote_Temp_559"><sup><small>24</small></sup></a></p><p>No entanto, existe uma maneira simples de tratar definições para que nomes definidos internamente tenham escopo verdadeiramente concorrente - basta criar todas as variáveis locais que estarão no ambiente atual antes de avaliar qualquer uma das expressões de valor. Uma maneira de fazer isso é através de uma transformação de sintaxe em expressões <tt>lambda</tt>. Antes de avaliar o corpo de uma expressão <tt>lambda</tt>, <a name="%_idx_4606" id="%_idx_4606"/><a name="%_idx_4608" id="%_idx_4608"/>“analisamos” e eliminamos todas as definições internas do corpo. As variáveis definidas internamente serão criadas com um <tt>let</tt> e, em seguida, configuradas para seus valores por atribuição. Por exemplo, o procedimento</p><p>
+
+</p><p/><p><tt>(lambda &lt;<em>vars</em>&gt;<br/>
+  (define u &lt;<em>e1</em>&gt;)<br/>
+  (define v &lt;<em>e2</em>&gt;)<br/>
+  &lt;<em>e3</em>&gt;)<br/></tt></p><p/><p>seria transformado em</p><p>
+
+</p><p/><p><tt>(lambda &lt;<em>vars</em>&gt;<br/>
+  (let ((u '*unassigned*)<br/>
+        (v '*unassigned*))<br/>
+    (set! u &lt;<em>e1</em>&gt;)<br/>
+    (set! v &lt;<em>e2</em>&gt;)<br/>
+    &lt;<em>e3</em>&gt;))<br/></tt></p><p/><p>Onde <tt>*unassigned*</tt> é um símbolo especial que faz com que procurar uma variável sinalize um erro se for feita uma tentativa de usar o valor da variável ainda não atribuída.</p><p>Uma estratégia alternativa para verificar definições internas é mostrada no exercício <a href="#%_thm_4.18">4.18</a>. Diferente da transformação mostrada acima, isso impõe a restrição de que os valores das variáveis definidas possam ser avaliados sem o uso de nenhum dos valores das variáveis.<a name="call_footnote_Temp_560" href="#footnote_Temp_560" id="call_footnote_Temp_560"><sup><small>25</small></sup></a></p><p>
+
+</p><p><a name="%_thm_4.16" id="%_thm_4.16"/>
+<b>Exercício 4.16.</b> Neste exercício, implementamos o método descrito para interpretar definições internas. Assumimos que o avaliador suporta <tt>let</tt> (veja exercício <a href="#%_thm_4.6">4.6</a>)</p><p>
+
+<a name="%_idx_4612" id="%_idx_4612"/>a. Mude <tt>lookup-variable-value</tt> (seção <a href="#%_sec_4.1.3">4.1.3</a>) para sinalizar um erro se o valor encontrado for o símbolo <tt>*unassigned*</tt>.</p><p>
+
+<a name="%_idx_4614" id="%_idx_4614"/>b. Escreva um procedimento <tt>scan-out-defines</tt> que pega um corpo de procedimento e retorna um corpo equivalente que não possui definições internas, fazendo a transformação descrita acima.</p><p>c. Instale <tt>scan-out-defines</tt> no interpretador, seja em <tt>make-procedure</tt> ou em <tt>procedure-body</tt> (veja a seção <a href="#%_sec_4.1.3">4.1.3</a>) Qual lugar é melhor? Por quê?</p><p/><p>
+
+</p><p><a name="%_thm_4.17" id="%_thm_4.17"/>
+<b>Exercício 4.17.</b> Desenhe diagramas do ambiente em vigor ao avaliar a expressão &lt;<em>e3</em>&gt; no procedimento no texto, comparando como isso será estruturado quando as definições forem interpretadas sequencialmente e como será estruturado se as definições forem varridas conforme descrito. Por que há um quadro extra no programa transformado? Explique por que essa diferença na estrutura do ambiente nunca pode fazer diferença no comportamento de um programa correto. Crie uma maneira de fazer com que o interpretador implemente a regra de escopo &quot;concorrente&quot; para definições internas sem construir o quadro extra.</p><p/><p>
+
+</p><p><a name="%_thm_4.18" id="%_thm_4.18"/>
+<b>Exercício 4.18.</b> Considere uma estratégia alternativa para varrer definições que traduza o exemplo no texto para</p><p/><p><tt>(lambda &lt;<em>vars</em>&gt;<br/>
+  (let ((u '*unassigned*)<br/>
+        (v '*unassigned*))<br/>
+    (let ((a &lt;<em>e1</em>&gt;)<br/>
+          (b &lt;<em>e2</em>&gt;))<br/>
+      (set! u a)<br/>
+      (set! v b))<br/>
+    &lt;<em>e3</em>&gt;))<br/></tt></p><p/><p>Aqui <tt>a</tt> e <tt>b</tt> devem representar novos nomes de variáveis, criados pelo interpretador, que não aparecem no programa do usuário. Considere o procedimento <tt>solve</tt> da seção <a href="book-Z-H-24.html#%_sec_3.5.4">3.5.4</a>:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4616" id="%_idx_4616"/>(define (solve f y0 dt)<br/>
+  (define y (integral (delay dy) y0 dt))<br/>
+  (define dy (stream-map f y))<br/>
+  y)<br/></tt></p><p/><p>Este procedimento funcionará se as definições internas forem varridas, conforme mostrado neste exercício? E se eles forem varridos conforme mostrado no texto? Explique.</p><p/><p>
+
+</p><p><a name="%_thm_4.19" id="%_thm_4.19"/>
+<b>Exercício 4.19.</b> Ben Bitdiddle, Alyssa P. Hacker e Eva Lu Ator estão discutindo sobre o resultado desejado da avaliação da expressão</p><p>
+
+</p><p/><p><tt>(let ((a 1))<br/>
+  (define (f x)<br/>
+    (define b (+ a x))<br/>
+    (define a 5)<br/>
+    (+ a b))<br/>
+  (f 10))<br/></tt></p><p/><p>Ben afirma que o resultado deve ser obtido usando a regra sequencial para <tt>define</tt>: <tt>b</tt> é definido como 11, então <tt>a</tt> é definido como 5, então o resultado é 16. A Alyssa contesta que a recursão mútua requer a regra de escopo concorrente para definições de procedimentos internos e que não é razoável tratar nomes de procedimentos de maneira diferente de outros nomes. Assim, ela defende o mecanismo implementado no exercício <a href="#%_thm_4.16">4.16</a>. Isso levaria a <tt>a</tt> sendo não atribuído no momento em que o valor para <tt>b</tt> deve ser calculado. Portanto, na visão de Alyssa, o procedimento deve produzir um erro. Eva tem uma terceira opinião. Ela diz que se as definições de <tt>a</tt> e <tt>b</tt> são realmente feitos para serem concorrentes, então o valor 5 para <tt>a</tt> deve ser usado na avaliação <tt>b</tt>. Portanto, na opinião de Eva <tt>a</tt> deve ser 5, <tt>b</tt> deve ser 15 e o resultado deve ser 20. Quais (se houver) desses pontos de vista você apoia? Você pode criar uma maneira de implementar definições internas para que elas se comportem como Eva prefere?<a name="call_footnote_Temp_565" href="#footnote_Temp_565" id="call_footnote_Temp_565"><sup><small>26</small></sup></a>
+
+</p><p/><p>
+
+</p><p><a name="%_thm_4.20" id="%_thm_4.20"/>
+<b>Exercício 4.20.</b> <a name="%_idx_4618" id="%_idx_4618"/><a name="%_idx_4620" id="%_idx_4620"/>Como as definições internas parecem sequenciais, mas na verdade são simultâneas, algumas pessoas preferem evitá-las completamente e usam a forma especial <tt>letrec</tt> em vez de. <tt>Letrec</tt> parece <tt>let</tt>, portanto, não surpreende que as variáveis ligadas sejam ligadas simultaneamente e tenham o mesmo escopo uma da outra. O procedimento de amostra <tt>f</tt> acima pode ser escrito sem definições internas, mas com exatamente o mesmo significado, como</p><p>
+
+</p><p/><p><tt>(define (f x)<br/>
+  (letrec ((even?<br/>
+            (lambda (n)<br/>
+              (if (= n 0)<br/>
+                  true<br/>
+                  (odd? (- n 1)))))<br/>
+           (odd?<br/>
+            (lambda (n)<br/>
+              (if (= n 0)<br/>
+                  false<br/>
+                  (even? (- n 1))))))<br/>
+    &lt;<em>rest of body of <tt>f</tt></em>&gt;))<br/></tt></p><p/><p>
+Expressões <tt>letrec</tt>, que possuem a forma</p><p/><p><tt>(letrec ((&lt;<em>var<sub>1</sub></em>&gt; &lt;<em>exp<sub>1</sub></em>&gt;) <tt>...</tt> (&lt;<em>var<sub><em>n</em></sub></em>&gt; &lt;<em>exp<sub><em>n</em></sub></em>&gt;))<br/>
+  &lt;<em>body</em>&gt;)<br/></tt></p><p/><p>são uma variação de <tt>let</tt> em que as expressões &lt;<em>exp<sub><em>k</em></sub></em>&gt; que fornecem os valores iniciais para as variáveis &lt;<em>var<sub><em>k</em></sub></em>&gt; são avaliados em um ambiente que inclui todos os <tt>letrec</tt> ligações. Isso permite a recursão nas ligações, como a recursão mútua de <tt>even?</tt> e <tt>odd?</tt> no exemplo acima, ou <a name="%_idx_4622" id="%_idx_4622"/>a avaliação de 10 fatorial com</p><p>
+
+</p><p/><p><tt>(letrec ((fact<br/>
+          (lambda (n)<br/>
+            (if (= n 1)<br/>
+                1<br/>
+                (* n (fact (- n 1)))))))<br/>
+  (fact 10))<br/></tt></p><p/><p/><p>
+
+</p><p/><p>a. Implemente <tt>letrec</tt> como uma expressão derivada, transformando uma expressão <tt>letrec</tt> em uma expressão <tt>let</tt>, como mostrado no texto acima ou no exercício <a href="#%_thm_4.18">4.18</a>. Ou seja, as variáveis <tt>letrec</tt> devem ser criadas com um <tt>let</tt> e depois receber seus valores com <tt>set!</tt>.</p><p>
+
+</p><p/><p>b. Louis Reasoner está confuso com toda essa confusão sobre definições internas. Do jeito que ele vê, se você não gosta de usar <tt>define</tt> dentro de um procedimento, você pode apenas usar <tt>let</tt>. Ilustre o que está falho em seu raciocínio, desenhando um diagrama de ambiente que mostra o ambiente em que o &lt;<em>resto do corpo de <tt>f</tt></em>&gt; é avaliado durante a avaliação da expressão <tt>(f 5)</tt> com <tt>f</tt> definido como neste exercício. Desenhe um diagrama de ambiente para a mesma avaliação, mas com <tt>let</tt> no lugar de <tt>letrec</tt> na definição de <tt>f</tt>.</p><p/><p>
+
+</p><p><a name="%_thm_4.21" id="%_thm_4.21"/>
+<b>Exercício 4.21.</b> <a name="%_idx_4624" id="%_idx_4624"/>Surpreendentemente, a intuição de Louis em exercício <a href="#%_thm_4.20">4.20</a> está correta. É realmente possível especificar procedimentos recursivos sem usar <tt>letrec</tt> (ou mesmo <tt>define</tt>), embora o método para fazer isso seja muito mais sutil do que Louis imaginava. A expressão a seguir calcula 10 fatorial aplicando um <a name="%_idx_4626" id="%_idx_4626"/>procedimento fatorial recursivo :<a name="call_footnote_Temp_568" href="#footnote_Temp_568" id="call_footnote_Temp_568"><sup><small>27</small></sup></a>
+</p><p/><p><tt>((lambda (n)<br/>
+   ((lambda (fact)<br/>
+      (fact fact n))<br/>
+    (lambda (ft k)<br/>
+      (if (= k 1)<br/>
+          1<br/>
+          (* k (ft ft (- k 1)))))))<br/>
+ 10)<br/></tt></p><p/><p/><p>
+
+</p><p/><p>a. Verifique (avaliando a expressão) que isso realmente calcula fatoriais. Crie uma expressão análoga para calcular números de Fibonacci.</p><p>
+
+</p><p/><p>b. Considere o seguinte procedimento, que inclui definições internas mutuamente recursivas:</p><p/><p><tt>(define (f x)<br/>
+  (define (even? n)<br/>
+    (if (= n 0)<br/>
+        true<br/>
+        (odd? (- n 1))))<br/>
+  (define (odd? n)<br/>
+    (if (= n 0)<br/>
+        false<br/>
+        (even? (- n 1))))<br/>
+  (even? x))<br/></tt></p><p/><p>Preencha as expressões ausentes para concluir uma definição alternativa de <tt>f</tt>, que não usa definições internas nem <tt>letrec</tt>:</p><p/><p><tt>(define (f x)<br/>
+  ((lambda (even? odd?)<br/>
+     (even? even? odd? x))<br/>
+   (lambda (ev? od? n)<br/>
+     (if (= n 0) true (od? &lt;??&gt; &lt;??&gt; &lt;??&gt;)))<br/>
+   (lambda (ev? od? n)<br/>
+     (if (= n 0) false (ev? &lt;??&gt; &lt;??&gt; &lt;??&gt;)))))<br/></tt></p><p/><p>
+</p><p/><p>
+
+<a name="%_sec_4.1.7" id="%_sec_4.1.7"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_4.1.7">4.1.7 Separando análise sintática da execução</a></h3><p>
+
+
+<a name="%_idx_4634" id="%_idx_4634"/><a name="%_idx_4636" id="%_idx_4636"/><a name="%_idx_4638" id="%_idx_4638"/>
+<a name="%_idx_4640" id="%_idx_4640"/><a name="%_idx_4642" id="%_idx_4642"/>O avaliador implementado acima é simples, mas é muito ineficiente, porque a análise sintática das expressões é intercalada com sua execução. Assim, se um programa é executado várias vezes, sua sintaxe é analisada várias vezes. Considere, por exemplo, avaliar <tt>(factorial 4)</tt> usando a seguinte definição de <tt>factorial</tt>:</p><p>
+
+</p><p/><p><tt>(define (factorial n)<br/>
+  (if (= n 1)<br/>
+      1<br/>
+      (* (factorial (- n 1)) n)))<br/></tt></p><p/><p/><p>Cada vez <tt>factorial</tt> é chamado, o avaliador deve determinar que o corpo é uma expressão <tt>if</tt> e extraia o predicado. Somente então ele poderá avaliar o predicado e despachar seu valor. Cada vez que avalia a expressão <tt>(* (factorial (- n 1)) n)</tt> ou as subexpressões <tt>(factorial (- n 1))</tt> e <tt>(- n 1)</tt>, o avaliador deve executar a análise de caso em <tt>eval</tt> para determinar que a expressão é uma aplicação e deve extrair seu operador e operandos. Essa análise é cara???. Realizá-lo repetidamente é um desperdício.</p><p>Podemos transformar o avaliador em significativamente mais eficiente, organizando para que a análise sintática seja realizada apenas uma vez.<a name="call_footnote_Temp_569" href="#footnote_Temp_569" id="call_footnote_Temp_569"><sup><small>28.</small></sup></a> Dividimos <tt>eval</tt>, que leva uma expressão e um ambiente, em duas partes. O procedimento <tt>analyze</tt> pega apenas a expressão. Ele realiza a análise sintática e retorna um novo procedimento, o <a name="%_idx_4652" id="%_idx_4652"/><em>procedimento de execução</em>, que encapsula o trabalho a ser executado na execução da expressão analisada. O procedimento de execução usa um ambiente como argumento e conclui a avaliação. Isso economiza trabalho porque <tt>analyze</tt> será chamado apenas uma vez em uma expressão, enquanto o procedimento de execução pode ser chamado várias vezes.</p><p>Com a separação em análise e execução, <tt>eval</tt> agora se torna</p><p>
+
+</p><p/><p><tt><a name="%_idx_4654" id="%_idx_4654"/>(define (eval exp env)<br/>
+  ((analyze exp) env))<br/></tt></p><p/><p/><p>O resultado da chamada <tt>analyze</tt> é o procedimento de execução a ser aplicado ao ambiente. O procedimento <tt>analyze</tt> é a mesma análise de caso realizada pelo original <tt>eval</tt> da seção <a href="#%_sec_4.1.1">4.1.1</a>, exceto que os procedimentos para os quais enviamos executam apenas análise, não avaliação completa:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4656" id="%_idx_4656"/>(define (analyze exp)<br/>
+  (cond ((self-evaluating? exp) <br/>
+         (analyze-self-evaluating exp))<br/>
+        ((quoted? exp) (analyze-quoted exp))<br/>
+        ((variable? exp) (analyze-variable exp))<br/>
+        ((assignment? exp) (analyze-assignment exp))<br/>
+        ((definition? exp) (analyze-definition exp))<br/>
+        ((if? exp) (analyze-if exp))<br/>
+        ((lambda? exp) (analyze-lambda exp))<br/>
+        ((begin? exp) (analyze-sequence (begin-actions exp)))<br/>
+        ((cond? exp) (analyze (cond-&gt;if exp)))<br/>
+        ((application? exp) (analyze-application exp))<br/>
+        (else<br/>
+         (error &quot;Unknown expression type -- ANALYZE&quot; exp))))<br/></tt></p><p/><p/><p>Aqui está o procedimento mais simples de análise sintática, que lida com expressões de autoavaliação. Ele retorna um procedimento de execução que ignora o argumento do ambiente e apenas retorna a expressão:</p><p>
+
+<a name="%_idx_4658" id="%_idx_4658"/></p><p/><p><tt>(define (analyze-self-evaluating exp)<br/>
+  (lambda (env) exp))<br/></tt></p><p/><p/><p>Para uma expressão citada, podemos obter um pouco de eficiência extraindo o texto da citação apenas uma vez, na fase de análise, e não na fase de execução.</p><p>
+
+</p><p/><p><tt>(define (analyze-quoted exp)<br/>
+  (let ((qval (text-of-quotation exp)))<br/>
+    (lambda (env) qval)))<br/></tt></p><p/><p/><p>A busca de um valor variável ainda deve ser feita na fase de execução, pois isso depende do conhecimento do ambiente.<a name="call_footnote_Temp_570" href="#footnote_Temp_570" id="call_footnote_Temp_570"><sup><small>29</small></sup></a></p><p>
+
+</p><p/><p><tt>(define (analyze-variable exp)<br/>
+  (lambda (env) (lookup-variable-value exp env)))<br/></tt></p><p/><p/><p>
+
+<tt>Analyze-assignment</tt> também deve adiar a configuração da variável até a execução, quando o ambiente foi fornecido. No entanto, o fato da expressão <tt>assignment-value</tt> poder ser analisada (recursivamente) durante a análise é um grande ganho em eficiência, porque a expressão <tt>assignment-value</tt> agora será analisada apenas uma vez. O mesmo vale para definições.</p><p>
+
+</p><p/><p><tt>(define (analyze-assignment exp)<br/>
+  (let ((var (assignment-variable exp))<br/>
+        (vproc (analyze (assignment-value exp))))<br/>
+    (lambda (env)<br/>
+      (set-variable-value! var (vproc env) env)<br/>
+      'ok)))<br/>
+(define (analyze-definition exp)<br/>
+  (let ((var (definition-variable exp))<br/>
+        (vproc (analyze (definition-value exp))))<br/>
+    (lambda (env)<br/>
+      (define-variable! var (vproc env) env)<br/>
+      'ok)))<br/></tt></p><p/><p/><p>Para expressões <tt>if</tt>, extraímos e analisamos o predicado, consequente e alternativo no momento da análise.</p><p>
+
+</p><p/><p><tt>(define (analyze-if exp)<br/>
+  (let ((pproc (analyze (if-predicate exp)))<br/>
+        (cproc (analyze (if-consequent exp)))<br/>
+        (aproc (analyze (if-alternative exp))))<br/>
+    (lambda (env)<br/>
+      (if (true? (pproc env))<br/>
+          (cproc env)<br/>
+          (aproc env)))))<br/></tt></p><p/><p/><p>Analisando a expressão <tt>lambda</tt> também alcança um grande ganho em eficiência: analisamos o corpo <tt>lambda</tt> apenas uma vez, apesar de procedimentos resultantes da avaliação do <tt>lambda</tt> pode ser aplicado várias vezes.</p><p>
+
+</p><p/><p><tt>(define (analyze-lambda exp)<br/>
+  (let ((vars (lambda-parameters exp))<br/>
+        (bproc (analyze-sequence (lambda-body exp))))<br/>
+    (lambda (env) (make-procedure vars bproc env))))<br/></tt></p><p/><p/><p>Análise de uma sequência de expressões (como em um <tt>begin</tt> ou o corpo de uma expressão <tt>lambda</tt>) está mais envolvida.<a name="call_footnote_Temp_571" href="#footnote_Temp_571" id="call_footnote_Temp_571"><sup><small>30</small></sup></a> Cada expressão na sequência é analisada, produzindo um procedimento de execução. Esses procedimentos de execução são combinados para produzir um procedimento de execução que usa um ambiente como argumento e chama sequencialmente cada procedimento de execução individual com o ambiente como argumento.</p><p>
+
+</p><p/><p><tt>(define (analyze-sequence exps)<br/>
+  (define (sequentially proc1 proc2)<br/>
+    (lambda (env) (proc1 env) (proc2 env)))<br/>
+  (define (loop first-proc rest-procs)<br/>
+    (if (null? rest-procs)<br/>
+        first-proc<br/>
+        (loop (sequentially first-proc (car rest-procs))<br/>
+              (cdr rest-procs))))<br/>
+  (let ((procs (map analyze exps)))<br/>
+    (if (null? procs)<br/>
+        (error &quot;Empty sequence -- ANALYZE&quot;))<br/>
+    (loop (car procs) (cdr procs))))<br/></tt></p><p/><p/><p>Para analisar uma aplicação, analisamos o operador e os operandos e construímos um procedimento de execução que chama o procedimento de execução do operador (para obter o procedimento real a ser aplicado) e os procedimentos de execução do operando (para obter os argumentos reais). Passamos então para <tt>execute-application</tt>, que é o análogo de <tt>apply</tt> na seção <a href="#%_sec_4.1.1">4.1.1</a>. <tt>Execute-application</tt> é diferente de <tt>apply</tt> em que o corpo do procedimento para um procedimento composto já foi analisado, portanto não há necessidade de fazer análises adicionais. Em vez disso, apenas chamamos o procedimento de execução do corpo no ambiente estendido.</p><p/><p><tt>(define (analyze-application exp)<br/>
+  (let ((fproc (analyze (operator exp)))<br/>
+        (aprocs (map analyze (operands exp))))<br/>
+    (lambda (env)<br/>
+      (execute-application (fproc env)<br/>
+                           (map (lambda (aproc) (aproc env))<br/>
+                                aprocs)))))<br/><a name="%_idx_4660" id="%_idx_4660"/>(define (execute-application proc args)<br/>
+  (cond ((primitive-procedure? proc)<br/>
+         (apply-primitive-procedure proc args))<br/>
+        ((compound-procedure? proc)<br/>
+         ((procedure-body proc)<br/>
+          (extend-environment (procedure-parameters proc)<br/>
+                              args<br/>
+                              (procedure-environment proc))))<br/>
+        (else<br/>
+         (error<br/>
+          &quot;Unknown procedure type -- EXECUTE-APPLICATION&quot;<br/>
+          proc))))<br/></tt></p><p/><p/><p>Nosso novo avaliador usa as mesmas estruturas de dados, procedimentos de sintaxe e procedimentos de suporte em tempo de execução das seções <a href="#%_sec_4.1.2">4.1.2</a>, <a href="#%_sec_4.1.3">4.1.3</a> e <a href="#%_sec_4.1.4">4.1.4</a>.</p><p>
+
+</p><p><a name="%_thm_4.22" id="%_thm_4.22"/>
+<b>Exercício 4.22.</b> <a name="%_idx_4662" id="%_idx_4662"/>Estenda o avaliador nesta seção para apoiar a forma especial <tt>let</tt>. (Ver exercício <a href="#%_thm_4.6">4.6</a>).</p><p/><p>
+
+</p><p><a name="%_thm_4.23" id="%_thm_4.23"/>
+<b>Exercício 4.23.</b> <a name="%_idx_4664" id="%_idx_4664"/>Alyssa P. Hacker não entende por que <tt>analyze-sequence</tt> precisa ser tão complicado. Todos os outros procedimentos de análise são transformações diretas dos procedimentos de avaliação correspondentes (ou <tt>eval</tt> cláusulas) na seção <a href="#%_sec_4.1.1">4.1.1</a>. Ela esperava <tt>analyze-sequence</tt> para ficar assim:</p><p>
+
+
+</p><p/><p><tt>(define (analyze-sequence exps)<br/>
+  (define (execute-sequence procs env)<br/>
+    (cond ((null? (cdr procs)) ((car procs) env))<br/>
+          (else ((car procs) env)<br/>
+                (execute-sequence (cdr procs) env))))<br/>
+  (let ((procs (map analyze exps)))<br/>
+    (if (null? procs)<br/>
+        (error &quot;Empty sequence -- ANALYZE&quot;))<br/>
+    (lambda (env) (execute-sequence procs env))))<br/></tt></p><p/><p>Eva Lu Ator explica a Alyssa que a versão no texto faz mais do trabalho de avaliar uma sequência no momento da análise. O procedimento de execução de sequência de Alyssa, em vez de incluir as chamadas para os procedimentos de execução individuais, percorre os procedimentos para chamá-los: De fato, embora as expressões individuais na sequência tenham sido analisadas, a própria sequência não foi.</p><p>Compare as duas versões do <tt>analyze-sequence</tt>. Por exemplo, considere o caso comum (típico dos corpos dos procedimentos) em que a sequência possui apenas uma expressão. Que trabalho o procedimento de execução produzido pelo programa de Alyssa fará? E o procedimento de execução produzido pelo programa no texto acima? Como as duas versões se comparam para uma sequência com duas expressões?</p><p/><p>
+
+</p><p><a name="%_thm_4.24" id="%_thm_4.24"/>
+<b>Exercício 4.24.</b> Projete e realize alguns experimentos para comparar a velocidade do avaliador metacircular original com a versão nesta seção. Use seus resultados para estimar a fração de tempo gasto em análise versus execução para vários procedimentos.</p><p/><p>
+
+</p><p/><div class="smallprint"><hr/></div><p>
+</p><div class="footnote"><p><a name="footnote_Temp_510" href="#call_footnote_Temp_510" id="footnote_Temp_510"><sup><small>3</small></sup></a> Mesmo assim, permanecerão aspectos importantes do processo de avaliação que não são elucidados pelo nosso avaliador. O mais importante deles são os mecanismos detalhados pelos quais os procedimentos chamam outros procedimentos e retornam valores aos seus chamadores. Abordaremos essas questões no capítulo 5, onde examinaremos mais de perto o processo de avaliação implementando o avaliador como uma simples máquina de registrador.</p><p><a name="footnote_Temp_511" href="#call_footnote_Temp_511" id="footnote_Temp_511"><sup><small>4</small></sup></a> Se nos concedermos a capacidade de aplicar primitivas, <a name="%_idx_4222" id="%_idx_4222"/>então o que resta para implementar no avaliador? O trabalho do avaliador não é especificar as primitivas da linguagem, mas fornecer o tecido conjuntivo - os meios de combinação e os meios de abstração - que liga uma coleção de primitivas para formar uma linguagem. Especificamente:</p><p/><ul><li>O avaliador nos permite lidar com expressões aninhadas. Por exemplo, embora a simples aplicação de primitivas seja suficiente para avaliar a expressão <tt>(+ 1 6)</tt>, não é adequado para o manuseio <tt>(+ 1 (* 2 3))</tt>. No que diz respeito ao procedimento primitivo <tt>+</tt> , seus argumentos devem ser números e sufocariam??? se passássemos a expressão <tt>(* 2 3)</tt> como argumento. Um papel importante do avaliador é coreografar a composição do procedimento para que <tt>(* 2 3)</tt> é reduzido para 6 antes de ser passado como argumento para <tt>+</tt>.<p>
+
+</p></li><li>O avaliador nos permite usar variáveis. Por exemplo, o procedimento primitivo para adição não tem como lidar com expressões como <tt>(+ x 1)</tt>. Precisamos de um avaliador para acompanhar as variáveis e obter seus valores antes de invocar os procedimentos primitivos.<p>
+
+</p></li><li>O avaliador nos permite definir procedimentos compostos. Isso envolve acompanhar as definições de procedimentos, saber como usá-las na avaliação de expressões e fornecer um mecanismo que permita que os procedimentos aceitem argumentos.<p>
+
+</p></li><li>O avaliador fornece as formas especiais, que devem ser avaliados diferentemente das chamadas de procedimento.</li></ul><p>
+
+</p><p><a name="footnote_Temp_518" href="#call_footnote_Temp_518" id="footnote_Temp_518"><sup><small>5</small></sup></a> Poderíamos ter simplificado o <tt>application?</tt> cláusula em <tt>eval</tt> usando <tt>map</tt> (e estipulando que <tt>operands</tt> retorna uma lista) em vez de escrever um procedimento <tt>list-of-values</tt> explícito . Optamos por não usar <tt>map</tt> aqui para enfatizar o fato de que o <a name="%_idx_4252" id="%_idx_4252"/><a name="%_idx_4254" id="%_idx_4254"/>o avaliador pode ser implementado sem o uso de procedimentos de ordem superior (e, portanto, pode ser escrito em uma linguagem que não possui procedimentos de ordem superior), mesmo que a linguagem que ela suporta inclua procedimentos de ordem superior.</p><p><a name="footnote_Temp_520" href="#call_footnote_Temp_520" id="footnote_Temp_520"><sup><small>6</small></sup></a> Nesse caso, a linguagem que é implementada e a linguagem de implementação são as mesmas. Contemplação do significado de <a name="%_idx_4262" id="%_idx_4262"/><tt>true?</tt> aqui produz expansão da consciência sem o abuso de substâncias.</p><p><a name="footnote_Temp_523" href="#call_footnote_Temp_523" id="footnote_Temp_523"><sup><small>7</small></sup></a> Esta implementação de <tt>define</tt> ignora um problema sutil no tratamento de definições internas, embora funcione corretamente na maioria dos casos. Veremos qual é o problema e como resolvê-lo na seção <a href="#%_sec_4.1.6">4.1.6</a>.</p><p><a name="footnote_Temp_524" href="#call_footnote_Temp_524" id="footnote_Temp_524"><sup><small>8</small></sup></a> Como dissemos quando introduzimos <tt>define</tt> e <tt>set!</tt>, esses valores dependem da implementação no Scheme - ou seja, o implementador pode escolher qual valor retornar.</p><p><a name="footnote_Temp_526" href="#call_footnote_Temp_526" id="footnote_Temp_526"><sup><small>9</small></sup></a> Conforme mencionado na seção <a href="book-Z-H-16.html#%_sec_2.3.1">2.3.1</a>, o avaliador vê uma expressão entre aspas como uma lista que começa com <tt>quote</tt>, mesmo se a expressão for digitada com aspas. Por exemplo, a expressão <tt>'a</tt> seria visto pelo avaliador como <tt>(quote a)</tt>. Veja o exercício <a href="book-Z-H-16.html#%_thm_2.55">2.55</a>.</p><p><a name="footnote_Temp_527" href="#call_footnote_Temp_527" id="footnote_Temp_527"><sup><small>10</small></sup></a> O valor de uma a expressão <tt>if</tt> quando o predicado é falso e não há alternativa especificada no Scheme; escolhemos aqui para torná-lo falso. Apoiaremos o uso das variáveis <tt>true</tt> e <tt>false</tt> em expressões a serem avaliadas ligando-as no ambiente global. Veja a seção <a href="#%_sec_4.1.4">4.1.4</a>.</p><p><a name="footnote_Temp_528" href="#call_footnote_Temp_528" id="footnote_Temp_528"><sup><small>11</small></sup></a> Esses seletores para uma lista de expressões - e os correspondentes para uma lista de operandos - não são destinados a uma abstração de dados. Eles são introduzidos como nomes mnemônicos para as operações básicas da lista, a fim de facilitar o entendimento do avaliador de controle explícito na seção <a href="book-Z-H-34.html#%_sec_5.4">5.4</a>.</p><p><a name="footnote_Temp_530" href="#call_footnote_Temp_530" id="footnote_Temp_530"><sup><small>12</small></sup></a> O valor de uma expressão <tt>cond</tt> quando todos os predicados são falsos e não há uma cláusula <tt>else</tt> não especificada no Scheme; escolhemos aqui para torná-lo falso.</p><p><a name="footnote_Temp_531" href="#call_footnote_Temp_531" id="footnote_Temp_531"><sup><small>13</small></sup></a> Os sistemas práticos do Lisp fornecem um mecanismo que permite ao usuário adicionar novas expressões derivadas e especificar sua implementação como transformações sintáticas sem modificar o avaliador. Essa transformação definida pelo usuário é chamada de <a name="%_idx_4374" id="%_idx_4374"/><em>macro</em>. Embora seja fácil adicionar um mecanismo elementar para definir macros, a linguagem resultante apresenta sutis problemas de conflito de nome. Tem havido muita pesquisa sobre mecanismos de definição macro que não causam essas dificuldades. Veja, <a name="%_idx_4376" id="%_idx_4376"/><a name="%_idx_4378" id="%_idx_4378"/><a name="%_idx_4380" id="%_idx_4380"/><a name="%_idx_4382" id="%_idx_4382"/>por exemplo, Kohlbecker 1986, Clinger e Rees 1991 e Hanson 1991.</p><p><a name="footnote_Temp_544" href="#call_footnote_Temp_544" id="footnote_Temp_544"><sup><small>14</small></sup></a> Os quadros não são realmente uma abstração de dados no seguinte código: <tt>Set-variable-value!</tt> e <tt>define-variable!</tt> usam <tt>set-car!</tt> para modificar diretamente os valores em um quadro. O objetivo dos procedimentos de estrutura é facilitar a leitura dos procedimentos de manipulação do ambiente.</p><p><a name="footnote_Temp_545" href="#call_footnote_Temp_545" id="footnote_Temp_545"><sup><small>15</small></sup></a> A desvantagem dessa representação (bem como a variante no exercício <a href="#%_thm_4.11">4.11</a>) é que o avaliador pode precisar pesquisar muitos quadros para encontrar a ligação para uma determinada variável. <a name="%_idx_4488" id="%_idx_4488"/><a name="%_idx_4490" id="%_idx_4490"/>(Essa abordagem é chamada de <em>ligação profunda</em>???). Uma maneira de evitar essa ineficiência é fazer uso de uma estratégia chamada <em>endereçamento léxico</em>, que será discutido na seção <a href="book-Z-H-35.html#%_sec_5.5.6">5.5.6</a>.</p><p><a name="footnote_Temp_549" href="#call_footnote_Temp_549" id="footnote_Temp_549"><sup><small>16</small></sup></a> Qualquer procedimento definido no Lisp subjacente pode ser usado como um primitivo para o avaliador metacircular. O nome de uma primitiva instalada no avaliador não precisa ser igual ao nome de sua implementação no Lisp subjacente; os nomes são os mesmos aqui, porque o avaliador metacircular implementa o próprio Scheme. Assim, por exemplo, poderíamos colocar <tt>(list 'first car)</tt> ou <tt>(list 'square (lambda (x) (* x x)))</tt> na lista de <tt>primitive-procedures</tt>.</p><p><a name="footnote_Temp_550" href="#call_footnote_Temp_550" id="footnote_Temp_550"><sup><small>17</small></sup></a><tt>Apply-in-underlying-scheme</tt> é o procedimento <tt>apply</tt> que usamos nos capítulos anteriores. O procedimento <tt>apply</tt> do avaliador metacircular (seção <a href="#%_sec_4.1.1">4.1.1</a>) modela o funcionamento desta primitiva. Tendo dois procedimentos diferentes chamados <tt>apply</tt> leva a um problema técnico na execução do avaliador metacircular, porque a definição da avaliação do avaliador metacircular <tt>apply</tt> irá mascarar a definição da primitiva. Uma maneira de contornar isso é renomear o <tt>apply</tt> metacircular para evitar conflito com o nome do procedimento primitivo. Em vez disso, assumimos que salvamos uma referência ao objeto subjacente <tt>apply</tt> fazendo</p><p/><p><tt>(define apply-in-underlying-scheme apply)<br/></tt></p><p/><p>antes de definir o <tt>apply</tt> metacircular. Isso nos permite acessar a versão original do <tt>apply</tt> sob um nome diferente.</p><p><a name="footnote_Temp_551" href="#call_footnote_Temp_551" id="footnote_Temp_551"><sup><small>18</small></sup></a> O procedimento primitivo <a name="%_idx_4522" id="%_idx_4522"/><a name="%_idx_4524" id="%_idx_4524"/><tt>read</tt> aguarda a entrada do usuário e retorna a próxima expressão completa digitada. Por exemplo, se o usuário digitar <tt>(+ 23 x)</tt>, <tt>read</tt> retorna uma lista de três elementos contendo o símbolo <tt>+</tt>, o número 23 e o símbolo <tt>x</tt>. <a name="%_idx_4526" id="%_idx_4526"/><a name="%_idx_4528" id="%_idx_4528"/>Se o usuário digitar <tt>'x</tt>, <tt>read</tt> retorna uma lista de dois elementos contendo o símbolo <tt>quote</tt> e o símbolo <tt>x</tt>.</p><p><a name="footnote_Temp_553" href="#call_footnote_Temp_553" id="footnote_Temp_553"><sup><small>19</small></sup></a> O fato de as máquinas serem descritas no Lisp não é essencial. Se atribuirmos ao nosso avaliador um programa Lisp que se comporta como um avaliador para outra linguagem, digamos C, o avaliador Lisp emulará o avaliador C, que por sua vez pode emular qualquer máquina descrita como um programa C. Da mesma forma, escrever um avaliador Lisp em C produz um programa C que pode executar qualquer programa Lisp. A ideia profunda aqui é que qualquer avaliador pode emular outro. Assim, a noção de &quot;o que pode, em princípio, ser computado&quot; (ignorando os aspectos práticos do tempo e da memória necessários) é independente da linguagem ou do computador e, em vez disso, reflete uma noção subjacente de <a name="%_idx_4554" id="%_idx_4554"/><em>computabilidade</em>. Isso foi demonstrado pela primeira vez de maneira clara por <a name="%_idx_4556" id="%_idx_4556"/>Alan M. Turing (1912-1954), cujo artigo de 1936 lançou as bases da teoria <a name="%_idx_4558" id="%_idx_4558"/>Ciência da Computação. No artigo, Turing apresentou um modelo computacional simples - agora conhecido como <a name="%_idx_4560" id="%_idx_4560"/><em>Máquina de Turing</em> - e argumentou que qualquer &quot;processo eficaz&quot; pode ser formulado como um programa para essa máquina. (Este argumento é conhecido como <a name="%_idx_4562" id="%_idx_4562"/><em>Tese de Church-Turing</em>). Turing implementou uma máquina universal, ou seja, uma máquina de Turing que se comporta como avaliadora de programas de máquinas de Turing. Ele usou essa estrutura para demonstrar que existem problemas bem colocados que não podem ser computados pelas máquinas de Turing (consulte o exercício <a href="#%_thm_4.15">4.15</a>) e, por implicação, não pode ser formulado como &quot;processos efetivos&quot;. Turing também fez contribuições fundamentais para a ciência da computação prática. Por exemplo, ele inventou a ideia de <a name="%_idx_4564" id="%_idx_4564"/>estruturação de programas usando sub-rotinas de uso geral. Veja <a name="%_idx_4566" id="%_idx_4566"/>Hodges 1983 para uma biografia de Turing.</p><p><a name="footnote_Temp_554" href="#call_footnote_Temp_554" id="footnote_Temp_554"><sup><small>20</small></sup></a> Algumas pessoas acham contra-intuitivo que um avaliador, implementado por um procedimento relativamente simples, possa emular programas que são mais complexos que o próprio avaliador. A existência de uma máquina avaliadora universal é uma propriedade profunda e maravilhosa da computação. <a name="%_idx_4568" id="%_idx_4568"/><em>Teoria da recursão</em>, um ramo da lógica matemática, preocupa-se com os limites lógicos da computação. <a name="%_idx_4570" id="%_idx_4570"/>O belo livro de Douglas Hofstadter <em>Gödel, Escher, Bach</em> (1979) explora algumas dessas ideias.</p><p><a name="footnote_Temp_555" href="#call_footnote_Temp_555" id="footnote_Temp_555"><sup><small>21</small></sup></a> Aviso: <a name="%_idx_4576" id="%_idx_4576"/>este <tt>eval</tt> primitivo não é idêntico ao procedimento <tt>eval</tt> que implementamos na seção <a href="#%_sec_4.1.1">4.1.1</a>, porque usa o ambientes <em>reais</em> do Scheme em vez das estruturas de ambiente de amostra que construímos na seção <a href="#%_sec_4.1.3">4.1.3</a>. Esses ambientes reais não podem ser manipulados pelo usuário como listas comuns; eles devem ser acessados via <tt>eval</tt> ou outras operações especiais. <a name="%_idx_4578" id="%_idx_4578"/>Da mesma forma, o <tt>apply</tt> primitivo que vimos anteriormente não é idêntico ao metacircular <tt>apply</tt>, porque usa procedimentos reais do Scheme em vez dos objetos de procedimento que construímos nas seções <a href="#%_sec_4.1.3">4.1.3</a> e <a href="#%_sec_4.1.4">4.1.4</a>.</p><p><a name="footnote_Temp_556" href="#call_footnote_Temp_556" id="footnote_Temp_556"><sup><small>22</small></sup></a> A <a name="%_idx_4580" id="%_idx_4580"/><a name="%_idx_4582" id="%_idx_4582"/><a name="%_idx_4584" id="%_idx_4584"/><a name="%_idx_4586" id="%_idx_4586"/>implementação MIT do Scheme inclui <tt>eval</tt>, bem como um símbolo <tt>user-initial-environment</tt> que está ligado ao ambiente inicial no qual as expressões de entrada do usuário são avaliadas.</p><p><a name="footnote_Temp_558" href="#call_footnote_Temp_558" id="footnote_Temp_558"><sup><small>23</small></sup></a> Embora tenhamos estipulado que <tt>halts?</tt> recebe um objeto de procedimento, observe que esse raciocínio ainda se aplica mesmo se <tt>halts?</tt> pode obter acesso ao texto do procedimento e seu ambiente. <a name="%_idx_4590" id="%_idx_4590"/><a name="%_idx_4592" id="%_idx_4592"/><a name="%_idx_4594" id="%_idx_4594"/><a name="%_idx_4596" id="%_idx_4596"/>Este é o célebre <em>Teorema da Parada</em>, que deu o primeiro exemplo claro de uma <em>não computável</em> problema, ou seja, uma tarefa bem colocada que não pode ser executada como um procedimento computacional.</p><p><a name="footnote_Temp_559" href="#call_footnote_Temp_559" id="footnote_Temp_559"><sup><small>24</small></sup></a> Deseja que os programas não dependam desse mecanismo de avaliação é o motivo da observação “a gerência não é responsável” na nota de rodapé<a href="book-Z-H-10.html#footnote_Temp_45">28.</a> do capítulo 1. Ao insistir que as definições internas venham primeiro e não se usem enquanto as definições fossem avaliadas, o padrão IEEE para o Scheme deixa aos implementadores alguma opção no mecanismo usado para avaliar essas definições. A escolha de uma regra de avaliação em vez de outra aqui pode parecer um pequeno problema, afetando apenas a interpretação de programas &quot;mal formados&quot;. No entanto, veremos na seção <a href="book-Z-H-35.html#%_sec_5.5.6">5.5.6</a> que a mudança para um modelo de escopo concorrente para definições internas evita algumas dificuldades desagradáveis que de outra forma surgiriam na implementação de um compilador.</p><p><a name="footnote_Temp_560" href="#call_footnote_Temp_560" id="footnote_Temp_560"><sup><small>25</small></sup></a> O padrão IEEE para Scheme permite diferentes estratégias de implementação, especificando que cabe ao programador obedecer a essa restrição, e não a implementação para aplicá-la. Algumas implementações do Scheme, incluindo <a name="%_idx_4610" id="%_idx_4610"/>Scheme MIT, use a transformação mostrada acima. Portanto, alguns programas que não obedecem a essa restrição serão executados de fato nessas implementações.</p><p><a name="footnote_Temp_565" href="#call_footnote_Temp_565" id="footnote_Temp_565"><sup><small>26</small></sup></a> Os implementadores do MIT do Scheme apoiam a Alyssa pelos seguintes motivos: Eva é, em princípio, correta - as definições devem ser consideradas simultâneas. Mas parece difícil implementar um mecanismo geral e eficiente que faça o que Eva exige. Na ausência de tal mecanismo, é melhor gerar um erro nos casos difíceis de definições simultâneas (noção de Alyssa) do que produzir uma resposta incorreta (como Ben o faria).</p><p><a name="footnote_Temp_568" href="#call_footnote_Temp_568" id="footnote_Temp_568"><sup><small>27</small></sup></a> Este exemplo ilustra um truque de programação para formular procedimentos recursivos sem usar <tt>define</tt>. O <a name="%_idx_4628" id="%_idx_4628"/>truque mais geral desse tipo é o <em>operador</em> <em>Y</em>, que pode ser usado para fornecer uma implementação &quot;pura de λ-cálculo&quot; da??? <a name="%_idx_4630" id="%_idx_4630"/><a name="%_idx_4632" id="%_idx_4632"/>recursão. (Veja Stoy 1977 para detalhes sobre o cálculo lambda, e Gabriel 1988 para uma exposição do operador <em>Y</em> no Scheme).</p><p><a name="footnote_Temp_569" href="#call_footnote_Temp_569" id="footnote_Temp_569"><sup><small>28.</small></sup></a> Essa técnica é parte integrante do processo de compilação, que discutiremos no capítulo 5. Jonathan Rees escreveu um <a name="%_idx_4644" id="%_idx_4644"/><a name="%_idx_4646" id="%_idx_4646"/><a name="%_idx_4648" id="%_idx_4648"/><a name="%_idx_4650" id="%_idx_4650"/>interpretador Scheme como esse em 1982 para o projeto T (Rees e Adams 1982). Marc Feeley (1986) (veja também Feeley e Lapalme 1987) inventou independentemente essa técnica em sua tese de mestrado.</p><p><a name="footnote_Temp_570" href="#call_footnote_Temp_570" id="footnote_Temp_570"><sup><small>29</small></sup></a> Há, no entanto, uma parte importante da pesquisa variável que <em>pode</em> ser feito como parte da análise sintática. Como mostraremos na seção <a href="book-Z-H-35.html#%_sec_5.5.6">5.5.6</a>, pode-se determinar a posição na estrutura do ambiente em que o valor da variável será encontrado, evitando assim a necessidade de varrer o ambiente em busca da entrada que corresponde à variável.</p><p><a name="footnote_Temp_571" href="#call_footnote_Temp_571" id="footnote_Temp_571"><sup><small>30</small></sup></a> Ver exercício <a href="#%_thm_4.23">4.23</a> para obter algumas dicas sobre o processamento de sequências.</p></div>
+
+
+
+</body>
+</html>

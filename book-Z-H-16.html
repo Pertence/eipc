@@ -1,0 +1,553 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops">
+<!-- Generated from TeX source by tex2page, v 4o,
+     (c) Dorai Sitaram, http://www.cs.rice.edu/~dorai/tex2page -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type: text/html; charset=utf-8"/>
+    <title>Estrutura e Interpretação de Programas de Computador</title>
+    <link rel="stylesheet" type="text/css" href="book-Z-C.css" title="default"/>
+  </head>
+  <body>
+
+
+
+<a name="%_sec_2.3" id="%_sec_2.3"/>
+<h2><a href="book-Z-H-4.html#%_toc_%_sec_2.3">2.3 Dados simbólicos</a></h2><p>
+
+
+<a name="%_idx_1984" id="%_idx_1984"/>
+<a name="%_idx_1986" id="%_idx_1986"/>Todos os objetos de dados compostos que usamos até agora foram construídos a partir de números. Nesta seção, estendemos a capacidade representacional de nossa linguagem, introduzindo a capacidade de trabalhar com símbolos arbitrários como dados.</p><p>
+
+<a name="%_sec_2.3.1" id="%_sec_2.3.1"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_2.3.1">2.3.1 Citação</a></h3><p>
+
+
+<a name="%_idx_1988" id="%_idx_1988"/>Se podemos formar dados compostos usando símbolos, podemos ter listas como</p><p>
+
+</p><p/><p><tt><a name="%_idx_1990" id="%_idx_1990"/>(a b c d)<br/>
+(23 45 17)<br/>
+((Norah 12) (Molly 9) (Anna 7) (Lauren 6) (Charlotte 4))<br/></tt></p><p/><p>As listas que contêm símbolos podem se parecer com as expressões da nossa linguagem:</p><p>
+
+</p><p/><p><tt>(* (+ 23 45) (+ x 9))<br/><br/>
+(define (fact n) (if (= n 1) 1 (* n (fact (- n 1)))))<br/></tt></p><p/><p/><p>Para manipular símbolos, precisamos de um novo elemento em nossa linguagem: a capacidade de <em>citar</em> um objeto de dados. Suponha que desejemos construir a lista <tt>(a b)</tt>. Não podemos fazer isso com <tt>(list a b)</tt>, porque essa expressão constrói uma lista dos <em>valores</em> de <tt>a</tt> e <tt>b</tt> em vez dos próprios símbolos. Esse problema é bem conhecido no contexto das <a name="%_idx_1992" id="%_idx_1992"/><a name="%_idx_1994" id="%_idx_1994"/>linguagens naturais, onde palavras e frases podem ser consideradas como entidades semânticas ou como cadeias de caracteres (entidades sintáticas). A prática comum em linguagens naturais é usar aspas para indicar que uma palavra ou sentença deve ser tratada literalmente como uma sequência de caracteres. Por exemplo, a primeira letra de &quot;João&quot; é claramente &quot;J&quot;. Se dissermos a alguém &quot;diga seu nome em voz alta&quot;, esperamos ouvir o nome dessa pessoa. No entanto, se dissermos a alguém &quot;diga 'seu nome' em voz alta&quot;, esperamos ouvir as palavras &quot;seu nome&quot;. Observe que somos obrigados a aninhar aspas para descrever o que outra pessoa pode dizer.<a name="call_footnote_Temp_227" href="#footnote_Temp_227" id="call_footnote_Temp_227"><sup><small>32</small></sup></a></p><p>
+
+<a name="%_idx_1998" id="%_idx_1998"/>Podemos seguir essa mesma prática para identificar listas e símbolos que devem ser tratados como objetos de dados e não como expressões a serem avaliadas. No entanto, nosso formato de citação difere do das linguagens naturais, pois colocamos aspas (tradicionalmente, o único símbolo de citação <a name="%_idx_2000" id="%_idx_2000"/><tt>'</tt>) apenas no início do objeto a ser citado. Podemos nos livrar disso na sintaxe Scheme, porque contamos com espaços em branco e parênteses para delimitar objetos. Assim, o significado do caractere de aspas simples é citar o próximo objeto.<a name="call_footnote_Temp_228" href="#footnote_Temp_228" id="call_footnote_Temp_228"><sup><small>33</small></sup></a></p><p>
+
+<a name="%_idx_2010" id="%_idx_2010"/>Agora podemos distinguir entre símbolos e seus valores:</p><p>
+
+</p><p/><p><tt>(define a 1)<br/><br/>
+(define b 2)<br/><br/>
+(list a b)<br/><i>(1 2)</i><br/><br/>
+(list 'a 'b)<br/><i>(a b)</i><br/><br/>
+(list 'a b)<br/><i>(a 2)</i><br/></tt></p><p/><p/><p>
+
+<a name="%_idx_2012" id="%_idx_2012"/>A citação também nos permite digitar objetos compostos, usando a representação impressa convencional para listas:<a name="call_footnote_Temp_229" href="#footnote_Temp_229" id="call_footnote_Temp_229"><sup><small>34</small></sup></a></p><p>
+
+</p><p/><p><tt>(car '(a b c))<br/><i>a</i><br/><br/>
+(cdr '(a b c))<br/><i>(b c)</i><br/></tt></p><p/><p>
+<a name="%_idx_2018" id="%_idx_2018"/><a name="%_idx_2020" id="%_idx_2020"/>De acordo com isso, podemos obter a lista vazia avaliando <tt>'()</tt> e, assim, dispensar a variável <tt>nil</tt>.</p><p>Uma primitiva adicional usada na manipulação de símbolos é <a name="%_idx_2022" id="%_idx_2022"/><a name="%_idx_2024" id="%_idx_2024"/><a name="%_idx_2026" id="%_idx_2026"/><a name="%_idx_2028" id="%_idx_2028"/><tt>eq?</tt>, que recebe dois símbolos como argumentos e testa se são iguais. <a name="call_footnote_Temp_230" href="#footnote_Temp_230" id="call_footnote_Temp_230"><sup><small>35</small></sup></a> Usando <tt>eq?</tt>, podemos implementar um procedimento útil chamado <tt>memq</tt>. Isso requer dois argumentos, um símbolo e uma lista. Se o símbolo não estiver contido na lista (ou seja, não for <tt>eq?</tt> para nenhum item da lista), <tt>memq</tt> retornará false. Caso contrário, ele retornará a sub-lista da lista, começando com a primeira ocorrência do símbolo:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2030" id="%_idx_2030"/>(define (memq item x)<br/>
+  (cond ((null? x) false)<br/>
+        ((eq? item (car x)) x)<br/>
+        (else (memq item (cdr x)))))<br/></tt></p><p/><p>Por exemplo, o valor de</p><p>
+
+</p><p/><p><tt>(memq 'apple '(pear banana prune))<br/></tt></p><p/><p>é falso, enquanto o valor de</p><p>
+
+</p><p/><p><tt>(memq 'apple '(x (apple sauce) y apple pear))<br/></tt></p><p/><p>é <tt>(apple pear)</tt>.</p><p>
+
+</p><p><a name="%_thm_2.53" id="%_thm_2.53"/>
+<b>Exercício 2.53.</b> O que o interpretador imprimiria em resposta à avaliação de cada uma das seguintes expressões?</p><p>
+
+</p><p/><p><tt>(list 'a 'b 'c)<br/><br/>
+(list (list 'george))<br/>
+(cdr '((x1 x2) (y1 y2)))<br/><br/>
+(cadr '((x1 x2) (y1 y2)))<br/>
+(pair? (car '(a short list)))<br/>
+(memq 'red '((red shoes) (blue socks)))<br/><br/>
+(memq 'red '(red shoes blue socks))<br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_2.54" id="%_thm_2.54"/>
+<b>Exercício 2.54.</b> Duas listas são consideradas <a name="%_idx_2032" id="%_idx_2032"/><a name="%_idx_2034" id="%_idx_2034"/><a name="%_idx_2036" id="%_idx_2036"/><tt>equal?</tt> se elas contiverem elementos iguais organizados na mesma ordem. Por exemplo,</p><p>
+
+</p><p/><p><tt>(equal? '(this is a list) '(this is a list))<br/></tt></p><p/><p>é verdade, mas</p><p>
+
+</p><p/><p><tt>(equal? '(this is a list) '(this (is a) list))<br/></tt></p><p/><p>é falso. Para ser mais preciso, podemos definir <tt>equal?</tt> recursivamente em termos da <tt>eq?</tt> igualdade básica de símbolos, dizendo que <tt>a</tt> e <tt>b</tt> são <tt>equal?</tt> se forem ambos símbolos e os símbolos forem <tt>eq?</tt>, ou se forem ambas listas de modo que <tt>(car a)</tt> é <tt>equal?</tt> a <tt>(car b)</tt> e <tt>(cdr a)</tt> é <tt>equal?</tt> a <tt>(cdr b)</tt>. Usando essa ideia, implemente <tt>equal?</tt> como um procedimento.<a name="call_footnote_Temp_233" href="#footnote_Temp_233" id="call_footnote_Temp_233"><sup><small>36</small></sup></a>
+</p><p/><p>
+
+</p><p><a name="%_thm_2.55" id="%_thm_2.55"/>
+<b>Exercício 2.55.</b> Eva Lu Ator digita para o interpretador a expressão</p><p/><p><tt>(car ”abracadabra)<br/></tt></p><p/><p>Para sua surpresa, o interpretador imprime <tt>quote</tt>. Explique.</p><p>
+
+<a name="%_sec_2.3.2" id="%_sec_2.3.2"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_2.3.2">2.3.2 Exemplo: diferenciação simbólica</a></h3><p>
+
+
+<a name="%_idx_2042" id="%_idx_2042"/><a name="%_idx_2044" id="%_idx_2044"/><a name="%_idx_2046" id="%_idx_2046"/>Como uma ilustração da manipulação de símbolos e uma ilustração adicional da abstração de dados, considere o projeto de um procedimento que execute diferenciação simbólica de expressões algébricas. Gostaríamos que o procedimento tomasse como argumentos uma expressão algébrica e uma variável e retornasse a derivada da expressão em relação à variável. Por exemplo, se os argumentos para o procedimento forem <em>a</em><em>x</em><sup>2</sup> + <em>b</em><em>x</em> + <em>c</em> e <em>x</em>, o procedimento deve retornar 2<em>a</em><em>x</em> + <em>b</em>. A diferenciação simbólica é de significado histórico especial em Lisp. Foi um dos exemplos motivadores por trás do desenvolvimento de uma linguagem de computador para manipulação de símbolos. Além disso, marcou o início da linha de pesquisa que levou ao desenvolvimento de sistemas poderosos para o trabalho matemático simbólico, atualmente sendo usados ​​por um número crescente de matemáticos e físicos.</p><p>No desenvolvimento do programa de diferenciação simbólica, seguiremos a mesma estratégia de abstração de dados que seguimos no desenvolvimento do sistema de números racionais da seção <a href="book-Z-H-14.html#%_sec_2.1.1">2.1.1</a>. Ou seja, primeiro definiremos um algoritmo de diferenciação que opera em objetos abstratos como &quot;somas&quot;, &quot;produtos&quot; e &quot;variáveis&quot; sem nos preocuparmos com a forma como eles devem ser representados. Somente depois abordaremos o problema de representação.</p><p>
+
+<a name="%_sec_Temp_235" id="%_sec_Temp_235"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_235">O programa de diferenciação com dados abstratos</a></h4><p>
+
+<a name="%_idx_2048" id="%_idx_2048"/>Para manter tudo simples, consideraremos um programa de diferenciação simbólica muito simples que lida com expressões construídas usando apenas as operações de adição e multiplicação com dois argumentos. A diferenciação de qualquer expressão pode ser realizada aplicando as seguintes regras de redução:</p><p>
+
+</p><p/><div align="left"><img src="images/ch2-Z-G-45.gif" border="0"/></div><p/><p>
+
+</p><p/><div align="left"><img src="images/ch2-Z-G-46.gif" border="0"/></div><p/><p>
+
+</p><p/><div align="left"><img src="images/ch2-Z-G-47.gif" border="0"/></div><p/><p>
+
+</p><p/><div align="left"><img src="images/ch2-Z-G-48.gif" border="0"/></div><p/><p>Observe que as duas últimas regras são de natureza recursiva. Ou seja, para obter a derivada de uma soma, primeiro encontramos as derivadas dos termos e as adicionamos. Cada um dos termos pode, por sua vez, ser uma expressão que precisa ser decomposta. A decomposição em partes cada vez menores produzirá partes que são constantes ou variáveis, cujas derivadas serão 0 ou 1.</p><p>Para incorporar essas regras em um procedimento, nos entregamos a um pouco de <a name="%_idx_2050" id="%_idx_2050"/>ilusão, como fizemos ao projetar a implementação do número racional. Se tivéssemos um meio para representar expressões algébricas, poderíamos saber se uma expressão é uma soma, um produto, uma constante ou uma variável. Deveríamos conseguir extrair as partes de uma expressão. Para uma soma, por exemplo, queremos poder extrair o adendo (primeiro termo) e o trecho (segundo termo). Também devemos ser capazes de construir expressões a partir de partes. Suponhamos que já temos procedimentos para implementar os seguintes seletores, construtores e predicados:</p><p>
+
+</p><table border="0"><tr><td valign="top"><tt>(variable? e)</tt> </td><td valign="top"><tt>e</tt> é uma variável?</td></tr><tr><td valign="top"><tt>(same-variable? v1 v2)</tt> </td><td valign="top"><tt>v1</tt> e <tt>v2</tt> são a mesma variável?</td></tr><tr><td valign="top"><p>
+
+<tt>(sum? e)</tt> </p></td><td valign="top"><tt>e</tt> é uma soma?</td></tr><tr><td valign="top"><tt>(addend e)</tt> </td><td valign="top">Adendo da soma <tt>e</tt>.</td></tr><tr><td valign="top"><tt>(augend e)</tt> </td><td valign="top">Adendo da soma <tt>e</tt>.</td></tr><tr><td valign="top"><tt>(make-sum a1 a2)</tt> </td><td valign="top">Constrói a soma de <tt>a1</tt> e <tt>a2</tt>.</td></tr><tr><td valign="top"><p>
+
+<tt>(product? e)</tt> </p></td><td valign="top"><tt>e</tt> é um produto?</td></tr><tr><td valign="top"><tt>(multiplier e)</tt> </td><td valign="top">Multiplier of the product <tt>e</tt>.</td></tr><tr><td valign="top"><tt>(multiplicand e)</tt> </td><td valign="top">Multiplicador do produto <tt>e</tt>.</td></tr><tr><td valign="top"><tt>(make-product m1 m2)</tt> </td><td valign="top">Constrói o produto de <tt>m1</tt> e <tt>m2</tt>.</td></tr></table>Usando estes e o predicado primitivo <tt>number?</tt>, <a name="%_idx_2052" id="%_idx_2052"/><a name="%_idx_2054" id="%_idx_2054"/>que identifica números, podemos expressar as regras de diferenciação como o seguinte procedimento:<p>
+
+</p><p/><p><tt><a name="%_idx_2056" id="%_idx_2056"/>(define (deriv exp var)<br/>
+  (cond ((number? exp) 0)<br/>
+        ((variable? exp)<br/>
+         (if (same-variable? exp var) 1 0))<br/>
+        ((sum? exp)<br/>
+         (make-sum (deriv (addend exp) var)<br/>
+                   (deriv (augend exp) var)))<br/>
+        ((product? exp)<br/>
+         (make-sum<br/>
+           (make-product (multiplier exp)<br/>
+                         (deriv (multiplicand exp) var))<br/>
+           (make-product (deriv (multiplier exp) var)<br/>
+                         (multiplicand exp))))<br/>
+        (else<br/>
+         (error &quot;unknown expression type -- DERIV&quot; exp))))<br/></tt></p><p/><p>Este procedimento <tt>deriv</tt> incorpora o algoritmo completo de diferenciação. Como é expresso em termos de dados abstratos, funcionará não importa como escolhemos representar expressões algébricas, desde que projetemos um conjunto adequado de seletores e construtores. Esta é a questão que devemos abordar a seguir.</p><p>
+
+<a name="%_sec_Temp_236" id="%_sec_Temp_236"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_236">Representando expressões algébricas</a></h4><p>
+
+<a name="%_idx_2058" id="%_idx_2058"/>Podemos imaginar muitas maneiras de usar a estrutura de lista para representar expressões algébricas. Por exemplo, poderíamos usar listas de símbolos que espelham a notação algébrica usual, representando <em>a</em><em>x</em> + <em>b</em> como a lista <tt>(a * x + b)</tt>. No entanto, uma opção especialmente direta é usar a mesma notação de prefixo entre parênteses que o Lisp usa para combinações; isto é, para representar <em>a</em><em>x</em> + <em>b</em> como <tt>(+ (* a x) b)</tt>. Em seguida, nossa representação de dados para o problema de diferenciação é a seguinte:</p><p>
+
+</p><p/><ul><li>As variáveis ​​são símbolos. Eles são identificados pelo símbolo de predicado primitivo <a name="%_idx_2060" id="%_idx_2060"/><a name="%_idx_2062" id="%_idx_2062"/><tt>symbol?</tt>:<p>
+
+</p><p/><p><tt><a name="%_idx_2064" id="%_idx_2064"/>(define (variable? x) (symbol? x))<br/></tt></p><p/><p>
+</p><p>
+
+</p></li><li>Duas variáveis ​​são iguais se os símbolos que as representam forem <tt>eq?</tt>:<p>
+
+</p><p/><p><tt><a name="%_idx_2066" id="%_idx_2066"/>(define (same-variable? v1 v2)<br/>
+  (and (variable? v1) (variable? v2) (eq? v1 v2)))<br/></tt></p><p/><p>
+</p><p>
+
+</p></li><li>Somas e produtos são construídos como listas:<p>
+
+</p><p/><p><tt><a name="%_idx_2068" id="%_idx_2068"/>(define (make-sum a1 a2) (list '+ a1 a2))<br/><br/><a name="%_idx_2070" id="%_idx_2070"/>(define (make-product m1 m2) (list '* m1 m2))<br/></tt></p><p/><p>
+</p><p>
+
+</p></li><li>Uma soma é uma lista cujo primeiro elemento é o símbolo <tt>+</tt>:<p>
+
+</p><p/><p><tt><a name="%_idx_2072" id="%_idx_2072"/>(define (sum? x)<br/>
+  (and (pair? x) (eq? (car x) '+)))<br/></tt></p><p/><p>
+</p><p>
+
+</p></li><li>O adendo é o segundo item da lista de soma:<p>
+
+</p><p/><p><tt><a name="%_idx_2074" id="%_idx_2074"/>(define (addend s) (cadr s))<br/></tt></p><p/><p>
+</p><p>
+
+</p></li><li>O adendo é o terceiro item da lista de soma:<p>
+
+</p><p/><p><tt><a name="%_idx_2076" id="%_idx_2076"/>(define (augend s) (caddr s))<br/></tt></p><p/><p>
+</p><p>
+
+</p></li><li>Um produto é uma lista cujo primeiro elemento é o símbolo <tt>*</tt>:<p>
+
+</p><p/><p><tt><a name="%_idx_2078" id="%_idx_2078"/>(define (product? x)<br/>
+  (and (pair? x) (eq? (car x) '*)))<br/></tt></p><p/><p>
+</p><p>
+
+</p></li><li>O multiplicador é o segundo item da lista de produtos:<p>
+
+</p><p/><p><tt><a name="%_idx_2080" id="%_idx_2080"/>(define (multiplier p) (cadr p))<br/></tt></p><p/><p>
+</p><p>
+
+</p></li><li>O multiplicando é o terceiro item da lista de produtos:<p>
+
+</p><p/><p><tt><a name="%_idx_2082" id="%_idx_2082"/>(define (multiplicand p) (caddr p))<br/></tt></p><p/><p>
+</p></li></ul><p/><p>Assim, precisamos apenas combiná-los com o algoritmo incorporado por <tt>deriv</tt> para termos um programa de diferenciação simbólica funcional. Vejamos alguns exemplos de seu comportamento:</p><p>
+
+</p><p/><p><tt>(deriv '(+ x 3) 'x)<br/><i>(+ 1 0)</i><br/>
+(deriv '(* x y) 'x)<br/><i>(+ (* x 0) (* 1 y))</i><br/>
+(deriv '(* (* x y) (+ x 3)) 'x)<br/><i>(+ (* (* x y) (+ 1 0))<br/>
+   (* (+ (* x 0) (* 1 y))<br/>
+      (+  x 3)))</i><br/></tt></p><p/><p>O programa produz respostas corretas; no entanto, eles não são simplificados. É verdade que</p><p>
+
+</p><p/><div align="left"><img src="images/ch2-Z-G-49.gif" border="0"/></div><p/><p>mas gostaríamos que o programa soubesse que <em>x</em> · 0 = 0, 1 · <em>y</em> = <em>y</em>, e 0 + <em>y</em> = <em>y</em>. A resposta para o segundo exemplo deveria ter sido simplesmente <tt>y</tt>. Como o terceiro exemplo mostra, isso se torna um problema sério quando as expressões são complexas.</p><p>
+
+<a name="%_idx_2084" id="%_idx_2084"/><a name="%_idx_2086" id="%_idx_2086"/>Nossa dificuldade é muito parecida com a que encontramos na implementação do número racional: não reduzimos as respostas à forma mais simples. Para realizar a redução do número racional, precisávamos alterar apenas os construtores e os seletores da implementação. Podemos adotar uma estratégia semelhante aqui. Não mudaremos <tt>deriv</tt>. Em vez disso, alteraremos <tt>make-sum</tt> para que, se ambas as parcelas forem números, <tt>make-sum</tt> os adicione e retorne sua soma. Além disso, se uma das parcelas for 0, <tt>make-sum</tt> retornará a outra parcela.</p><p>
+
+</p><p/><p><tt><a name="%_idx_2088" id="%_idx_2088"/>(define (make-sum a1 a2)<br/>
+  (cond ((=number? a1 0) a2)<br/>
+        ((=number? a2 0) a1)<br/>
+        ((and (number? a1) (number? a2)) (+ a1 a2))<br/>
+        (else (list '+ a1 a2))))<br/></tt></p><p/><p>Isso usa o procedimento <tt>=number?</tt>, que verifica se uma expressão é igual a um determinado número:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2090" id="%_idx_2090"/>(define (=number? exp num)<br/>
+  (and (number? exp) (= exp num)))<br/></tt></p><p/><p>Da mesma forma, mudaremos <tt>make-product</tt> para criar as regras de que 0 vezes algo é 0 e 1 vezes algo é o algo em si:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2092" id="%_idx_2092"/>(define (make-product m1 m2)<br/>
+  (cond ((or (=number? m1 0) (=number? m2 0)) 0)<br/>
+        ((=number? m1 1) m2)<br/>
+        ((=number? m2 1) m1)<br/>
+        ((and (number? m1) (number? m2)) (* m1 m2))<br/>
+        (else (list '* m1 m2))))<br/></tt></p><p/><p>Aqui está como esta versão funciona em nossos três exemplos:</p><p>
+
+</p><p/><p><tt>(deriv '(+ x 3) 'x)<br/><i>1</i><br/>
+(deriv '(* x y) 'x)<br/><i>y</i><br/>
+(deriv '(* (* x y) (+ x 3)) 'x)<br/><i>(+ (* x y) (* y (+ x 3)))</i><br/></tt></p><p/><p>Embora isso melhore bastante, o terceiro exemplo mostra que ainda há um longo caminho a percorrer antes de obtermos um programa que coloque expressões em uma forma que possamos concordar que seja &quot;mais simples&quot;. O problema da simplificação algébrica é complexo porque, entre outras razões, uma forma que pode ser mais simples para um propósito pode não ser para outro.</p><p><a name="%_thm_2.56" id="%_thm_2.56"/>
+<b>Exercício 2.56.</b> <a name="%_idx_2094" id="%_idx_2094"/> Mostre como estender o diferenciador básico para lidar com mais tipos de expressões. Por exemplo, implemente a regra de diferenciação</p><p>
+
+</p><p/><div align="left"><img src="images/ch2-Z-G-50.gif" border="0"/></div><p/><p>adicionando uma nova cláusula ao programa <tt>deriv</tt> e definindo os procedimentos apropriados <tt>exponentiation?</tt>, <tt>base</tt>, <tt>exponent</tt> e <tt>make-exponentiation</tt>. (Você pode usar o símbolo <tt>**</tt> para denotar exponenciação). Construa nas regras que algo elevado à potência 0 é 1 e algo elevado à potência 1 é o algo em si.</p><p/><p>
+
+</p><p><a name="%_thm_2.57" id="%_thm_2.57"/>
+<b>Exercício 2.57.</b> Estenda o programa de diferenciação para lidar com somas e produtos de números arbitrários de (dois ou mais) termos. Então o último exemplo acima pode ser expresso como</p><p/><p><tt>(deriv '(* x y (+ x 3)) 'x)<br/></tt></p><p/><p>Tente fazer isso alterando apenas a representação de somas e produtos, sem alterar o procedimento <tt>deriv</tt>. Por exemplo, o <tt>addend</tt> de uma soma seria o primeiro termo, e o <tt>augend</tt> seria a soma do restante dos termos.</p><p/><p>
+
+</p><p><a name="%_thm_2.58" id="%_thm_2.58"/>
+<b>Exercício 2.58.</b> <a name="%_idx_2096" id="%_idx_2096"/> <a name="%_idx_2098" id="%_idx_2098"/>Suponha que desejemos modificar o programa de diferenciação para que ele funcione com notação matemática comum, na qual <tt>+</tt> e <tt>*</tt> são operadores de infixo e não de prefixo. Como o programa de diferenciação é definido em termos de dados abstratos, podemos modificá-lo para trabalhar com diferentes representações de expressões apenas alterando os predicados, seletores e construtores que definem a representação das expressões algébricas nas quais o diferenciador deve operar.</p><p>
+
+</p><p/><p>a. Mostre como fazer isso para diferenciar expressões algébricas apresentadas em forma de infixo, como <tt>(x + (3 * (x + (y + 2))))</tt>. Para simplificar a tarefa, assuma que <tt>+</tt> e <tt>*</tt> sempre recebem dois argumentos e que as expressões estão totalmente entre parênteses.</p><p>
+
+</p><p/><p>b. O problema se torna substancialmente mais difícil se permitirmos notação algébrica padrão, como <tt>(x + 3 * (x + y + 2))</tt>, que reduz parênteses desnecessários e assume que a multiplicação é feita antes da adição. Você pode projetar predicados, seletores e construtores apropriados para essa notação, de modo que nosso programa derivado ainda funcione?</p><p>
+
+<a name="%_sec_2.3.3" id="%_sec_2.3.3"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_2.3.3">2.3.3 Exemplo: representando conjuntos</a></h3><p>
+
+
+<a name="%_idx_2100" id="%_idx_2100"/>Nos exemplos anteriores, construímos representações para dois tipos de objetos de dados compostos: números racionais e expressões algébricas. Em um desses exemplos, tivemos a opção de simplificar (reduzir) as expressões no tempo de construção ou no tempo de seleção, mas, além disso, a escolha de uma representação para essas estruturas em termos de lista foi direta. Quando nos voltamos para a representação de conjuntos, a escolha de uma representação não é tão óbvia. De fato, há várias representações possíveis e elas diferem significativamente uma da outra de várias maneiras.</p><p>
+
+
+<a name="%_idx_2102" id="%_idx_2102"/>Informalmente, um conjunto é simplesmente uma coleção de objetos distintos. Para dar uma definição mais precisa, podemos empregar o método de abstração de dados. Ou seja, definimos &quot;conjunto&quot; especificando as operações que devem ser usadas nos conjuntos. São <tt>union-set</tt>, <tt>intersection-set</tt>, <tt>element-of-set?</tt>, e <tt>adjoin-set</tt>. <a name="%_idx_2104" id="%_idx_2104"/><tt>Element-of-set?</tt> é um predicado que determina se um determinado elemento é membro de um conjunto. <a name="%_idx_2106" id="%_idx_2106"/><tt>Adjoin-set</tt> pega um objeto e um conjunto como argumentos e retorna um conjunto que contém os elementos do conjunto original e também o elemento adjacente. <a name="%_idx_2108" id="%_idx_2108"/><tt>Union-set</tt> calcula a união de dois conjuntos, que é o conjunto que contém cada elemento que aparece em qualquer argumento. <a name="%_idx_2110" id="%_idx_2110"/><tt>Intersection-set</tt> calcula a interseção de dois conjuntos, que é o conjunto que contém apenas elementos que aparecem nos dois argumentos. Do ponto de vista da abstração de dados, somos livres para projetar qualquer representação que implemente essas operações de maneira consistente com as interpretações fornecidas acima.<a name="call_footnote_Temp_240" href="#footnote_Temp_240" id="call_footnote_Temp_240"><sup><small>37</small></sup></a>
+</p><p>
+
+
+<a name="%_sec_Temp_241" id="%_sec_Temp_241"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_241">Conjuntos como listas não ordenadas</a></h4><p>
+
+<a name="%_idx_2112" id="%_idx_2112"/><a name="%_idx_2114" id="%_idx_2114"/>Uma maneira de representar um conjunto é como uma lista de seus elementos nos quais nenhum elemento aparece mais de uma vez. O conjunto vazio é representado pela lista vazia. Nesta representação, <tt>element-of-set?</tt> é semelhante ao procedimento <tt>memq</tt> da seção <a href="#%_sec_2.3.1">2.3.1</a>. Ele usa <tt>equal?</tt> em vez de <tt>eq?</tt> para que os elementos do conjunto não precisem ser símbolos:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2116" id="%_idx_2116"/>(define (element-of-set? x set)<br/>
+  (cond ((null? set) false)<br/>
+        ((equal? x (car set)) true)<br/>
+        (else (element-of-set? x (cdr set)))))<br/></tt></p><p/><p>Usando isso, podemos escrever <tt>adjoin-set</tt>. Se o objeto a ser unido já estiver no conjunto, basta retornar o conjunto. Caso contrário, usamos <tt>cons</tt> para adicionar o objeto à lista que representa o conjunto:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2118" id="%_idx_2118"/>(define (adjoin-set x set)<br/>
+  (if (element-of-set? x set)<br/>
+      set<br/>
+      (cons x set)))<br/></tt></p><p/><p>Para <tt>intersection-set</tt>, podemos usar uma estratégia recursiva. Se sabemos como formar a interseção do <tt>set2</tt> e do <tt>cdr</tt> do <tt>set1</tt>, precisamos apenas decidir se deve incluir o <tt>car</tt> de <tt>set1</tt> nisso. Mas isso depende se <tt>(car set1)</tt> também está em <tt>set2</tt>. Aqui está o procedimento resultante:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2120" id="%_idx_2120"/>(define (intersection-set set1 set2)<br/>
+  (cond ((or (null? set1) (null? set2)) '())<br/>
+        ((element-of-set? (car set1) set2)        <br/>
+         (cons (car set1)<br/>
+               (intersection-set (cdr set1) set2)))<br/>
+        (else (intersection-set (cdr set1) set2))))<br/></tt></p><p/><p/><p>Ao projetar uma representação, uma das questões com as quais devemos nos preocupar é a eficiência. Considere o número de etapas necessárias para nossas operações definidas. Como todos eles usam <tt>element-of-set?</tt>, a velocidade dessa operação possui um grande impacto na eficiência da implementação do conjunto como um todo. Agora, para verificar se um objeto é membro de um conjunto, <tt>element-of-set?</tt> pode ter que verificar o conjunto inteiro. (No pior caso, o objeto não está no conjunto). Portanto, se o conjunto tiver elementos <em>n</em>, <tt>element-of-set?</tt> para <em>n</em> etapas. Assim, o número de etapas necessárias cresce como θ (<em>n</em>). O número de etapas exigidas pelo <tt>adjoin-set</tt>, que usa essa operação, também cresce como θ (<em>n</em>). Para <tt>intersection-set</tt>, que verifica um <tt>element-of-set?</tt> para cada elemento do <tt>set1</tt>, o número de etapas necessárias aumenta como o produto dos tamanhos dos conjuntos envolvidos ou θ (<em>n</em><sup>2</sup>) para dois conjuntos de tamanho <em>n</em>. O mesmo se aplica ao <tt>union-set</tt>.</p><p>
+
+</p><p><a name="%_thm_2.59" id="%_thm_2.59"/>
+<b>Exercício 2.59.</b> Implemente a operação <a name="%_idx_2122" id="%_idx_2122"/><tt>union-set</tt> para a representação de conjuntos de lista não ordenada.</p><p/><p>
+
+</p><p><a name="%_thm_2.60" id="%_thm_2.60"/>
+<b>Exercício 2.60.</b> Especificamos que um conjunto seria representado como uma lista sem duplicados. Agora, suponha que permitimos duplicados. Por exemplo, o conjunto {1,2,3} pode ser representado como a lista <tt>(2 3 2 1 3 2 2)</tt>. Projete procedimentos <tt>element-of-set?</tt>, <tt>adjoin-set</tt>, <tt>union-set</tt> e <tt>intersection-set</tt> que operam, nesta representação. Como a eficiência de cada um se compara ao procedimento correspondente para a representação não duplicada? Existem aplicações para os quais você usaria essa representação em preferência à não duplicada?</p><p>
+
+
+<a name="%_sec_Temp_244" id="%_sec_Temp_244"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_244">Conjuntos como listas ordenadas</a></h4><p>
+
+<a name="%_idx_2124" id="%_idx_2124"/><a name="%_idx_2126" id="%_idx_2126"/>Uma maneira de acelerar nossas operações de conjunto é alterar a representação para que os elementos do conjunto sejam listados em ordem crescente. Para fazer isso, precisamos de uma maneira de comparar dois objetos para podermos dizer qual é maior. Por exemplo, poderíamos comparar símbolos lexicograficamente, ou poderíamos concordar com algum método para atribuir um número único a um objeto e depois comparar os elementos comparando os números correspondentes. Para manter nossa discussão simples, consideraremos apenas o caso em que os elementos definidos são números, para que possamos comparar elementos usando <tt>&gt;</tt> e <tt>&lt;</tt>. Representaremos um conjunto de números listando seus elementos em ordem crescente. Enquanto nossa primeira representação acima nos permitiu representar o conjunto {1,3,6,10} listando os elementos em qualquer ordem, nossa nova representação permite apenas a lista <tt>(1 3 6 10)</tt>.</p><p>Uma vantagem do pedido aparece no <tt>element-of-set?</tt>: Ao verificar a presença de um item, não precisamos mais varrer o conjunto inteiro. Se atingirmos um elemento do conjunto que é maior que o item que estamos procurando, sabemos que o item não está no conjunto:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2128" id="%_idx_2128"/>(define (element-of-set? x set)<br/>
+  (cond ((null? set) false)<br/>
+        ((= x (car set)) true)<br/>
+        ((&lt; x (car set)) false)<br/>
+        (else (element-of-set? x (cdr set)))))<br/></tt></p><p/><p>Quantas etapas isso salva? Na pior das hipóteses, o item que procuramos pode ser o maior do conjunto; portanto, o número de etapas é o mesmo da representação não ordenada. Por outro lado, se procurarmos itens de tamanhos diferentes, podemos esperar que, às vezes, possamos parar de procurar em um ponto próximo ao início da lista e que, outras vezes, ainda precisaremos examinar a maior parte da lista. Em média, devemos esperar examinar cerca de metade dos itens do conjunto. Assim, o número médio de etapas necessárias será de cerca de <em>n</em>/2. Ainda é um crescimento de θ (<em>n</em>), mas economiza, em média, um fator de 2 no número de etapas em relação à implementação anterior.</p><p>Obtemos uma aceleração mais impressionante com <tt>intersection-set</tt>. Na representação não ordenada, esta operação exigiu θ (<em>n</em><sup>2</sup>) etapas, porque realizamos uma varredura completa de <tt>set2</tt> para cada elemento de <tt>set1</tt>. Mas com a representação ordenada, podemos usar um método mais inteligente. Begin by comparing the initial elements, <tt>x1</tt> and <tt>x2</tt>, of the two sets. Se <tt>x1</tt> for igual a <tt>x2</tt>, isso fornecerá um elemento da interseção, e o restante da interseção será a interseção dos <tt>cdr</tt> s dos dois conjuntos. Suponha, no entanto, que <tt>x1</tt> seja menor que <tt>x2</tt>. Como <tt>x2</tt> é o menor elemento do <tt>set2</tt>, podemos concluir imediatamente que <tt>x1</tt> não pode aparecer em nenhum lugar do <tt>set2</tt> e, portanto, não está na interseção. Portanto, a interseção é igual à interseção de <tt>set2</tt> com o <tt>cdr</tt> de <tt>set1</tt>. Da mesma forma, se <tt>x2</tt> for menor que <tt>x1</tt>, a interseção será dada pela interseção de <tt>set1</tt> com o <tt>cdr</tt> do <tt>set2</tt>. Aqui está o procedimento:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2130" id="%_idx_2130"/>(define (intersection-set set1 set2)<br/>
+  (if (or (null? set1) (null? set2))<br/>
+      '()    <br/>
+      (let ((x1 (car set1)) (x2 (car set2)))<br/>
+        (cond ((= x1 x2)<br/>
+               (cons x1<br/>
+                     (intersection-set (cdr set1)<br/>
+                                       (cdr set2))))<br/>
+              ((&lt; x1 x2)<br/>
+               (intersection-set (cdr set1) set2))<br/>
+              ((&lt; x2 x1)<br/>
+               (intersection-set set1 (cdr set2)))))))<br/></tt></p><p/><p>Para estimar o número de etapas exigidas por esse processo, observe que a cada etapa reduzimos o problema de interseção para calcular interseções de conjuntos menores - removendo o primeiro elemento de <tt>set1</tt> ou <tt>set2</tt> ou ambos. Assim, o número de etapas necessárias é no máximo a soma dos tamanhos de <tt>set1</tt> e <tt>set2</tt>, em vez do produto dos tamanhos, como na representação não ordenada. Este é o crescimento de θ (<em>n</em>) em vez de θ (<em>n</em><sup>2</sup>) - uma aceleração considerável, mesmo para conjuntos de tamanho moderado.</p><p>
+
+</p><p><a name="%_thm_2.61" id="%_thm_2.61"/>
+<b>Exercício 2.61.</b> Forneça uma implementação de <a name="%_idx_2132" id="%_idx_2132"/><tt>adjoin-set</tt> usando a representação ordenada. Por analogia com o <tt>element-of-set?</tt>, mostre como tirar proveito da ordem para produzir um procedimento que requer, em média, cerca de metade do número de etapas da representação não ordenada.</p><p/><p>
+
+</p><p><a name="%_thm_2.62" id="%_thm_2.62"/>
+<b>Exercício 2.62.</b> Forneça uma implementação θ (<em>n</em>) de <a name="%_idx_2134" id="%_idx_2134"/><tt>union-set</tt> para conjuntos representados como listas ordenadas.</p><p>
+</p><p>
+
+<a name="%_sec_Temp_247" id="%_sec_Temp_247"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_247">Conjuntos como árvores binárias</a></h4><p>
+
+<a name="%_idx_2136" id="%_idx_2136"/><a name="%_idx_2138" id="%_idx_2138"/><a name="%_idx_2140" id="%_idx_2140"/><a name="%_idx_2142" id="%_idx_2142"/><a name="%_idx_2144" id="%_idx_2144"/><a name="%_idx_2146" id="%_idx_2146"/>Podemos fazer melhor do que a representação da lista ordenada organizando os elementos definidos na forma de uma árvore. Cada nó da árvore contém um elemento do conjunto, chamado de “entrada” nesse nó, e um link para cada um dos outros dois (possivelmente vazios) nós. O link &quot;esquerdo&quot; aponta para elementos menores que o do nó e o link &quot;direito&quot; para elementos maiores que o do nó. A figura <a href="#%_fig_2.16">2.16</a> mostra algumas árvores que representam o conjunto {1,3,5,7,9,11}. O mesmo conjunto pode ser representado por uma árvore de várias maneiras diferentes. O único objeto que exigimos para uma representação válida é que todos os elementos na subárvore esquerda sejam menores que a entrada do nó e que todos os elementos na subárvore direita sejam maiores.</p><p>
+
+<a name="%_fig_2.16" id="%_fig_2.16"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch2-Z-G-51.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.16:</b> Várias árvores binárias que representam o conjunto {1,3,5,7,9,11}.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>A vantagem da representação em árvore é esta: suponha que desejamos verificar se um número <em>x</em> está contido em um conjunto. Começamos comparando <em>x</em> com a entrada no nó superior. Se <em>x</em> for menor que isso, sabemos que precisamos pesquisar apenas a subárvore esquerda; se <em>x</em> for maior, precisamos procurar apenas a subárvore correta. Agora, se a árvore estiver &quot;equilibrada&quot;, cada uma dessas subárvores terá cerca da metade do tamanho do original. Assim, em uma etapa, reduzimos o problema de pesquisar em uma árvore de tamanho <em>n</em> para pesquisar em uma árvore de tamanho <em>n</em>/2. Como o tamanho da árvore é dividido pela metade em cada etapa, devemos esperar que o número de etapas necessárias para pesquisar em uma árvore de tamanho <em>n</em> cresça como θ (<tt>log</tt> <em>n</em>).<a name="call_footnote_Temp_248" href="#footnote_Temp_248" id="call_footnote_Temp_248"><sup><small>38</small></sup></a> Para conjuntos grandes, isso será uma aceleração significativa em relação às representações anteriores.</p><p>
+
+<a name="%_idx_2150" id="%_idx_2150"/>Podemos representar árvores usando listas. Cada nó será uma lista de três itens: a entrada no nó, a subárvore esquerda e a subárvore direita. Uma subárvore esquerda ou direita da lista vazia indicará que não há nenhuma subárvore conectada lá. Podemos descrever essa representação pelos seguintes procedimentos:<a name="call_footnote_Temp_249" href="#footnote_Temp_249" id="call_footnote_Temp_249"><sup><small>39</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_2152" id="%_idx_2152"/>(define (entry tree) (car tree))<br/><a name="%_idx_2154" id="%_idx_2154"/>(define (left-branch tree) (cadr tree))<br/><a name="%_idx_2156" id="%_idx_2156"/>(define (right-branch tree) (caddr tree))<br/><a name="%_idx_2158" id="%_idx_2158"/>(define (make-tree entry left right)<br/>
+  (list entry left right))<br/></tt></p><p/><p/><p>Agora podemos escrever o procedimento <tt>element-of-set?</tt> usando a estratégia descrita acima:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2160" id="%_idx_2160"/>(define (element-of-set? x set)<br/>
+  (cond ((null? set) false)<br/>
+        ((= x (entry set)) true)<br/>
+        ((&lt; x (entry set))<br/>
+         (element-of-set? x (left-branch set)))<br/>
+        ((&gt; x (entry set))<br/>
+         (element-of-set? x (right-branch set)))))<br/></tt></p><p/><p/><p>A adição de um item a um conjunto é implementada de maneira semelhante e também requer θ (<tt>log</tt> <em>n</em>) etapas. Para unir um item <tt>x</tt>, comparamos <tt>x</tt> com a entrada do nó para determinar se <tt>x</tt> deve ser adicionado à ramificação direita ou esquerda, e depois de nos unirmos <tt>x</tt> ao ramo apropriado, juntamos esse ramo recém-construído junto com a entrada original e o outro ramo. Se <tt>x</tt> for igual à entrada, basta retornar o nó. Se formos solicitados a juntar <tt>x</tt> a uma árvore vazia, geramos uma árvore que tenha <tt>x</tt> como entrada e ramos direito e esquerdos vazios. Aqui está o procedimento:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2162" id="%_idx_2162"/>(define (adjoin-set x set)<br/>
+  (cond ((null? set) (make-tree x '() '()))<br/>
+        ((= x (entry set)) set)<br/>
+        ((&lt; x (entry set))<br/>
+         (make-tree (entry set) <br/>
+                    (adjoin-set x (left-branch set))<br/>
+                    (right-branch set)))<br/>
+        ((&gt; x (entry set))<br/>
+         (make-tree (entry set)<br/>
+                    (left-branch set)<br/>
+                    (adjoin-set x (right-branch set))))))<br/></tt></p><p/><p/><p>A alegação acima de que a pesquisa na árvore pode ser executada em um número logarítmico de etapas se baseia na suposição de que a árvore está <a name="%_idx_2164" id="%_idx_2164"/><a name="%_idx_2166" id="%_idx_2166"/>&quot;equilibrada&quot;, isto é, que as subárvores esquerda e direita de cada árvore possuem aproximadamente o mesmo número de elementos, para que cada subárvore contenha cerca da metade dos elementos de seu pai. Mas como podemos ter certeza de que as árvores que construímos serão equilibradas? Mesmo se começarmos com uma árvore equilibrada, adicionar elementos com <tt>adjoin-set</tt> pode produzir um resultado desequilibrado. Como a posição de um elemento recém-dependente depende de como o elemento se compara aos itens já no conjunto, podemos esperar que, se adicionarmos elementos &quot;aleatoriamente&quot;, a árvore tenderá a ser equilibrada em média. Mas isso não é uma garantia. Por exemplo, se começamos com um conjunto vazio e juntamos os números de 1 a 7 em sequência, terminamos com a árvore altamente desequilibrada mostrada na figura <a href="#%_fig_2.17">2.17</a>. Nesta árvore, todas as subárvores esquerdas estão vazias, portanto, não há vantagem sobre uma simples lista ordenada. Uma maneira de resolver esse problema é definir uma operação que transforma uma árvore arbitrária em uma árvore equilibrada com os mesmos elementos. Em seguida, podemos executar essa transformação após todas as operações <tt>adjoin-set</tt> para manter nosso conjunto em equilíbrio. Também existem outras maneiras de resolver esse problema, a maioria envolvendo o projeto de novas estruturas de dados para as quais a pesquisa e a inserção podem ser feitas em θ (<tt>log</tt> <em>n</em>) etapas.<a name="call_footnote_Temp_250" href="#footnote_Temp_250" id="call_footnote_Temp_250"><sup><small>40</small></sup></a></p><p>
+
+<a name="%_fig_2.17" id="%_fig_2.17"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch2-Z-G-52.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.17:</b>Árvore desequilibrada produzida pela junção de 1 a 7 em sequência.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>
+
+</p><p><a name="%_thm_2.63" id="%_thm_2.63"/>
+<b>Exercício 2.63.</b> Cada um dos dois procedimentos a seguir converte uma árvore binária <a name="%_idx_2182" id="%_idx_2182"/><a name="%_idx_2184" id="%_idx_2184"/>em uma lista.<a name="%_idx_2186" id="%_idx_2186"/></p><p/><p><tt>(define (tree-&gt;list-1 tree)<br/>
+  (if (null? tree)<br/>
+      '()<br/>
+      (append (tree-&gt;list-1 (left-branch tree))<br/>
+              (cons (entry tree)<br/>
+                    (tree-&gt;list-1 (right-branch tree))))))<br/>
+(define (tree-&gt;list-2 tree)<br/>
+  (define (copy-to-list tree result-list)<br/>
+    (if (null? tree)<br/>
+        result-list<br/>
+        (copy-to-list (left-branch tree)<br/>
+                      (cons (entry tree)<br/>
+                            (copy-to-list (right-branch tree)<br/>
+                                          result-list)))))<br/>
+  (copy-to-list tree '()))<br/></tt></p><p/><p>
+</p><p/><p>a. Os dois procedimentos produzem o mesmo resultado para cada árvore? Caso contrário, como os resultados diferem? Quais listas os dois procedimentos produzem para as árvores na figura <a href="#%_fig_2.16">2.16</a>?</p><p/><p>b. Os dois procedimentos possuem a mesma ordem de crescimento no número de etapas necessárias para converter uma árvore balanceada com <em>n</em> elementos em uma lista? Se não, qual cresce mais lentamente?</p><p/><p>
+
+</p><p><a name="%_thm_2.64" id="%_thm_2.64"/>
+<b>Exercício 2.64.</b> <a name="%_idx_2188" id="%_idx_2188"/> <a name="%_idx_2190" id="%_idx_2190"/>O procedimento a seguir <tt>list-&gt;tree</tt> converte uma lista ordenada em uma árvore binária balanceada. O procedimento auxiliar <tt>partial-tree</tt> usa como argumentos um número inteiro <em>n</em> e lista de, pelo menos, <em>n</em> elementos e constrói uma árvore balanceada contendo os primeiros <em>n</em> elementos da lista. O resultado retornado por <tt>partial-tree</tt> é um par (formado com <tt>cons</tt>) cujo <tt>car</tt> é a árvore construída e cujo <tt>cdr</tt> é a lista de elementos não incluídos na árvore.</p><p>
+
+</p><p/><p><tt><a name="%_idx_2192" id="%_idx_2192"/>(define (list-&gt;tree elements)<br/>
+  (car (partial-tree elements (length elements))))<br/><br/>
+(define (partial-tree elts n)<br/>
+  (if (= n 0)<br/>
+      (cons '() elts)<br/>
+      (let ((left-size (quotient (- n 1) 2)))<br/>
+        (let ((left-result (partial-tree elts left-size)))<br/>
+          (let ((left-tree (car left-result))<br/>
+                (non-left-elts (cdr left-result))<br/>
+                (right-size (- n (+ left-size 1))))<br/>
+            (let ((this-entry (car non-left-elts))<br/>
+                  (right-result (partial-tree (cdr non-left-elts)<br/>
+                                              right-size)))<br/>
+              (let ((right-tree (car right-result))<br/>
+                    (remaining-elts (cdr right-result)))<br/>
+                (cons (make-tree this-entry left-tree right-tree)<br/>
+                      remaining-elts))))))))<br/></tt></p><p/><p/><p>
+
+</p><p/><p>a. Escreva um breve parágrafo explicando o mais claramente possível como <tt>partial-tree</tt> funciona. Desenhe a árvore produzida por <tt>list-&gt;tree</tt> para a lista <tt>(1 3 5 7 9 11)</tt>.</p><p/><p>b. Qual é a ordem de crescimento no número de etapas exigidas por <tt>list-&gt;tree</tt> para converter uma lista de <em>n</em> elementos?</p><p/><p>
+
+</p><p><a name="%_thm_2.65" id="%_thm_2.65"/>
+<b>Exercício 2.65.</b> <a name="%_idx_2194" id="%_idx_2194"/> <a name="%_idx_2196" id="%_idx_2196"/>Use os resultados dos exercícios <a href="#%_thm_2.63">2.63</a> e <a href="#%_thm_2.64">2.64</a> para fornecer θ (<em>n</em>) implementações de <tt>union-set</tt> e <tt>intersection-set</tt> para conjuntos implementados como árvores binárias (balanceadas).<a name="call_footnote_Temp_254" href="#footnote_Temp_254" id="call_footnote_Temp_254"><sup><small>41</small></sup></a>
+
+</p><p>
+
+<a name="%_sec_Temp_255" id="%_sec_Temp_255"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_255">Conjuntos e recuperação de informação</a></h4><p>
+
+<a name="%_idx_2200" id="%_idx_2200"/>Examinamos opções para usar listas para representar conjuntos e vimos como a escolha da representação para um objeto de dados pode ter um grande impacto no desempenho dos programas que usam os dados. Outro motivo para se concentrar em conjuntos é que as técnicas discutidas aqui aparecem repetidamente em aplicativos que envolvem recuperação de informações.</p><p>
+
+<a name="%_idx_2202" id="%_idx_2202"/>Considere uma base de dados contendo um grande número de registradores individuais, <a name="%_idx_2204" id="%_idx_2204"/>como os arquivos de pessoal de uma empresa ou as transações em um sistema de contabilidade. Um sistema típico de gerenciamento de dados gasta uma grande quantidade de tempo acessando ou modificando os dados nos registradores e, portanto, requer um método eficiente para acessar os registradores. Isso é feito identificando uma parte de cada registrador para servir como uma <a name="%_idx_2206" id="%_idx_2206"/><em>chave</em> de identificação. Uma chave pode ser algo que identifique exclusivamente o registrador. Para um arquivo pessoal, pode ser o número de identificação de um funcionário. Para um sistema de contabilidade, pode ser um número de transação. Qualquer que seja a chave, quando definimos o registrador como uma estrutura de dados, devemos incluir um procedimento seletor <a name="%_idx_2208" id="%_idx_2208"/><tt>key</tt> que recupera a chave associada a um determinado registrador.</p><p>Agora, representamos a base de dados como um conjunto de registradores. Para localizar o registrador com uma determinada chave, usamos o procedimento <tt>lookup</tt>, que usa como argumento uma chave e uma base de dados e retorna o registrador que possui essa chave ou falso se não houver esse registrador. A <tt>Lookup</tt> é implementada quase da mesma maneira que o <tt>element-of-set?</tt>. Por exemplo, se o conjunto de registradores for implementado como uma lista não ordenada, poderíamos usar</p><p>
+
+</p><p/><p><tt><a name="%_idx_2210" id="%_idx_2210"/>(define (lookup given-key set-of-records)<br/>
+  (cond ((null? set-of-records) false)<br/>
+        ((equal? given-key (key (car set-of-records)))<br/>
+         (car set-of-records))<br/>
+        (else (lookup given-key (cdr set-of-records)))))<br/></tt></p><p/><p/><p>Obviamente, existem maneiras melhores de representar conjuntos grandes do que em listas não ordenadas. Os sistemas de recuperação de informações nos quais os registradores precisam ser &quot;acessados ​​aleatoriamente&quot; geralmente são implementados por um método baseado em árvore, como a representação em árvore binária discutida anteriormente. Ao projetar esse sistema, a metodologia de abstração de dados pode ser uma grande ajuda. O projetista pode criar uma implementação inicial usando uma representação simples e direta, como listas não ordenadas. Isso não é adequado para o sistema eventual, mas pode ser útil para fornecer uma base de dados “rápida e desleixada” com a qual testar o restante do sistema. Posteriormente, a representação de dados pode ser modificada para ser mais sofisticada. Se o banco de dados for acessado em termos de seletores e construtores abstratos, essa alteração na representação não exigirá nenhuma alteração no restante do sistema.</p><p>
+
+</p><p><a name="%_thm_2.66" id="%_thm_2.66"/>
+<b>Exercício 2.66.</b> Implemente o procedimento de <tt>lookup</tt> para o caso em que o conjunto de registradores é estruturado como uma árvore binária, ordenada pelos valores numéricos das chaves.</p><p/><p>
+
+<a name="%_sec_2.3.4" id="%_sec_2.3.4"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_2.3.4">2.3.4 Exemplo: árvores de codificação Huffman</a></h3><p>
+
+<a name="%_idx_2212" id="%_idx_2212"/>Esta seção fornece prática no uso da estrutura de lista e abstração de dados para manipular conjuntos e árvores. A aplicação é para métodos para representar dados como sequências de uns e zeros (bits). Por exemplo, o código padrão <a name="%_idx_2214" id="%_idx_2214"/><a name="%_idx_2216" id="%_idx_2216"/>ASCII usado para representar texto em computadores codifica cada <a name="%_idx_2218" id="%_idx_2218"/>caractere como uma sequência de sete bits. O uso de sete bits nos permite distinguir 2<sup>7</sup>, ou 128, possíveis caracteres diferentes. Em geral, se quisermos distinguir <em>n</em> símbolos diferentes, precisaremos usar <tt>log</tt><sub>2</sub><em>n</em> bits por símbolo. Se todas as nossas mensagens são compostas pelos oito símbolos A, B, C, D, E, F, G e H, podemos escolher um código com três bits por caractere, por exemplo</p><table border="0"><tr><td valign="top">A 000 </td><td valign="top">C 010 </td><td valign="top">E 100 </td><td valign="top">G 110</td></tr><tr><td valign="top">B 001 </td><td valign="top">D 011 </td><td valign="top">F 101 </td><td valign="top">H 111
+</td></tr></table>Com esse código, a mensagem<p>
+
+</p><p/><p>BACADAEAFABBAAAGAH</p><p>
+
+</p><p/><p>é codificado como a sequência de 54 bits</p><p>
+
+</p><p/><p>001000010000011000100000101000001001000000000110000111</p><p>
+
+</p><p/><p>Códigos como ASCII e o código A a H acima são conhecidos como códigos de <a name="%_idx_2220" id="%_idx_2220"/><a name="%_idx_2222" id="%_idx_2222"/><em>tamanho fixo</em>, porque representam cada símbolo na mensagem com o mesmo número de bits. Às vezes é vantajoso usar códigos <a name="%_idx_2224" id="%_idx_2224"/><a name="%_idx_2226" id="%_idx_2226"/><em>tamanho variável</em>, nos quais símbolos diferentes podem ser representados por diferentes números de bits. Por exemplo, <a name="%_idx_2228" id="%_idx_2228"/><a name="%_idx_2230" id="%_idx_2230"/>código Morse não usa o mesmo número de pontos e traços para cada letra do alfabeto. Em particular, E, a letra mais frequente, é representada por um único ponto. Em geral, se nossas mensagens forem tais que alguns símbolos apareçam com muita frequência e muito raramente, podemos codificar os dados com mais eficiência (ou seja, usando menos bits por mensagem) se atribuirmos códigos mais curtos aos símbolos frequentes. Considere o seguinte código alternativo para as letras A a H:</p><table border="0"><tr><td valign="top">A 0 </td><td valign="top">C 1010 </td><td valign="top">E 1100 </td><td valign="top">G 1110</td></tr><tr><td valign="top">B 100 </td><td valign="top">D 1011 </td><td valign="top">F 1101 </td><td valign="top">H 1111
+</td></tr></table>Com esse código, a mesma mensagem acima é codificada como a sequência<p>
+
+</p><p/><p>100010100101101100011010100100000111001111</p><p>
+
+</p><p/><p>Essa string contém 42 bits, economizando mais de 20% em espaço em comparação com o código de comprimento fixo mostrado acima.</p><p>Uma das dificuldades de usar um código de tamanho variável é saber quando você atingiu o final de um símbolo ao ler uma sequência de zeros e uns. O código Morse resolve esse problema usando um <a name="%_idx_2232" id="%_idx_2232"/><em>código separador</em> (neste caso, uma pausa) após a sequência de pontos e traços para cada letra. Outra solução é projetar o código de forma que nenhum código completo para qualquer símbolo seja o começo (ou <em>prefixo</em>) do código para outro símbolo. Esse código é chamado de <a name="%_idx_2234" id="%_idx_2234"/><a name="%_idx_2236" id="%_idx_2236"/><em>código de prefixo</em>. No exemplo acima, A é codificado por 0 e B é codificado por 100, portanto, nenhum outro símbolo pode ter um código que comece com 0 ou com 100.</p><p>Em geral, podemos obter economias significativas se usarmos códigos de prefixo de comprimento variável que aproveitam as frequências relativas dos símbolos nas mensagens a serem codificadas. Um esquema específico para fazer isso é chamado de método de codificação Huffman, após seu descobridor, <a name="%_idx_2238" id="%_idx_2238"/>David Huffman. Um código Huffman pode ser representado como uma árvore binária <a name="%_idx_2240" id="%_idx_2240"/><a name="%_idx_2242" id="%_idx_2242"/>cujas folhas são os símbolos que são codificados. Em cada nó não-folha da árvore, há um conjunto contendo todos os símbolos nas folhas que ficam abaixo do nó. Além disso, a cada símbolo de uma folha é atribuído um peso (que é sua frequência relativa), e cada nó que não seja de folha contém um peso que é a soma de todos os pesos das folhas abaixo dele. Os pesos não são usados ​​no processo de codificação ou decodificação. Veremos abaixo como eles são usados ​​para ajudar a construir a árvore.</p><p>
+
+<a name="%_fig_2.18" id="%_fig_2.18"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch2-Z-G-53.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 2.18:</b> Uma árvore de codificação Huffman.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>A figura <a href="#%_fig_2.18">2.18</a> mostra a árvore de Huffman para o código A a H fornecido acima. Os pesos nas folhas indicam que a árvore foi projetada para mensagens nas quais A aparece com frequência relativa 8, B com frequência relativa 3 e as outras letras cada uma com frequência relativa 1.</p><p>Dada uma árvore de Huffman, podemos encontrar a codificação de qualquer símbolo começando na raiz e descendo até chegar à folha que contém o símbolo. Cada vez que movemos um ramo esquerdo para baixo, adicionamos 0 ao código, e cada vez que movemos um ramo direito, adicionamos 1. (Decidimos qual ramificação seguir testando para ver qual ramificação é o nó da folha do símbolo ou contém o símbolo em seu conjunto). Por exemplo, começando pela raiz da árvore na figura <a href="#%_fig_2.18">2.18</a>, chegamos à folha para D seguindo um ramo direito, depois um ramo esquerdo, depois um ramo direito, depois um ramo direito; portanto, o código para D é 1011.</p><p>Para decodificar uma sequência de bits usando uma árvore de Huffman, começamos pela raiz e usamos os zeros e os sucessivos da sequência de bits para determinar se devemos mover para baixo o ramo esquerdo ou direito. Cada vez que chegamos a uma folha, geramos um novo símbolo na mensagem; nesse ponto, começamos da raiz da árvore para encontrar o próximo símbolo. Por exemplo, suponha que recebamos a árvore acima e a sequência 10001010. Começando na raiz, movemos para baixo o ramo direito (desde que o primeiro bit da cadeia é 1), depois o ramo esquerdo (desde que o segundo bit é 0) e depois o ramo esquerdo (já que o terceiro bit também é 0) Isso nos leva à folha de B, então o primeiro símbolo da mensagem decodificada é B. Agora começamos novamente pela raiz e fazemos um movimento para a esquerda porque o próximo bit na cadeia é 0. Isso nos leva à folha de A. Então começamos novamente na raiz com o restante da string 1010, então movemos para a direita, esquerda, direita, esquerda e alcançamos C. Assim, a mensagem inteira é BAC.</p><p>
+
+<a name="%_sec_Temp_257" id="%_sec_Temp_257"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_257">Gerando árvores Huffman</a></h4><p>Dado um &quot;alfabeto&quot; de símbolos e suas frequências relativas, como construímos o &quot;melhor&quot; código? (Em outras palavras, qual árvore codificará as mensagens com o menor número de bits?) Huffman forneceu um algoritmo para fazer isso e mostrou que o código resultante é realmente o melhor código de tamanho variável para mensagens em que a frequência relativa dos símbolos corresponde às frequências com qual o código foi construído. <a name="%_idx_2244" id="%_idx_2244"/><a name="%_idx_2246" id="%_idx_2246"/>Não provaremos essa otimização dos códigos Huffman aqui, mas mostraremos como as árvores Huffman são construídas.<a name="call_footnote_Temp_258" href="#footnote_Temp_258" id="call_footnote_Temp_258"><sup><small>42</small></sup></a></p><p>O algoritmo para gerar uma árvore Huffman é muito simples. A ideia é organizar a árvore para que os símbolos com a frequência mais baixa apareçam mais afastados da raiz. Comece com o conjunto de nós de folha, contendo símbolos e suas frequências, conforme determinado pelos dados iniciais a partir dos quais o código deve ser construído. Agora encontre duas folhas com os pesos mais baixos e mescle-as para produzir um nó que tenha esses dois nós como ramificações esquerda e direita. O peso do novo nó é a soma dos dois pesos. Remova as duas folhas do conjunto original e substitua-as por esse novo nó. Agora continue esse processo. Em cada etapa, mescle dois nós com os menores pesos, removendo-os do conjunto e substituindo-os por um nó que tenha esses dois como seus ramos esquerdo e direito. O processo para quando resta apenas um nó, que é a raiz de toda a árvore. Aqui está como a árvore Huffman da figura <a href="#%_fig_2.18">2.18</a> foi gerada:</p><p>
+
+</p><table border="0"><tr><td valign="top">Folhas iniciais</td><td valign="top">{(A 8)  (B 3)  (C 1)
+ (D 1)  (E 1)  (F 1)  (G 1)  (H 1)}</td></tr><tr><td valign="top"><p>Mesclar</p></td><td valign="top">{(A 8)  (B 3)  ({C D} 2)  (E
+1)  (F 1)  (G 1)  (H 1)}</td></tr><tr><td valign="top"><p>Mesclar</p></td><td valign="top">{(A 8)  (B 3)  ({C D} 2)
+({E F} 2)  (G 1)  (H 1)}</td></tr><tr><td valign="top"><p>Mesclar</p></td><td valign="top">{(A 8)  (B 3)  ({C D} 2)
+({E F} 2)   ({G H} 2)}</td></tr><tr><td valign="top"><p>Mesclar</p></td><td valign="top">{(A 8)   (B 3)  ({C D} 2)  ({E F G H} 4)}</td></tr><tr><td valign="top"><p>Mesclar</p></td><td valign="top">{(A 8)  ({B C D} 5)  ({E F G H} 4)}</td></tr><tr><td valign="top"><p>Mesclar</p></td><td valign="top">{(A 8)  ({B C D E F G H} 9)}</td></tr><tr><td valign="top"><p>Mesclagem final</p></td><td valign="top">{({A B C D E F G H} 17)}</td></tr><tr><td valign="top"/></tr></table>O algoritmo nem sempre especifica uma árvore única, porque pode não haver nós de menor peso exclusivos em cada etapa. Além disso, a escolha da ordem na qual os dois nós são mesclados (ou seja, qual será o ramo direito e qual será o ramo esquerdo) é arbitrária.<p>
+
+<a name="%_sec_Temp_259" id="%_sec_Temp_259"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_259">Representando árvores Huffman</a></h4><p>Nos exercícios abaixo, trabalharemos com um sistema que usa árvores Huffman para codificar e decodificar mensagens e gera árvores Huffman de acordo com o algoritmo descrito acima. Começaremos discutindo como as árvores são representadas.</p><p>As folhas da árvore são representadas por uma lista que consiste no símbolo <tt>leaf</tt>, no símbolo na folha e no peso:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2250" id="%_idx_2250"/>(define (make-leaf symbol weight)<br/>
+  (list 'leaf symbol weight))<br/><a name="%_idx_2252" id="%_idx_2252"/>(define (leaf? object)<br/>
+  (eq? (car object) 'leaf))<br/><a name="%_idx_2254" id="%_idx_2254"/>(define (symbol-leaf x) (cadr x))<br/><a name="%_idx_2256" id="%_idx_2256"/>(define (weight-leaf x) (caddr x))<br/></tt></p><p/><p>Uma árvore geral será uma lista de um ramo esquerdo, um ramo direito, um conjunto de símbolos e um peso. O conjunto de símbolos será simplesmente uma lista dos símbolos, em vez de uma representação de conjunto mais sofisticada. Quando fazemos uma árvore mesclando dois nós, obtemos o peso da árvore como a soma dos pesos dos nós e o conjunto de símbolos como a união dos conjuntos de símbolos para os nós. Como nossos conjuntos de símbolos são representados como listas, podemos formar a união usando o procedimento <tt>append</tt> que definimos na seção <a href="book-Z-H-15.html#%_sec_2.2.1">2.2.1</a>:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2258" id="%_idx_2258"/>(define (make-code-tree left right)<br/>
+  (list left<br/>
+        right<br/>
+        (append (symbols left) (symbols right))<br/>
+        (+ (weight left) (weight right))))<br/></tt></p><p/><p>Se fizermos uma árvore dessa maneira, teremos os seguintes seletores:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2260" id="%_idx_2260"/>(define (left-branch tree) (car tree))<br/><br/><a name="%_idx_2262" id="%_idx_2262"/>(define (right-branch tree) (cadr tree))<br/><a name="%_idx_2264" id="%_idx_2264"/>(define (symbols tree)<br/>
+  (if (leaf? tree)<br/>
+      (list (symbol-leaf tree))<br/>
+      (caddr tree)))<br/><a name="%_idx_2266" id="%_idx_2266"/>(define (weight tree)<br/>
+  (if (leaf? tree)<br/>
+      (weight-leaf tree)<br/>
+      (cadddr tree)))<br/></tt></p><p/><p>Os procedimentos <tt>symbols</tt> e <tt>weight</tt> devem fazer algo ligeiramente diferente, dependendo de serem chamados com uma folha ou uma árvore geral. Estes são exemplos simples de <a name="%_idx_2268" id="%_idx_2268"/><a name="%_idx_2270" id="%_idx_2270"/><em>procedimentos genéricos</em> (procedimentos que podem lidar com mais de um tipo de dados), sobre os quais teremos muito mais a dizer nas seções <a href="book-Z-H-17.html#%_sec_2.4">2.4</a> e <a href="book-Z-H-18.html#%_sec_2.5">2.5</a>.</p><p>
+
+<a name="%_sec_Temp_260" id="%_sec_Temp_260"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_260">O procedimento de decodificação</a></h4><p>O procedimento a seguir implementa o algoritmo de decodificação. Toma-se como argumento uma lista de zeros e uns, junto com uma árvore de Huffman.</p><p>
+
+</p><p/><p><tt><a name="%_idx_2272" id="%_idx_2272"/>(define (decode bits tree)<br/>
+  (define (decode-1 bits current-branch)<br/>
+    (if (null? bits)<br/>
+        '()<br/>
+        (let ((next-branch<br/>
+               (choose-branch (car bits) current-branch)))<br/>
+          (if (leaf? next-branch)<br/>
+              (cons (symbol-leaf next-branch)<br/>
+                    (decode-1 (cdr bits) tree))<br/>
+              (decode-1 (cdr bits) next-branch)))))<br/>
+  (decode-1 bits tree))<br/>
+(define (choose-branch bit branch)<br/>
+  (cond ((= bit 0) (left-branch branch))<br/>
+        ((= bit 1) (right-branch branch))<br/>
+        (else (error &quot;bad bit -- CHOOSE-BRANCH&quot; bit))))<br/></tt></p><p/><p>O procedimento <tt>decode-1</tt> utiliza dois argumentos: a lista de bits restantes e a posição atual na árvore. Ele continua movendo a árvore para baixo, escolhendo um ramo esquerdo ou direito, dependendo se o próximo bit da lista é zero ou um. (Isso é feito com o procedimento <tt>choose-branch</tt>). Quando chega a uma folha, ele retorna o símbolo nessa folha como o próximo símbolo na mensagem ao <tt>cons</tt> para o resultado da decodificação do restante da mensagem, começando na raiz da árvore. Observe a verificação de erro na cláusula final de <tt>choose-branch</tt>, que reclama se o procedimento encontra algo diferente de zero ou um nos dados de entrada.</p><p>
+
+<a name="%_sec_Temp_261" id="%_sec_Temp_261"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_261">Conjuntos de elementos ponderados</a></h4><p>Em nossa representação de árvores, cada nó não-folha contém um conjunto de símbolos, que representamos como uma lista simples. No entanto, o algoritmo de geração de árvore discutido acima exige que também trabalhemos com conjuntos de folhas e árvores, mesclando sucessivamente os dois itens menores. Como seremos obrigados a encontrar repetidamente o menor item de um conjunto, é conveniente usar uma representação ordenada para esse tipo de conjunto.</p><p>Representaremos um conjunto de folhas e árvores como uma lista de elementos, organizados em ordem crescente de peso. O procedimento <tt>adjoin-set</tt> a seguir para construir conjuntos é semelhante ao descrito no exercício <a href="#%_thm_2.61">2.61</a>; no entanto, os itens são comparados por seus pesos e o elemento que é adicionado ao conjunto nunca está nele.</p><p>
+
+</p><p/><p><tt><a name="%_idx_2274" id="%_idx_2274"/>(define (adjoin-set x set)<br/>
+  (cond ((null? set) (list x))<br/>
+        ((&lt; (weight x) (weight (car set))) (cons x set))<br/>
+        (else (cons (car set)<br/>
+                    (adjoin-set x (cdr set))))))<br/></tt></p><p/><p/><p>O procedimento a seguir pega uma lista de pares símbolo-frequência como <tt>((A 4) (B 2) (C 1) (D 1))</tt> e constrói um conjunto inicial ordenado de folhas, pronto para ser mesclados de acordo com o algoritmo de Huffman:</p><p>
+
+</p><p/><p><tt><a name="%_idx_2276" id="%_idx_2276"/>(define (make-leaf-set pairs)<br/>
+  (if (null? pairs)<br/>
+      '()<br/>
+      (let ((pair (car pairs)))<br/>
+        (adjoin-set (make-leaf (car pair)    <em>; symbol</em><br/>
+                               (cadr pair))  <em>; frequency</em><br/>
+                    (make-leaf-set (cdr pairs))))))<br/></tt></p><p/><p/><p>
+
+</p><p><a name="%_thm_2.67" id="%_thm_2.67"/>
+<b>Exercício 2.67.</b> Defina uma árvore de codificação e uma mensagem de amostra:</p><p>
+
+
+</p><p/><p><tt>(define sample-tree<br/>
+  (make-code-tree (make-leaf 'A 4)<br/>
+                  (make-code-tree<br/>
+                   (make-leaf 'B 2)<br/>
+                   (make-code-tree (make-leaf 'D 1)<br/>
+                                   (make-leaf 'C 1)))))<br/><br/>
+(define sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))<br/></tt></p><p/><p>Use o procedimento <tt>decode</tt> para decodificar a mensagem e forneça o resultado.</p><p/><p>
+
+
+</p><p><a name="%_thm_2.68" id="%_thm_2.68"/>
+<b>Exercício 2.68.</b> O procedimento <tt>encode</tt> usa como argumentos uma mensagem e uma árvore e produz a lista de bits que fornece a mensagem codificada.</p><p>
+
+
+</p><p/><p><tt><a name="%_idx_2278" id="%_idx_2278"/>(define (encode message tree)<br/>
+  (if (null? message)<br/>
+      '()<br/>
+      (append (encode-symbol (car message) tree)<br/>
+              (encode (cdr message) tree))))<br/></tt></p><p/><p>
+<tt>Encode-symbol</tt> é um procedimento, que você deve escrever, que retorna a lista de bits que codifica um determinado símbolo de acordo com uma determinada árvore. Você deve projetar <tt>encode-symbol</tt> para sinalizar um erro se o símbolo não estiver na árvore. Teste seu procedimento codificando o resultado obtido no exercício <a href="#%_thm_2.67">2.67</a> com a árvore de amostras e verificando se é o mesmo que a mensagem de amostra original.</p><p/><p>
+
+</p><p><a name="%_thm_2.69" id="%_thm_2.69"/>
+<b>Exercício 2.69.</b> O procedimento a seguir usa como argumento uma lista de pares símbolo-frequência (onde nenhum símbolo aparece em mais de um par) e gera uma árvore de codificação Huffman de acordo com o algoritmo Huffman.</p><p>
+
+</p><p/><p><tt><a name="%_idx_2280" id="%_idx_2280"/>(define (generate-huffman-tree pairs)<br/>
+  (successive-merge (make-leaf-set pairs)))<br/></tt></p><p/><p>
+<tt>Make-leaf-set</tt> é o procedimento fornecido acima que transforma a lista de pares em um conjunto ordenado de folhas. <tt>Successive-merge</tt> é o procedimento que você deve escrever, usando <tt>make-code-tree</tt> para mesclar sucessivamente os elementos de menor peso do conjunto até restar apenas um elemento, que é a árvore Huffman desejada. (Este procedimento é um pouco manhoso, mas não é realmente complicado. Se você planejasse um procedimento complexo, certamente fazerá algo errado. Você pode tirar vantagem significativa do fato de usarmos uma representação de conjunto ordenada).</p><p/><p>
+
+</p><p><a name="%_thm_2.70" id="%_thm_2.70"/>
+<b>Exercício 2.70.</b> <a name="%_idx_2282" id="%_idx_2282"/> O alfabeto de oito símbolos a seguir, com frequências relativas associadas, foi projetado para codificar com eficiência as letras das músicas de rock dos anos 50. (Observe que os &quot;símbolos&quot; de um &quot;alfabeto&quot; não precisam ser letras individuais).</p><p>
+
+</p><table border="0"><tr><td valign="top">A    </td><td valign="top">2 </td><td valign="top">NA  </td><td valign="top">16</td></tr><tr><td valign="top">BOOM </td><td valign="top">1 </td><td valign="top">SHA </td><td valign="top">3</td></tr><tr><td valign="top">GET  </td><td valign="top">2 </td><td valign="top">YIP </td><td valign="top">9</td></tr><tr><td valign="top">JOB  </td><td valign="top">2 </td><td valign="top">WAH </td><td valign="top">1
+</td></tr></table>Use <tt>generate-huffman-tree</tt> (exercício <a href="#%_thm_2.69">2.69</a>) para gerar uma árvore Huffman correspondente e use <tt>encode</tt> (exercício <a href="#%_thm_2.68">2.68</a>) para codificar a seguinte mensagem:<p>
+
+</p><p/><p>Get a job</p><p>
+
+Sha na na na na na na na na</p><p>
+
+Get a job</p><p>
+
+Sha na na na na na na na na</p><p>
+
+Wah yip yip yip yip yip yip yip yip yip</p><p>
+
+Sha boom</p><p>
+
+</p><p/><p>Quantos bits são necessários para a codificação? Qual é o menor número de bits que seria necessário para codificar essa música se usássemos um código de tamanho fixo para o alfabeto de oito símbolos?</p><p/><p>
+
+</p><p><a name="%_thm_2.71" id="%_thm_2.71"/>
+<b>Exercício 2.71.</b> Suponha que tenhamos uma árvore Huffman para um alfabeto de <em>n</em> símbolos e que as frequências relativas dos símbolos sejam 1, 2, 4, <tt>…</tt>, 2<sup><em>n</em>-1</sup>. Esboce a árvore para <em>n</em>= 5; para <em>n</em>= 10. Em uma árvore (em geral <em>n</em>) como os bits são necessários para codificar o símbolo mais frequente? o símbolo menos frequente?</p><p/><p>
+
+</p><p><a name="%_thm_2.72" id="%_thm_2.72"/>
+<b>Exercício 2.72.</b> <a name="%_idx_2284" id="%_idx_2284"/> Considere o procedimento de codificação que você projetou no exercício <a href="#%_thm_2.68">2.68</a>. Qual é a ordem de crescimento no número de etapas necessárias para codificar um símbolo? Certifique-se de incluir o número de etapas necessárias para pesquisar na lista de símbolos em cada nó encontrado. Responder a essa pergunta em geral é difícil. Considere o caso especial em que as frequências relativas dos símbolos <em>n</em> são as descritas no exercício <a href="#%_thm_2.71">2.71</a> e dê a ordem do crescimento (em função de <em>n</em>) do número de etapas necessárias para codificar os símbolos mais frequentes e menos frequentes no alfabeto.</p><p>
+
+</p><p/><div class="smallprint"><hr/></div><p>
+</p><div class="footnote"><p><a name="footnote_Temp_227" href="#call_footnote_Temp_227" id="footnote_Temp_227"><sup><small>32</small></sup></a> Permitir citação em uma linguagem causa estragos com a capacidade de raciocinar sobre a linguagem em termos simples, porque destrói a noção de que iguais podem ser substituído por iguais. Por exemplo, três é um mais dois, mas a palavra &quot;três&quot; não é a frase &quot;um mais dois&quot;. A citação é poderosa porque nos permite criar expressões que manipulam outras expressões (como veremos quando escrevermos um interpretador no capítulo 4). Mas permitir declarações em uma linguagem que falem sobre outras declarações nessa linguagem torna muito difícil manter qualquer princípio coerente do que &quot;iguais podem ser substituídos por iguais&quot; deve significar. Por exemplo, se sabemos que <a name="%_idx_1996" id="%_idx_1996"/>a estrela da tarde é a estrela da manhã, a partir da afirmação &quot;a estrela da noite é Vênus&quot;, podemos deduzir &quot;a estrela da manhã é Vênus&quot;. No entanto, dado que “João sabe que a estrela da noite é Vênus”, não podemos inferir que “João sabe que a estrela da manhã é Vênus”.</p><p><a name="footnote_Temp_228" href="#call_footnote_Temp_228" id="footnote_Temp_228"><sup><small>33</small></sup></a> As aspas simples são diferentes <a name="%_idx_2002" id="%_idx_2002"/><a name="%_idx_2004" id="%_idx_2004"/><a name="%_idx_2006" id="%_idx_2006"/><a name="%_idx_2008" id="%_idx_2008"/>das aspas duplas que foram usando para incluir cadeias de caracteres a serem impressas. Enquanto as aspas simples podem ser usadas para denotar listas ou símbolos, as aspas duplas são usadas apenas com cadeias de caracteres. Neste livro, o único uso para cadeias de caracteres é como itens a serem impressos.</p><p><a name="footnote_Temp_229" href="#call_footnote_Temp_229" id="footnote_Temp_229"><sup><small>34</small></sup></a> Estritamente, nosso uso de aspas viola a regra geral de que todas as expressões compostas em nossa linguagem devem ser delimitadas por parênteses e parecerem listas. <a name="%_idx_2014" id="%_idx_2014"/><a name="%_idx_2016" id="%_idx_2016"/>Podemos recuperar essa consistência introduzindo uma forma especial <tt>quote</tt>, que serve ao mesmo objetivo que as aspas. Assim, digitaríamos <tt>(quote a)</tt> em vez de <tt>'a</tt>, e digitaríamos <tt>(quote (a b c))</tt> em vez de <tt>'(a b c)</tt>. É exatamente assim que o interpretador funciona. As aspas são apenas uma abreviação de um caractere para agrupar a próxima expressão completa com <tt>quote</tt> para formar <tt>(quote &lt;<em>expression</em>&gt;)</tt>. Isso é importante porque mantém o princípio de que qualquer expressão vista pelo interpretador pode ser manipulada como um objeto de dados. Por exemplo, podemos construir a expressão <tt>(car '(a b c))</tt>, que é igual a <tt>(car (quote (a b c)))</tt>, avaliando <tt>(list 'car (list 'quote '(a b c)))</tt>.</p><p><a name="footnote_Temp_230" href="#call_footnote_Temp_230" id="footnote_Temp_230"><sup><small>35</small></sup></a> Podemos considerar dois símbolos como &quot;iguais&quot; se consistirem nos mesmos caracteres na mesma ordem. Essa definição contorna uma questão profunda que ainda não estamos prontos para abordar: o significado de &quot;semelhança&quot; em uma linguagem de programação. Voltaremos a isso no capítulo 3 (seção <a href="book-Z-H-20.html#%_sec_3.1.3">3.1.3</a>).</p><p><a name="footnote_Temp_233" href="#call_footnote_Temp_233" id="footnote_Temp_233"><sup><small>36</small></sup></a> Na prática, os programadores usam <tt>equal?</tt> para comparar listas que contêm números e símbolos. Os números não são considerados símbolos. A questão <a name="%_idx_2038" id="%_idx_2038"/><a name="%_idx_2040" id="%_idx_2040"/>de se dois números numericamente iguais (conforme testado por <tt>=</tt>) também são <tt>eq?</tt> é altamente dependente da implementação. Uma definição melhor de <tt>equal?</tt> (como a que vem como primitiva no Scheme) também estipularia que se <tt>a</tt> e <tt>b</tt> fossem ambos números <tt>a</tt> e <tt>b</tt> são <tt>equal?</tt> se forem numericamente iguais.</p><p><a name="footnote_Temp_240" href="#call_footnote_Temp_240" id="footnote_Temp_240"><sup><small>37</small></sup></a> Se queremos ser mais formais, podemos especificar &quot;consistente com as interpretações dadas acima&quot; para significar que as operações satisfazem uma coleção de regras como estas:</p><p>
+
+</p><p/><ul><li>Para qualquer conjunto <tt>S</tt> e qualquer objeto <tt>x</tt>, <tt>(element-of-set? x (adjoin-set x S))</tt> é verdadeiro (informalmente: “A junção de um objeto a um conjunto produz um conjunto que contém o objeto”).<p>
+
+</p></li><li>Para todos os conjuntos <tt>S</tt> e <tt>T</tt> e qualquer objeto <tt>x</tt>, <tt>(element-of-set? x (union-set S T))</tt> é igual a <tt>(or (element-of-set? x S) (element-of-set? x T))</tt> (informalmente: “Os elementos de <tt>(union S T)</tt> são os elementos que estão em <tt>S</tt> ou em <tt>T</tt>”).<p>
+
+</p></li><li>Para qualquer objeto <tt>x</tt>, <tt>(element-of-set? x '())</tt> é falso (informalmente: “Nenhum objeto é um elemento do conjunto vazio”).</li></ul><p>
+
+
+</p><p><a name="footnote_Temp_248" href="#call_footnote_Temp_248" id="footnote_Temp_248"><sup><small>38</small></sup></a> Reduzir pela metade o tamanho do problema em cada etapa é a característica distintiva do <a name="%_idx_2148" id="%_idx_2148"/>crescimento logarítmico, como vimos no algoritmo rápido de exponenciação da seção <a href="book-Z-H-11.html#%_sec_1.2.4">1.2.4</a> e o método de pesquisa de meio intervalo da seção <a href="book-Z-H-12.html#%_sec_1.3.3">1.3.3</a>.</p><p><a name="footnote_Temp_249" href="#call_footnote_Temp_249" id="footnote_Temp_249"><sup><small>39</small></sup></a> Representamos conjuntos em termos de árvores e árvores em termos de listas - na verdade, uma abstração de dados construída sobre uma abstração de dados. Podemos considerar os procedimentos <tt>entry</tt>, <tt>left-branch</tt>, <tt>right-branch</tt> e <tt>make-tree</tt> como uma maneira de isolar a abstração de uma “árvore binária” da maneira específica em que desejamos representar essa árvore em termos de estrutura de lista.</p><p><a name="footnote_Temp_250" href="#call_footnote_Temp_250" id="footnote_Temp_250"><sup><small>40</small></sup></a> Exemplos de tais estruturas incluem <a name="%_idx_2168" id="%_idx_2168"/><a name="%_idx_2170" id="%_idx_2170"/><a name="%_idx_2172" id="%_idx_2172"/><a name="%_idx_2174" id="%_idx_2174"/><em>B-trees</em> e <em>árvores rubro-negra</em>. Existe uma grande literatura sobre estruturas de dados dedicadas a esse problema. Veja Cormen, <a name="%_idx_2176" id="%_idx_2176"/><a name="%_idx_2178" id="%_idx_2178"/><a name="%_idx_2180" id="%_idx_2180"/>Leiserson e Rivest 1990.</p><p><a name="footnote_Temp_254" href="#call_footnote_Temp_254" id="footnote_Temp_254"><sup><small>41</small></sup></a> Exercícios <a href="#%_thm_2.63">2.63</a>- <a href="#%_thm_2.65">2.65</a> <a name="%_idx_2198" id="%_idx_2198"/>são devidos a Paul Hilfinger.</p><p><a name="footnote_Temp_258" href="#call_footnote_Temp_258" id="footnote_Temp_258"><sup><small>42</small></sup></a> Veja Hamming 1980 <a name="%_idx_2248" id="%_idx_2248"/>para uma discussão das propriedades matemáticas dos códigos de Huffman.</p></div>
+
+
+
+</body>
+</html>

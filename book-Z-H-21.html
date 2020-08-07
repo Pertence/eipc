@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops">
+<!-- Generated from TeX source by tex2page, v 4o,
+     (c) Dorai Sitaram, http://www.cs.rice.edu/~dorai/tex2page -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type: text/html; charset=utf-8"/>
+    <title>Estrutura e Interpretação de Programas de Computador</title>
+    <link rel="stylesheet" type="text/css" href="book-Z-C.css" title="default"/>
+  </head>
+  <body>
+
+
+
+<a name="%_sec_3.2" id="%_sec_3.2"/>
+<h2><a href="book-Z-H-4.html#%_toc_%_sec_3.2">3.2 O modelo de avaliação do ambiente</a></h2><p>
+
+
+<a name="%_idx_3034" id="%_idx_3034"/>Quando introduzimos procedimentos compostos no capítulo 1, usamos o modelo de avaliação de <a name="%_idx_3036" id="%_idx_3036"/>substituição (seção <a href="book-Z-H-10.html#%_sec_1.1.5">1.1.5</a>) para definir o que significa aplicar um procedimento aos argumentos:</p><p>
+
+</p><p/><ul><li>Para aplicar um procedimento composto aos argumentos, avalie o corpo do procedimento com cada parâmetro formal substituído pelo argumento correspondente.</li></ul><p/><p>Uma vez que admitimos a atribuição em nossa linguagem de programação, essa definição não é mais adequada. Em particular, a seção <a href="book-Z-H-20.html#%_sec_3.1.3">3.1.3</a> argumentou que, na presença de atribuição, uma variável não pode mais ser considerada apenas um nome para um valor. Em vez disso, uma variável deve, de alguma forma, designar um &quot;local&quot; no qual os valores podem ser armazenados. Em nosso novo modelo de avaliação, esses locais serão mantidos em estruturas chamadas <a name="%_idx_3038" id="%_idx_3038"/><em>ambientes</em>.</p><p>Um ambiente é uma sequência de <a name="%_idx_3040" id="%_idx_3040"/><em>quadros</em>. Cada quadro é uma tabela (possivelmente vazia) de <a name="%_idx_3042" id="%_idx_3042"/><em>ligações</em>, que associam nomes de variáveis ​​aos seus valores correspondentes. (Um único quadro pode conter no máximo uma ligação para qualquer variável). Cada quadro também possui um ponteiro para seu <a name="%_idx_3044" id="%_idx_3044"/><a name="%_idx_3046" id="%_idx_3046"/><em>ambiente incluso</em>, a menos que, para fins de discussão, o quadro é considerado <a name="%_idx_3048" id="%_idx_3048"/><a name="%_idx_3050" id="%_idx_3050"/><em>global</em>. O <a name="%_idx_3052" id="%_idx_3052"/><em>valor de uma variável</em> em relação a um ambiente é o valor fornecido pela ligação da variável no primeiro quadro do ambiente que contém uma ligação para essa variável. Se nenhum quadro na sequência especificar uma ligação para a variável, é dito que a variável é <a name="%_idx_3054" id="%_idx_3054"/><a name="%_idx_3056" id="%_idx_3056"/><em>não ligada</em> no ambiente.</p><p>
+
+<a name="%_fig_3.1" id="%_fig_3.1"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch3-Z-G-2.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 3.1:</b> Uma estrutura de ambiente simples.</div></caption><tr><td>
+
+<a name="%_idx_3058" id="%_idx_3058"/></td></tr></table></div><p/><p>A figura <a href="#%_fig_3.1">3.1</a> mostra uma estrutura de ambiente simples que consiste em três quadros, rotulados I, II e III. No diagrama, A, B, C e D são ponteiros para ambientes. C e D apontam para o mesmo ambiente. As variáveis ​​<tt>z</tt> e <tt>x</tt> estão ligadas no quadro II, enquanto <tt>y</tt> e <tt>x</tt> estão ligadas no quadro I. O valor de <tt>x</tt> no ambiente D é 3. O valor de <tt>x</tt> em relação ao ambiente B também é 3. Isso é determinado da seguinte forma: Examinamos o primeiro quadro na sequência (quadro III) e não encontramos uma ligação para <tt>x</tt>; portanto, prosseguimos para o ambiente envolvente D e encontramos a ligação no quadro I. Por outro lado, o valor de <tt>x</tt> no ambiente A é 7, porque o primeiro quadro na sequência (quadro II) contém uma ligação de <tt>x</tt> a 7. Com relação ao ambiente A, a ligação de <tt>x</tt> a 7 no quadro II é considerada a<a name="%_idx_3060" id="%_idx_3060"/><em>sombrear</em> a ligação de <tt>x</tt> a 3 no quadro I.</p><p>O ambiente é crucial para o processo de avaliação, porque determina o contexto em que uma expressão deve ser avaliada. De fato, pode-se dizer que expressões em uma linguagem de programação não possuem, por si só, nenhum significado. Em vez disso, uma expressão adquire um significado apenas em relação a algum ambiente em que é avaliada. Mesmo a interpretação de uma expressão tão direta quanto <tt>(+ 1 1)</tt> depende do entendimento de que alguém opera em um contexto em que <tt>+</tt> é o símbolo da adição. Assim, em nosso modelo de avaliação, sempre falaremos em avaliar uma expressão em relação a algum ambiente. Para descrever interações com o interpretador, suporemos que exista um <a name="%_idx_3062" id="%_idx_3062"/>ambiente global, consistindo em um único quadro (sem ambiente fechado) que inclua valores para os símbolos associados aos procedimentos primitivos. Por exemplo, a ideia de que <tt>+</tt> é o símbolo para adição é capturada ao dizer que o símbolo <tt>+</tt> está ligado no ambiente global ao procedimento de adição primitivo.</p><p>
+
+<a name="%_sec_3.2.1" id="%_sec_3.2.1"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_3.2.1">3.2.1 As regras para avaliação</a></h3><p>
+
+<a name="%_idx_3064" id="%_idx_3064"/>A especificação geral de como o interpretador avalia uma combinação permanece a mesma de quando a introduzimos pela primeira vez na seção <a href="book-Z-H-10.html#%_sec_1.1.3">1.1.3</a>:</p><p>
+
+</p><p/><ul><li>Para avaliar uma combinação:</li></ul><p/><p>
+
+</p><blockquote>
+<p>1. Avalie as subexpressões da combinação.<a name="call_footnote_Temp_342" href="#footnote_Temp_342" id="call_footnote_Temp_342"><sup><small>12</small></sup></a></p><p>
+
+</p><p>2. Aplique o valor da subexpressão do operador aos valores das subexpressões do operando.</p></blockquote><p>O modelo de avaliação do ambiente substitui o modelo de substituição ao especificar o que significa aplicar um procedimento composto aos argumentos.</p><p>No modelo de avaliação do ambiente, um procedimento é sempre um par que consiste em algum código e um ponteiro para um ambiente. Os procedimentos são criados apenas de uma maneira: avaliando uma expressão <tt>lambda</tt>. <a name="%_idx_3070" id="%_idx_3070"/>Isso produz um procedimento cujo código é obtido a partir do texto da expressão <tt>lambda</tt> e cujo ambiente é o ambiente no qual a expressão <tt>lambda</tt> foi avaliada para produzir o procedimento. Por exemplo, considere a definição do procedimento</p><p>
+
+</p><p/><p><tt><a name="%_idx_3072" id="%_idx_3072"/>(define (square x)<br/>
+  (* x x))<br/></tt></p><p/><p>avaliados no ambiente global. A sintaxe de definição de procedimento é apenas um açúcar sintático para uma expressão implícita <tt>lambda</tt> subjacente. Teria sido equivalente a ter usado</p><p>
+
+</p><p/><p><tt>(define square<br/>
+  (lambda (x) (* x x)))<br/></tt></p><p/><p>que avalia <tt>(lambda (x) (* x x))</tt> e liga <tt>square</tt> ao valor resultante, tudo no ambiente global.</p><p>A figura <a href="#%_fig_3.2">3.2</a> mostra o resultado da avaliação dessa expressão <tt>define</tt>. O objeto do procedimento é um par cujo código especifica que o procedimento possui um parâmetro formal, ou seja, <tt>x</tt>, e um corpo do procedimento <tt>(* x x)</tt>. A parte do ambiente do procedimento é um ponteiro para o ambiente global, pois é o ambiente no qual a expressão <tt>lambda</tt> foi avaliada para produzir o procedimento. Uma nova ligação, que associa o objeto de procedimento ao símbolo <tt>square</tt>, foi adicionada ao quadro global. Em geral, <tt>define</tt> cria definições adicionando ligações a quadros.</p><p>
+
+<a name="%_fig_3.2" id="%_fig_3.2"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch3-Z-G-3.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 3.2:</b> Estrutura do ambiente produzida pela avaliação de <tt>(define (square x) (* x x))</tt> no ambiente global.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Agora que vimos como os procedimentos são criados, podemos descrever como os procedimentos são aplicados. O modelo de ambiente especifica: Para aplicar um procedimento aos argumentos, crie um novo ambiente que contenha um quadro que ligue os parâmetros aos valores dos argumentos. O ambiente anexo desse quadro é o ambiente especificado pelo procedimento. Agora, dentro desse novo ambiente, avalie o corpo do procedimento.</p><p>Para mostrar como essa regra é seguida, a figura <a href="#%_fig_3.3">3.3</a> ilustra a estrutura do ambiente criada avaliando a expressão <tt>(square 5)</tt> no ambiente global, onde <tt>square</tt> é o procedimento gerado na figura <a href="#%_fig_3.2">3.2</a>. A aplicação do procedimento resulta na criação de um novo ambiente, rotulado E1 na figura, que começa com um quadro no qual <tt>x</tt>, o parâmetro formal do procedimento, está ligado ao argumento 5. O ponteiro que sobe desse quadro mostra que o ambiente envolvente do quadro é o ambiente global. O ambiente global é escolhido aqui, porque esse é o ambiente indicado como parte do objeto de procedimento <tt>square</tt>. No E1, avaliamos o corpo do procedimento, <tt>(* x x)</tt>. Como o valor de <tt>x</tt> em E1 é 5, o resultado é <tt>(* 5 5)</tt> ou 25.<a name="%_fig_3.3" id="%_fig_3.3"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch3-Z-G-4.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 3.3:</b> Ambiente criado pela avaliação de <tt>(square 5)</tt> no ambiente global.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>O modelo de ambiente da aplicação de procedimento pode ser resumido por duas regras:</p><p>
+
+</p><p/><ul><li>Um objeto de procedimento é aplicado a um conjunto de argumentos construindo um quadro, ligando os parâmetros formais do procedimento aos argumentos da chamada e avaliando o corpo do procedimento no contexto do novo ambiente construído. O novo quadro possui como ambiente anexo a parte do ambiente do objeto de procedimento que é aplicado.<p>
+
+<a name="%_idx_3074" id="%_idx_3074"/><a name="%_idx_3076" id="%_idx_3076"/></p></li><li>Um procedimento é criado avaliando uma expressão <tt>lambda</tt> em relação a um determinado ambiente. O objeto de procedimento resultante é um par que consiste no texto da expressão <tt>lambda</tt> e um ponteiro para o ambiente em que o procedimento foi criado.</li></ul><p/><p>
+
+<a name="%_idx_3078" id="%_idx_3078"/>Também especificamos que a definição de um símbolo usando <tt>define</tt> cria uma ligação no quadro do ambiente atual e atribui ao símbolo o valor indicado.<a name="call_footnote_Temp_343" href="#footnote_Temp_343" id="call_footnote_Temp_343"><sup><small>13</small></sup></a> Finalmente, especificamos o comportamento de <tt>set!</tt>, a operação que nos forçou a introduzir o modelo de ambiente em primeiro lugar. Avaliando a expressão <tt>(set! &lt;<em>variable</em>&gt; &lt;<em>value</em>&gt;)</tt> em algum ambiente localiza a ligação da variável no ambiente e altera essa ligação para indicar o novo valor. Ou seja, encontra-se o primeiro quadro no ambiente que contém uma ligação para a variável e modifica esse quadro. Se a variável não estiver ligada no ambiente, <tt>set!</tt> sinaliza um erro.</p><p>Essas regras de avaliação, embora consideravelmente mais complexas que o modelo de substituição, ainda são razoavelmente diretas. Além disso, o modelo de avaliação, embora abstrato, fornece uma descrição correta de como o interpretador avalia expressões. No capítulo 4, veremos como esse modelo pode servir como um plano para a implementação de um interpretador ativo. As seções a seguir elaboram os detalhes do modelo analisando alguns programas ilustrativos.<a name="%_sec_3.2.2" id="%_sec_3.2.2"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_3.2.2">3.2.2 Aplicando procedimentos simples</a></h3><p>
+
+<a name="%_idx_3082" id="%_idx_3082"/><a name="%_idx_3084" id="%_idx_3084"/>
+<a name="%_idx_3086" id="%_idx_3086"/>Quando introduzimos o modelo de substituição na seção <a href="book-Z-H-10.html#%_sec_1.1.5">1.1.5</a>, mostramos como a combinação <tt>(f 5)</tt> é avaliada para 136, considerando as seguintes definições de procedimento:</p><p>
+
+</p><p/><p><tt>(define (square x)<br/>
+  (* x x))<br/>
+(define (sum-of-squares x y)<br/>
+  (+ (square x) (square y)))<br/>
+(define (f a)<br/>
+  (sum-of-squares (+ a 1) (* a 2)))<br/></tt></p><p/><p>Podemos analisar o mesmo exemplo usando o modelo de ambiente. A figura <a href="#%_fig_3.4">3.4</a> mostra os três objetos de procedimento criados pela avaliação das definições de <tt>f</tt>, <tt>square</tt> e <tt>sum-of-squares</tt> no ambiente global. Cada objeto de procedimento consiste em algum código, com um ponteiro para o ambiente global.</p><p>
+
+<a name="%_fig_3.4" id="%_fig_3.4"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch3-Z-G-5.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 3.4:</b> Objetos de procedimento no quadro global.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Na figura <a href="#%_fig_3.5">3.5</a>, vemos a estrutura do ambiente criada avaliando a expressão <tt>(f 5)</tt>. A chamada para <tt>f</tt> cria um novo ambiente E1 começando com um quadro no qual <tt>a</tt>, o parâmetro formal de <tt>f</tt>, está ligado ao argumento 5. No E1, avaliamos o corpo de <tt>f</tt>:</p><p>
+
+</p><p/><p><tt>(sum-of-squares (+ a 1) (* a 2))<br/></tt></p><p/><p/><p>
+
+<a name="%_fig_3.5" id="%_fig_3.5"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch3-Z-G-6.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 3.5:</b> Ambientes criados pela avaliação de <tt>(f 5)</tt> usando os procedimentos da figura <a href="#%_fig_3.4">3.4</a>.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Para avaliar essa combinação, primeiro avaliamos as subexpressões. A primeira subexpressão, <tt>sum-of-squares</tt>, possui um valor que é um objeto de procedimento. (Observe como esse valor é encontrado: primeiro examinamos o primeiro quadro de E1, que não contém nenhuma ligação para <tt>sum-of-squares</tt>. Em seguida, prosseguimos para o ambiente anexo, ou seja, o ambiente global, e encontramos a ligação mostrada na figura <a href="#%_fig_3.4">3.4</a>). As outras duas subexpressões são avaliadas aplicando as operações primitivas <tt>+</tt> e <tt>*</tt> para avaliar as duas combinações <tt>(+ a 1)</tt> e <tt>(* a 2)</tt> para obter 6 e 10, respectivamente.</p><p>Agora aplicamos o objeto de procedimento <tt>sum-of-squares</tt> aos argumentos 6 e 10. Isso resulta em um novo ambiente E2, no qual os parâmetros formais <tt>x</tt> e <tt>y</tt> estão ligados aos argumentos. No E2, avaliamos a combinação <tt>(+ (square x) (square y))</tt>. Isso nos leva a avaliar <tt>(square x)</tt>, onde <tt>square</tt> é encontrado no quadro global e <tt>x</tt> é 6. Mais uma vez, montamos um novo ambiente, E3, no qual <tt>x</tt> é ligado a 6 e, dentro disso, avaliamos o corpo do <tt>square</tt>, que é <tt>(* x x)</tt>. Também como parte da aplicação da <tt>sum-of-squares</tt>, devemos avaliar a subexpressão <tt>(square y)</tt>, onde <tt>y</tt> é 10. Esta segunda chamada para <tt>square</tt> cria outro ambiente, E4, no qual <tt>x</tt>, o parâmetro formal de <tt>square</tt>, está ligado a 10. E no E4 devemos avaliar <tt>(* x x)</tt>.</p><p>O ponto importante a observar é que cada chamada para <tt>square</tt> cria um novo ambiente contendo uma ligação para <tt>x</tt>. Podemos ver aqui como os diferentes quadros servem para manter separadas as diferentes variáveis ​​locais, todas nomeadas <tt>x</tt>. Observe que cada quadro criado pelo <tt>square</tt> aponta para o ambiente global, pois esse é o ambiente indicado pelo objeto do procedimento <tt>square</tt>.</p><p>Depois que as subexpressões são avaliadas, os resultados são retornados. Os valores gerados pelas duas chamadas para <tt>square</tt> são adicionados pela <tt>sum-of-squares</tt> e esse resultado é retornado por <tt>f</tt>. Como nosso foco aqui é nas estruturas do ambiente, não nos concentraremos em como esses valores retornados são transmitidos de uma chamada para outra; no entanto, esse também é um aspecto importante do processo de avaliação e retornaremos a ele em detalhes no capítulo 5.</p><p><a name="%_thm_3.9" id="%_thm_3.9"/>
+<b>Exercício 3.9.</b> <a name="%_idx_3088" id="%_idx_3088"/><a name="%_idx_3090" id="%_idx_3090"/><a name="%_idx_3092" id="%_idx_3092"/>Na seção <a href="book-Z-H-11.html#%_sec_1.2.1">1.2.1</a>, usamos o modelo de substituição para analisar dois procedimentos para calcular fatoriais, uma versão recursiva</p><p>
+
+</p><p/><p><tt>(define (factorial n)<br/>
+  (if (= n 1)<br/>
+      1<br/>
+      (* n (factorial (- n 1)))))<br/></tt></p><p/><p>e uma versão iterativa</p><p>
+
+</p><p/><p><tt>(define (factorial n)<br/>
+  (fact-iter 1 1 n))<br/>
+(define (fact-iter product counter max-count)<br/>
+  (if (&gt; counter max-count)<br/>
+      product<br/>
+      (fact-iter (* counter product)<br/>
+                 (+ counter 1)<br/>
+                 max-count)))<br/></tt></p><p/><p>Mostre as estruturas do ambiente criadas avaliando <tt>(factorial 6)</tt> usando cada versão do procedimento <tt>factorial</tt>.<a name="call_footnote_Temp_345" href="#footnote_Temp_345" id="call_footnote_Temp_345"><sup><small>14</small></sup></a>
+</p><p>
+
+<a name="%_sec_3.2.3" id="%_sec_3.2.3"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_3.2.3">3.2.3 Quadros como repositório do estado local</a></h3><p>
+
+
+<a name="%_idx_3098" id="%_idx_3098"/><a name="%_idx_3100" id="%_idx_3100"/><a name="%_idx_3102" id="%_idx_3102"/>
+<a name="%_idx_3104" id="%_idx_3104"/>Podemos recorrer ao modelo de ambiente para ver como os procedimentos e a atribuição podem ser usados ​​para representar objetos com o estado local. Como exemplo, considere o &quot;processador de retirada&quot; da seção <a href="book-Z-H-20.html#%_sec_3.1.1">3.1.1</a> criado chamando o procedimento</p><p>
+
+</p><p/><p><tt>(define (make-withdraw balance)<br/>
+  (lambda (amount)<br/>
+    (if (&gt;= balance amount)<br/>
+        (begin (set! balance (- balance amount))<br/>
+               balance)<br/>
+        &quot;Insufficient funds&quot;)))<br/></tt></p><p/><p>Descreveremos a avaliação de</p><p>
+
+</p><p/><p><tt>(define W1 (make-withdraw 100))<br/></tt></p><p/><p>Seguido por</p><p>
+
+</p><p/><p><tt>(W1 50)<br/><i>50</i><br/></tt></p><p/><p>A figura <a href="#%_fig_3.6">3.6</a> mostra o resultado da definição do procedimento <tt>make-withdraw</tt> no ambiente global. Isso produz um objeto de procedimento que contém um ponteiro para o ambiente global. Até agora, isso não é diferente dos exemplos que já vimos, exceto que o corpo do procedimento é ele próprio uma expressão <tt>lambda</tt>.</p><p>
+
+<a name="%_fig_3.6" id="%_fig_3.6"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch3-Z-G-7.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 3.6:</b> Resultado da definição de <tt>make-withdraw</tt> no ambiente global.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>A parte interessante da computação acontece quando aplicamos o procedimento <tt>make-withdraw</tt> a um argumento:</p><p>
+
+</p><p/><p><tt>(define W1 (make-withdraw 100))<br/></tt></p><p/><p>Começamos, como sempre, configurando um ambiente E1 no qual o parâmetro formal <tt>balance</tt> está ligado ao argumento 100. Nesse ambiente, avaliamos o corpo de <tt>make-withdraw</tt>, ou seja, a expressão <tt>lambda</tt>. Isso constrói um novo objeto de procedimento, cujo código é especificado pelo <tt>lambda</tt> e cujo ambiente é E1, o ambiente no qual o <tt>lambda</tt> foi avaliado para produzir o procedimento. O objeto de procedimento resultante é o valor retornado pela chamada para <tt>make-withdraw</tt>. Isso está ligado a <tt>W1</tt> no ambiente global, pois <tt>define</tt> em si é avaliado no ambiente global. A figura <a href="#%_fig_3.7">3.7</a> mostra a estrutura do ambiente resultante.</p><p>
+
+<a name="%_fig_3.7" id="%_fig_3.7"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch3-Z-G-8.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 3.7:</b> Resultado da avaliação <tt>(define W1 (make-withdraw 100))</tt>.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Agora podemos analisar o que acontece quando <tt>W1</tt> é aplicado a um argumento:</p><p>
+
+</p><p/><p><tt>(W1 50)<br/><i>50</i><br/></tt></p><p/><p>Começamos construindo um quadro no qual <tt>amount</tt>, o parâmetro formal de <tt>W1</tt>, está ligado ao argumento 50. O ponto crucial a observar é que esse quadro possui como ambiente anexo não o ambiente global, mas o ambiente E1, porque esse é o ambiente especificado pelo objeto de procedimento <tt>W1</tt>. Nesse novo ambiente, avaliamos o corpo do procedimento:</p><p>
+
+</p><p/><p><tt>(if (&gt;= balance amount)<br/>
+    (begin (set! balance (- balance amount))<br/>
+           balance)<br/>
+    &quot;Insufficient funds&quot;)<br/></tt></p><p/><p>A estrutura do ambiente resultante é mostrada na figura <a href="#%_fig_3.8">3.8</a>. A expressão que é avaliada faz referência a <tt>amount</tt> e <tt>balance</tt>. <tt>Amount</tt> será encontrada no primeiro quadro do ambiente, enquanto <tt>balance</tt> será encontrado seguindo o ponteiro do ambiente incluso para E1.</p><p>
+
+<a name="%_fig_3.8" id="%_fig_3.8"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch3-Z-G-9.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 3.8:</b> Ambientes criados pela aplicação do objeto de procedimento <tt>W1</tt>.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Quando o <tt>set!</tt> é executado, a ligação do <tt>balance</tt> no E1 é alterada. Na conclusão da chamada para <tt>W1</tt>, o <tt>balance</tt> é 50, e o quadro que contém o <tt>balance</tt> ainda é apontado pelo objeto de procedimento <tt>W1</tt>. O quadro que liga a <tt>amount</tt> (na qual executamos o código que alterou o <tt>balance</tt>) não é mais relevante, pois a chamada de procedimento que a construiu foi encerrada e não há ponteiros para esse quadro de outras partes do ambiente. A próxima vez que <tt>W1</tt> for chamado, isso criará um novo quadro que liga <tt>amount</tt> e cujo ambiente envolvente é E1. Vemos que E1 serve como o &quot;local&quot; que contém a variável de estado local para o objeto de procedimento <tt>W1</tt>. A figura <a href="#%_fig_3.9">3.9</a> mostra a situação após a chamada para <tt>W1</tt>.</p><p>
+
+<a name="%_fig_3.9" id="%_fig_3.9"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch3-Z-G-10.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 3.9:</b> Ambientes após a chamada para <tt>W1</tt>.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Observe o que acontece quando criamos um segundo objeto &quot;retirar&quot; fazendo outra chamada para <tt>make-withdraw</tt>:</p><p>
+
+</p><p/><p><tt>(define W2 (make-withdraw 100))<br/></tt></p><p/><p>Isso produz a estrutura do ambiente da figura <a href="#%_fig_3.10">3.10</a>, que mostra que <tt>W2</tt> é um objeto de procedimento, ou seja, um par com algum código e um ambiente. O ambiente E2 para <tt>W2</tt> foi criado pela chamada para <tt>make-withdraw</tt>. Ele contém um quadro com sua própria ligação local para <tt>balance</tt>. Por outro lado, <tt>W1</tt> e <tt>W2</tt> possuem o mesmo código: o código especificado pela expressão <tt>lambda</tt> no corpo de <tt>make-withdraw</tt>.<a name="call_footnote_Temp_346" href="#footnote_Temp_346" id="call_footnote_Temp_346"><sup><small>15</small></sup></a> Vemos aqui por que <tt>W1</tt> e <tt>W2</tt> se comportam como objetos independentes. As chamadas para <tt>W1</tt> fazem referência à variável de estado <tt>balance</tt> armazenada em E1, enquanto as chamadas para <tt>W2</tt> fazem referência a <tt>balance</tt> armazenado em E2. Portanto, alterações no estado local de um objeto não afetam o outro objeto.</p><p>
+
+<a name="%_fig_3.10" id="%_fig_3.10"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch3-Z-G-11.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 3.10:</b> Usando <tt>(define W2 (make-withdraw 100))</tt> para criar um segundo objeto.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>
+
+</p><p><a name="%_thm_3.10" id="%_thm_3.10"/>
+<b>Exercício 3.10.</b> No procedimento <tt>make-withdraw</tt>, a variável local <tt>balance</tt> é criada como um parâmetro de <tt>make-withdraw</tt>. Também podemos criar a variável de estado local explicitamente, usando <tt>let</tt>, da seguinte maneira:</p><p>
+
+</p><p/><p><tt><a name="%_idx_3106" id="%_idx_3106"/>(define (make-withdraw initial-amount)<br/>
+  (let ((balance initial-amount))<br/>
+    (lambda (amount)<br/>
+      (if (&gt;= balance amount)<br/>
+          (begin (set! balance (- balance amount))<br/>
+                 balance)<br/>
+          &quot;Insufficient funds&quot;))))<br/></tt></p><p/><p>
+<a name="%_idx_3108" id="%_idx_3108"/><a name="%_idx_3110" id="%_idx_3110"/>Lembre-se da seção <a href="book-Z-H-12.html#%_sec_1.3.2">1.3.2</a> que <tt>let</tt> é simplesmente açúcar sintático para uma chamada de procedimento:</p><p>
+
+
+</p><p/><p><tt>(let ((&lt;<em>var</em>&gt; &lt;<em>exp</em>&gt;)) &lt;<em>body</em>&gt;)<br/></tt></p><p/><p>é interpretado como uma sintaxe alternativa para</p><p>
+
+
+</p><p/><p><tt>((lambda (&lt;<em>var</em>&gt;) &lt;<em>body</em>&gt;) &lt;<em>exp</em>&gt;)<br/></tt></p><p/><p>Use o modelo de ambiente para analisar esta versão alternativa do <tt>make-withdraw</tt>, desenhando figuras como as acima para ilustrar as interações</p><p>
+
+</p><p/><p><tt>(define W1 (make-withdraw 100))<br/><br/>
+(W1 50)<br/><br/>
+(define W2 (make-withdraw 100))<br/></tt></p><p/><p>Mostre que as duas versões do <tt>make-withdraw</tt> criam objetos com o mesmo comportamento. Como as estruturas do ambiente diferem nas duas versões?</p><p>
+</p><p>
+
+<a name="%_sec_3.2.4" id="%_sec_3.2.4"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_3.2.4">3.2.4 Definições internas</a></h3><p>
+
+<a name="%_idx_3112" id="%_idx_3112"/><a name="%_idx_3114" id="%_idx_3114"/><a name="%_idx_3116" id="%_idx_3116"/>A seção <a href="book-Z-H-10.html#%_sec_1.1.8">1.1.8</a> introduziu a ideia de que os procedimentos podem ter definições internas, levando a uma estrutura de blocos, como no procedimento a seguir para calcular raízes quadradas:</p><p>
+
+
+</p><p/><p><tt><a name="%_idx_3118" id="%_idx_3118"/>(define (sqrt x)<br/>
+  (define (good-enough? guess)<br/>
+    (&lt; (abs (- (square guess) x)) 0.001))<br/>
+  (define (improve guess)<br/>
+    (average guess (/ x guess)))<br/>
+  (define (sqrt-iter guess)<br/>
+    (if (good-enough? guess)<br/>
+        guess<br/>
+        (sqrt-iter (improve guess))))<br/>
+  (sqrt-iter 1.0))<br/></tt></p><p/><p>Agora podemos usar o modelo de ambiente para ver por que essas definições internas se comportam conforme desejado. A figura <a href="#%_fig_3.11">3.11</a> mostra o ponto na avaliação da expressão <tt>(sqrt 2)</tt> em que o procedimento interno <tt>good-enough?</tt> foi chamado pela primeira vez tempo com <tt>guess</tt> igual a 1.</p><p>
+
+<a name="%_fig_3.11" id="%_fig_3.11"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch3-Z-G-12.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 3.11:</b><tt>Sqrt</tt> com definições internas.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Observe a estrutura do ambiente. <tt>Sqrt</tt> é um símbolo no ambiente global ligado a um objeto de procedimento cujo ambiente associado é o ambiente global. Quando <tt>sqrt</tt> foi chamado, um novo ambiente E1 foi formado, subordinado ao ambiente global, no qual o parâmetro <tt>x</tt> está ligado a 2. O corpo de <tt>sqrt</tt> foi então avaliado em E1. Como a primeira expressão no corpo de <tt>sqrt</tt> é</p><p>
+
+</p><p/><p><tt>(define (good-enough? guess)<br/>
+  (&lt; (abs (- (square guess) x)) 0.001))<br/></tt></p><p/><p>avaliar esta expressão definiu o procedimento <tt>good-enough?</tt> no ambiente E1. Para ser mais preciso, o símbolo <tt>good-enough?</tt> foi adicionado ao primeiro quadro de E1, ligado a um objeto de procedimento cujo ambiente associado é E1. Da mesma forma, <tt>improve</tt> e <tt>sqrt-iter</tt> foram definidos como procedimentos no E1. Por questões de concisão, a figura <a href="#%_fig_3.11">3.11</a> mostra apenas o objeto de procedimento para <tt>good-enough?</tt>.</p><p>Após a definição dos procedimentos locais, a expressão <tt>(sqrt-iter 1.0)</tt> foi avaliada, ainda no ambiente E1. Portanto, o objeto de procedimento ligado ao <tt>sqrt-iter</tt> no E1 foi chamado com 1 como argumento. Isso criou um ambiente E2 no qual <tt>guess</tt>, o parâmetro de <tt>sqrt-iter</tt>, está ligado a 1. <tt>Sqrt-iter</tt>, por sua vez, chamou <tt>good-enough?</tt> com o valor de <tt>guess</tt> (do E2) como argumento para <tt>good-enough?</tt>. Isso configurou outro ambiente, o E3, no qual <tt>guess</tt> (o parâmetro <tt>good-enough?</tt>) está ligado a 1. Embora <tt>sqrt-iter</tt> e <tt>good-enough?</tt> ambos possuam um parâmetro chamado <tt>guess</tt>, essas são duas variáveis ​​locais distintas localizadas em quadros diferentes. Além disso, o E2 e o E3 possuem o E1 como ambiente envolvente, porque os procedimentos <tt>sqrt-iter</tt> e <tt>good-enough?</tt> possuem E1 como parte do ambiente. Uma consequência disso é que o símbolo <tt>x</tt> que aparece no corpo de <tt>good-enough?</tt> fará referência à ligação de <tt>x</tt> que aparece em E1, ou seja, o valor de <tt>x</tt> com o qual o procedimento original <tt>sqrt</tt> foi chamado. O modelo de ambiente explica as duas principais propriedades que tornam as definições de procedimentos locais uma técnica útil para modularizar programas:</p><p/><ul><li>Os nomes dos procedimentos locais não interferem nos nomes externos ao procedimento de fechamento, porque os nomes dos procedimentos locais serão ligados no quadro que o procedimento cria quando é executado, em vez de serem ligados no ambiente global.<p>
+
+</p></li><li>Os procedimentos locais podem acessar os argumentos do procedimento anexo, simplesmente usando nomes de parâmetros como variáveis ​​livres. Isso ocorre porque o corpo do procedimento local é avaliado em um ambiente subordinado ao ambiente de avaliação do procedimento de fechamento.</li></ul><p/><p>
+
+</p><p><a name="%_thm_3.11" id="%_thm_3.11"/>
+<b>Exercício 3.11.</b> <a name="%_idx_3120" id="%_idx_3120"/><a name="%_idx_3122" id="%_idx_3122"/><a name="%_idx_3124" id="%_idx_3124"/>Na seção <a href="#%_sec_3.2.3">3.2.3</a> vimos como o modelo de ambiente descreve o comportamento dos procedimentos com o estado local. Agora vimos como as definições internas funcionam. Um procedimento típico de passagem de mensagens contém esses dois aspectos. Considere o procedimento de conta bancária da seção <a href="book-Z-H-20.html#%_sec_3.1.1">3.1.1</a>:</p><p>
+
+</p><p/><p><tt><a name="%_idx_3126" id="%_idx_3126"/>(define (make-account balance)<br/>
+  (define (withdraw amount)<br/>
+    (if (&gt;= balance amount)<br/>
+        (begin (set! balance (- balance amount))<br/>
+               balance)<br/>
+        &quot;Insufficient funds&quot;))<br/>
+  (define (deposit amount)<br/>
+    (set! balance (+ balance amount))<br/>
+    balance)<br/>
+  (define (dispatch m)<br/>
+    (cond ((eq? m 'withdraw) withdraw)<br/>
+          ((eq? m 'deposit) deposit)<br/>
+          (else (error &quot;Unknown request -- MAKE-ACCOUNT&quot;<br/>
+                       m))))<br/>
+  dispatch)<br/></tt></p><p/><p>Mostre a estrutura do ambiente gerada pela sequência de interações</p><p>
+
+</p><p/><p><tt>(define acc (make-account 50))<br/><br/>
+((acc 'deposit) 40)<br/><i>90</i><br/><br/>
+((acc 'withdraw) 60)<br/><i>30</i><br/></tt></p><p/><p>Onde é mantido o estado local para <tt>acc</tt>? Suponha que definamos outra conta</p><p>
+
+</p><p/><p><tt>(define acc2 (make-account 100))<br/></tt></p><p/><p>Como os estados locais das duas contas são mantidos distintos? Quais partes da estrutura do ambiente são compartilhadas entre <tt>acc</tt> e <tt>acc2</tt>?</p><p>
+
+</p><p/><div class="smallprint"><hr/></div><p>
+</p><div class="footnote"><p><a name="footnote_Temp_342" href="#call_footnote_Temp_342" id="footnote_Temp_342"><sup><small>12</small></sup></a> A atribuição introduz uma sutileza na etapa 1 da regra de avaliação. Conforme mostrado no exercício <a href="book-Z-H-20.html#%_thm_3.8">3.8</a>, a presença de atribuição nos permite escrever expressões que produzirão valores diferentes dependendo da ordem em que as subexpressões em uma combinação <a name="%_idx_3066" id="%_idx_3066"/><a name="%_idx_3068" id="%_idx_3068"/>são avaliadas. Assim, para ser mais preciso, devemos especificar uma ordem de avaliação na etapa 1 (por exemplo, da esquerda para a direita ou da direita para a esquerda). No entanto, essa ordem sempre deve ser considerado um detalhe de implementação e nunca se deve escrever programas que dependam de alguma ordem específica. Por exemplo, um compilador sofisticado pode otimizar um programa variando a ordem em que as subexpressões são avaliadas.</p><p><a name="footnote_Temp_343" href="#call_footnote_Temp_343" id="footnote_Temp_343"><sup><small>13</small></sup></a> Se já houver uma ligação para a variável no quadro atual, a ligação será alterada. Isso é conveniente porque permite a redefinição de símbolos; no entanto, também significa que <tt>define</tt> pode ser usado para alterar valores, e isso traz à tona os problemas de atribuição sem usar explicitamente <a name="%_idx_3080" id="%_idx_3080"/><tt>set!</tt>. Por esse motivo, algumas pessoas preferem redefinições de símbolos existentes para sinalizar erros ou avisos.</p><p><a name="footnote_Temp_345" href="#call_footnote_Temp_345" id="footnote_Temp_345"><sup><small>14</small></sup></a> O modelo de ambiente não esclarecerá nossa afirmação na seção <a href="book-Z-H-11.html#%_sec_1.2.1">1.2.1</a> de que o interpretador pode executar um procedimento como <tt>fact-iter</tt> em uma quantidade constante de espaço usando recursão de cauda. Discutiremos a recursão de cauda quando <a name="%_idx_3094" id="%_idx_3094"/><a name="%_idx_3096" id="%_idx_3096"/>lidamos com a estrutura de controle do interpretador na seção <a href="book-Z-H-34.html#%_sec_5.4">5.4</a>.</p><p><a name="footnote_Temp_346" href="#call_footnote_Temp_346" id="footnote_Temp_346"><sup><small>15</small></sup></a> Se <tt>W1</tt> e <tt>W2</tt> compartilham o mesmo código físico armazenado no computador, ou se cada um deles mantém uma cópia do código, é um detalhe da implementação. Para o interpretador que implementamos no capítulo 4, o código é de fato compartilhado.</p></div>
+
+
+
+</body>
+</html>

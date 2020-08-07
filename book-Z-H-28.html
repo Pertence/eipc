@@ -1,0 +1,599 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops">
+<!-- Generated from TeX source by tex2page, v 4o,
+     (c) Dorai Sitaram, http://www.cs.rice.edu/~dorai/tex2page -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type: text/html; charset=utf-8"/>
+    <title>Estrutura e Interpretação de Programas de Computador</title>
+    <link rel="stylesheet" type="text/css" href="book-Z-C.css" title="default"/>
+  </head>
+  <body>
+
+
+
+<a name="%_sec_4.3" id="%_sec_4.3"/>
+<h2><a href="book-Z-H-4.html#%_toc_%_sec_4.3">4.3 Variações em um Scheme - Computação não determinística</a></h2><p>
+
+
+<a name="%_idx_4806" id="%_idx_4806"/>
+<a name="%_idx_4808" id="%_idx_4808"/>Nesta seção, estendemos o avaliador do Scheme para apoiar um paradigma de programação chamado <em>computação não determinística</em> incorporando ao avaliador um recurso para apoiar a pesquisa automática. Essa é uma mudança muito mais profunda na linguagem do que a introdução da avaliação preguiçosa na seção <a href="book-Z-H-27.html#%_sec_4.2">4.2</a>.</p><p>
+
+<a name="%_idx_4810" id="%_idx_4810"/>A computação não determinística, como o processamento de fluxo, é útil para &quot;gerar e testar&quot; aplicativos. Considere a tarefa de começar com duas listas de números inteiros positivos e encontrar um par de números inteiros - um da primeira lista e outro da segunda lista - cuja soma é um primo. Vimos como lidar com isso com operações de sequência finita na seção <a href="book-Z-H-15.html#%_sec_2.2.3">2.2.3</a> e com fluxos infinitos na seção <a href="book-Z-H-24.html#%_sec_3.5.3">3.5.3</a>. Nossa abordagem foi gerar a sequência de todos os pares possíveis e filtrá-los para selecionar os pares cuja soma é um primo. Se realmente geramos a sequência inteira de pares, primeiro, como no capítulo 2, ou intercalamos a geração e a filtragem, como no capítulo 3, é irrelevante para a imagem essencial de como a computação está organizada.</p><p>
+
+<a name="%_idx_4812" id="%_idx_4812"/>A abordagem não determinística evoca uma imagem diferente. Imagine simplesmente que escolhemos (de alguma forma) um número da primeira lista e um número da segunda lista e exigimos (usando algum mecanismo) que sua soma seja um primo. Isso é expresso pelo seguinte procedimento:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4814" id="%_idx_4814"/>(define (prime-sum-pair list1 list2)<br/>
+  (let ((a (an-element-of list1))<br/>
+        (b (an-element-of list2)))<br/>
+    (require (prime? (+ a b)))<br/>
+    (list a b)))<br/></tt></p><p/><p>Pode parecer que esse procedimento apenas reafirma o problema, em vez de especificar uma maneira de resolvê-lo. No entanto, este é um legítimo programa não determinístico.<a name="call_footnote_Temp_598" href="#footnote_Temp_598" id="call_footnote_Temp_598"><sup><small>42.</small></sup></a></p><p>A ideia principal aqui é que expressões em uma linguagem não determinística podem ter mais de um valor possível. Por exemplo, <tt>an-element-of</tt> pode retornar qualquer elemento da lista fornecida. Nosso avaliador não determinístico do programa funcionará escolhendo automaticamente um valor possível e acompanhando a escolha. Se um requisito subsequente não for atendido, o avaliador tentará uma escolha diferente e continuará tentando novas escolhas até que a avaliação seja bem-sucedida ou até que fiquemos sem opções. Assim como o avaliador preguiçoso liberou o programador dos detalhes de como os valores são atrasados e forçados, o avaliador não determinístico do programa liberta o programador dos detalhes de como as escolhas são feitas.</p><p>
+
+<a name="%_idx_4820" id="%_idx_4820"/>É instrutivo contrastar as diferentes imagens de tempo evocadas por avaliação não determinística e processamento de fluxo. O processamento de fluxo usa uma avaliação preguiçosa para desacoplar o tempo em que o fluxo de respostas possíveis é montado a partir do momento em que os elementos reais do fluxo são produzidos. O avaliador apoia a ilusão de que todas as respostas possíveis são apresentadas diante de nós em uma sequência atemporal. Com a avaliação não determinística, uma expressão representa a exploração de um conjunto de mundos possíveis, cada um determinado por um conjunto de escolhas. Alguns dos mundos possíveis levam a becos sem saída, enquanto outros possuem valores úteis. O avaliador não determinístico do programa apoia a ilusão de que o tempo se ramifica e que nossos programas possuem diferentes históricos de execução possíveis. Quando chegamos a um beco sem saída, podemos revisitar um ponto de escolha anterior e prosseguir por um ramo diferente.</p><p>O avaliador não determinístico do programa implementado abaixo é chamado de avaliador <tt>amb</tt> porque se baseia em uma nova forma especial chamada <tt>amb</tt>. Podemos digitar a definição acima de <tt>prime-sum-pair</tt> no loop do driver do avaliador <tt>amb</tt> (junto com as definições de <tt>prime?</tt>, <tt>an-element-of</tt> e <tt>require</tt>) e executar o procedimento da seguinte maneira:</p><p>
+
+</p><p/><p><tt><i>;;; Amb-Eval input:</i><br/>
+(prime-sum-pair '(1 3 5 8) '(20 35 110))<br/><i>;;; Starting a new problem</i><br/><i>;;; Amb-Eval value:</i><br/><i>(3 20)</i><br/></tt></p><p/><p>O valor retornado foi obtido depois que o avaliador escolheu repetidamente elementos de cada uma das listas, até que uma escolha bem-sucedida foi feita.</p><p>Seção <a href="#%_sec_4.3.1">4.3.1</a> introduz <tt>amb</tt> e explica como ele suporta o não determinismo por meio do mecanismo de busca automática do avaliador. Seção <a href="#%_sec_4.3.2">4.3.2</a> apresenta exemplos de programas não determinísticos, e a seção <a href="#%_sec_4.3.3">4.3.3</a> fornece os detalhes de como implementar o avaliador <tt>amb</tt> modificando o avaliador comum??? do Scheme.</p><p>
+
+<a name="%_sec_4.3.1" id="%_sec_4.3.1"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_4.3.1">4.3.1 Amb e Pesquisa</a></h3><p>
+
+</p><p>
+
+<a name="%_idx_4822" id="%_idx_4822"/>Para estender o Scheme para apoiar o não-determinismo, introduzimos um novo formulário especial chamado <tt>amb</tt>.<a name="call_footnote_Temp_599" href="#footnote_Temp_599" id="call_footnote_Temp_599"><sup><small>43</small></sup></a> <tt>(amb &lt;<em><em>e</em><sub>1</sub></em>&gt; &lt;<em><em>e</em><sub>2</sub></em>&gt; <tt>…</tt> &lt;<em><em>e</em><sub><em>n</em></sub></em>&gt;)</tt> retorna o valor de uma das <em>n</em> expressões &lt;<em><em>e</em><sub><em>i</em></sub></em>&gt; “ambiguamente.” Por exemplo, a expressão</p><p>
+
+</p><p/><p><tt>(list (amb 1 2 3) (amb 'a 'b))<br/></tt></p><p/><p>pode ter seis valores possíveis:</p><table border="0"><tr><td valign="top"><tt>(1 a) </tt></td><td valign="top"><tt>(1 b) </tt></td><td valign="top"><tt>(2 a) </tt></td><td valign="top"><tt>(2 b) </tt></td><td valign="top"><tt>(3 a) </tt></td><td valign="top"><tt>(3 b)
+</tt></td></tr></table><tt>Amb</tt> com uma única escolha produz um valor comum (único).<p>
+
+<a name="%_idx_4826" id="%_idx_4826"/><tt>Amb</tt> sem escolhas - a expressão <tt>(amb)</tt> - é uma expressão sem valores aceitáveis. Operacionalmente, podemos pensar em <tt>(amb)</tt> como uma expressão que, quando avaliada, faz com que o cálculo &quot;falhe&quot;: o cálculo é interrompido e nenhum valor é produzido. Usando essa ideia, podemos expressar o requisito de que uma expressão predicada específica <tt>p</tt> deve ser verdadeiro da seguinte maneira:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4828" id="%_idx_4828"/>(define (require p)<br/>
+  (if (not p) (amb)))<br/></tt></p><p/><p/><p>Com <tt>amb</tt> e <tt>require</tt>, podemos implementar o procedimento <tt>an-element-of</tt> usado acima:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4830" id="%_idx_4830"/>(define (an-element-of items)<br/>
+  (require (not (null? items)))<br/>
+  (amb (car items) (an-element-of (cdr items))))<br/></tt></p><p/><p>
+<tt>An-element-of</tt> falhará se a lista estiver vazia. Caso contrário, ele retornará ambiguamente o primeiro elemento da lista ou um elemento escolhido no restante da lista.</p><p>Também podemos expressar infinitas faixas de opções. O procedimento a seguir retorna potencialmente qualquer número inteiro maior ou igual a algum dado <em>n</em>:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4832" id="%_idx_4832"/>(define (an-integer-starting-from n)<br/>
+  (amb n (an-integer-starting-from (+ n 1))))<br/></tt></p><p/><p>É como o procedimento de fluxo <tt>integers-starting-from</tt> descrito na seção <a href="book-Z-H-24.html#%_sec_3.5.2">3.5.2</a>, mas com uma diferença importante: O procedimento de fluxo retorna um objeto que representa a sequência de todos os números inteiros começando com <em>n</em>, Considerando que a o procedimento <tt>amb</tt> retorna um único número inteiro.<a name="call_footnote_Temp_600" href="#footnote_Temp_600" id="call_footnote_Temp_600"><sup><small>44</small></sup></a></p><p>
+
+<a name="%_idx_4834" id="%_idx_4834"/>Abstratamente, podemos imaginar que avaliar uma expressão <tt>amb</tt> faz com que o tempo seja dividido em ramificações, onde a computação continua em cada ramificação com um dos possíveis valores da expressão. Dizemos que <tt>amb</tt> representa um <a name="%_idx_4836" id="%_idx_4836"/><em>ponto de escolha não determinístico</em>. Se tivéssemos uma máquina com um número suficiente de processadores que pudessem ser alocados dinamicamente, poderíamos implementar a pesquisa de maneira direta. A execução continuaria como em uma máquina sequencial, até que uma expressão <tt>amb</tt> é encontrada. Nesse ponto, mais processadores seriam alocados e inicializados para continuar todas as execuções paralelas implícitas pela escolha. Cada processador continuaria sequencialmente como se fosse a única opção, até que termine por encontrar uma falha, ou se subdivide ainda mais ou termine.<a name="call_footnote_Temp_601" href="#footnote_Temp_601" id="call_footnote_Temp_601"><sup><small>45</small></sup></a></p><p>
+
+<a name="%_idx_4840" id="%_idx_4840"/>Por outro lado, se tivermos uma máquina que possa executar apenas um processo (ou alguns processos concorrentes), devemos considerar as alternativas sequencialmente. Pode-se imaginar modificar um avaliador para escolher aleatoriamente um ramo a ser seguido sempre que encontrar um ponto de escolha. A escolha aleatória, no entanto, pode facilmente levar a valores com falha. Podemos tentar executar o avaliador repetidamente, fazendo escolhas aleatórias e esperando encontrar um valor sem falhas, mas é melhor <a name="%_idx_4842" id="%_idx_4842"/><a name="%_idx_4844" id="%_idx_4844"/><em>sistematicamente procurar</em> todos os caminhos de execução possíveis. O avaliador <tt>amb</tt>com o qual desenvolveremos e trabalharemos nesta seção implementa uma pesquisa sistemática da seguinte maneira: Quando o avaliador encontra uma aplicação de <tt>amb</tt>, seleciona inicialmente a primeira alternativa. Essa seleção pode levar a uma escolha adicional. O avaliador sempre escolherá inicialmente a primeira alternativa em cada ponto de escolha. Se uma opção resultar em falha, o avaliador <a name="%_idx_4846" id="%_idx_4846"/><a name="%_idx_4848" id="%_idx_4848"/><a name="%_idx_4850" id="%_idx_4850"/>automagicamente <a name="call_footnote_Temp_602" href="#footnote_Temp_602" id="call_footnote_Temp_602"><sup><small>46.</small></sup></a><a name="%_idx_4852" id="%_idx_4852"/><em>backtracks</em> ao ponto de escolha mais recente e tenta a próxima alternativa. Se ficar sem alternativas em qualquer ponto de escolha, o avaliador voltará do ponto de escolha anterior e continuará a partir daí. Esse processo leva a uma estratégia de pesquisa conhecida como <a name="%_idx_4854" id="%_idx_4854"/><a name="%_idx_4856" id="%_idx_4856"/><a name="%_idx_4858" id="%_idx_4858"/><em>pesquisa em profundidade</em> ou <em>retrocesso??? cronológico</em>.<a name="call_footnote_Temp_603" href="#footnote_Temp_603" id="call_footnote_Temp_603"><sup><small>47</small></sup></a></p><p>
+
+<a name="%_sec_Temp_604" id="%_sec_Temp_604"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_604">Loop do driver</a></h4><p>
+
+<a name="%_idx_4908" id="%_idx_4908"/>O loop do driver para o avaliador <tt>amb</tt>possui algumas propriedades incomuns. Ele lê uma expressão e imprime o valor da primeira execução sem falhas, como no <tt>prime-sum-pair</tt> exemplo mostrado acima. Se quisermos ver o valor da próxima execução bem-sucedida, podemos pedir ao interpretador para voltar atrás e tentar gerar uma segunda execução sem falhas. Isso é sinalizado digitando o símbolo <a name="%_idx_4910" id="%_idx_4910"/><tt>try-again</tt>. Se alguma expressão, exceto <tt>try-again</tt> é dada, o interpretador iniciará um novo problema, descartando as alternativas inexploradas no problema anterior. Aqui está uma amostra de interação:</p><p>
+
+</p><p/><p><tt><i>;;; Amb-Eval input:</i><br/>
+(prime-sum-pair '(1 3 5 8) '(20 35 110))<br/><i>;;; Starting a new problem</i><br/><i>;;; Amb-Eval value:</i><br/><i>(3 20)</i><br/><i>;;; Amb-Eval input:</i><br/>
+try-again<br/><i>;;; Amb-Eval value:</i><br/><i>(3 110)</i><br/><i>;;; Amb-Eval input:</i><br/>
+try-again<br/><i>;;; Amb-Eval value:</i><br/><i>(8 35)</i><br/><i>;;; Amb-Eval input:</i><br/>
+try-again<br/><i>;;; There are no more values of</i><br/><i>(prime-sum-pair (quote (1 3 5 8)) (quote (20 35 110)))</i><br/><i>;;; Amb-Eval input:</i><br/>
+(prime-sum-pair '(19 27 30) '(11 36 58))<br/><i>;;; Starting a new problem</i><br/><i>;;; Amb-Eval value:</i><br/><i>(30 11)</i><br/></tt></p><p/><p/><p>
+
+</p><p><a name="%_thm_4.35" id="%_thm_4.35"/>
+<b>Exercício 4.35.</b> <a name="%_idx_4912" id="%_idx_4912"/><a name="%_idx_4914" id="%_idx_4914"/>Escreva um procedimento <tt>an-integer-between</tt> que retorna um número inteiro entre dois limites. Isso pode ser usado para implementar um procedimento que encontre triplas pitagóricas, ou seja, triplas de números inteiros (<em>i</em>,<em>j</em>,<em>k</em>) entre os limites especificados, de modo que <em>i</em><u>&lt;</u><em>j</em> e <em>i</em><sup>2</sup> + <em>j</em><sup>2</sup> = <em>k</em><sup>2</sup>, do seguinte modo:</p><p/><p><tt>(define (a-pythagorean-triple-between low high)<br/>
+  (let ((i (an-integer-between low high)))<br/>
+    (let ((j (an-integer-between i high)))<br/>
+      (let ((k (an-integer-between j high)))<br/>
+        (require (= (+ (* i i) (* j j)) (* k k)))<br/>
+        (list i j k)))))<br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_4.36" id="%_thm_4.36"/>
+<b>Exercício 4.36.</b> <a name="%_idx_4916" id="%_idx_4916"/><a name="%_idx_4918" id="%_idx_4918"/>Exercício <a href="book-Z-H-24.html#%_thm_3.69">3.69</a> discutimos como gerar o fluxo de <em>todas</em> as triplas pitagóricos, sem limite superior no tamanho dos números inteiros a serem pesquisados. Explique por que simplesmente substituir <tt>an-integer-between</tt> de <tt>an-integer-starting-from</tt> no procedimento em exercício <a href="#%_thm_4.35">4.35</a> não é uma maneira adequada de gerar triplas pitagóricas arbitrárias. Escreva um procedimento que realmente consiga isso. (Ou seja, escreva um procedimento para o qual digitando repetidamente <tt>try-again</tt> acabaria por gerar todos as triplas pitagóricas).</p><p/><p>
+
+</p><p><a name="%_thm_4.37" id="%_thm_4.37"/>
+<b>Exercício 4.37.</b> <a name="%_idx_4920" id="%_idx_4920"/><a name="%_idx_4922" id="%_idx_4922"/>Ben Bitdiddle afirma que o método a seguir para gerar triplas pitagóricas é mais eficiente do que o método em exercício <a href="#%_thm_4.35">4.35</a>. Ele está correto? (Dica: considere o número de possibilidades que devem ser exploradas).</p><p>
+
+</p><p/><p><tt>(define (a-pythagorean-triple-between low high)<br/>
+  (let ((i (an-integer-between low high))<br/>
+        (hsq (* high high)))<br/>
+    (let ((j (an-integer-between i high)))<br/>
+      (let ((ksq (+ (* i i) (* j j))))<br/>
+        (require (&gt;= hsq ksq))<br/>
+        (let ((k (sqrt ksq)))<br/>
+          (require (integer? k))<br/>
+          (list i j k))))))<br/></tt></p><p/><p>
+</p><p/><p>
+
+<a name="%_sec_4.3.2" id="%_sec_4.3.2"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_4.3.2">4.3.2 Exemplos de programas não determinísticos</a></h3><p>
+
+</p><p>Seção <a href="#%_sec_4.3.3">4.3.3</a> descreve a implementação do avaliador <tt>amb</tt>. Primeiro, no entanto, damos alguns exemplos de como ele pode ser usado. A vantagem da programação não determinística é que podemos suprimir os detalhes de como a pesquisa é realizada, <a name="%_idx_4924" id="%_idx_4924"/>expressando nossos programas em um nível mais alto de abstração.</p><p>
+
+<a name="%_sec_Temp_608" id="%_sec_Temp_608"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_608">Quebra-cabeças Lógicos</a></h4><p>
+
+<a name="%_idx_4926" id="%_idx_4926"/><a name="%_idx_4928" id="%_idx_4928"/><a name="%_idx_4930" id="%_idx_4930"/>
+<a name="%_idx_4932" id="%_idx_4932"/>O quebra-cabeça a seguir (retirado de Dinesman 1968) é típico de uma grande classe de quebra-cabeças lógicos simples:</p><p>
+
+</p><blockquote>Baker, Cooper, Fletcher, Miller e Smith moram em andares diferentes de um prédio que contém apenas cinco andares. Baker não mora no último andar. Cooper não mora no andar de baixo. O Fletcher não mora no piso superior ou inferior. Miller vive em um andar mais alto do que Cooper. Smith não mora em um andar adjacente ao Fletcher. Fletcher não mora em um andar adjacente ao de Cooper. Onde todos moram?</blockquote><p>Podemos determinar quem mora em cada andar de maneira direta, enumerando todas as possibilidades e impondo as restrições fornecidas:<a name="call_footnote_Temp_609" href="#footnote_Temp_609" id="call_footnote_Temp_609"><sup><small>48.</small></sup></a></p><p>
+
+
+</p><p/><p><tt><a name="%_idx_4938" id="%_idx_4938"/>(define (multiple-dwelling)<br/>
+  (let ((baker (amb 1 2 3 4 5))<br/>
+        (cooper (amb 1 2 3 4 5))<br/>
+        (fletcher (amb 1 2 3 4 5))<br/>
+        (miller (amb 1 2 3 4 5))<br/>
+        (smith (amb 1 2 3 4 5)))<br/>
+    (require<br/>
+     (distinct? (list baker cooper fletcher miller smith)))<br/>
+    (require (not (= baker 5)))<br/>
+    (require (not (= cooper 1)))<br/>
+    (require (not (= fletcher 5)))<br/>
+    (require (not (= fletcher 1)))<br/>
+    (require (&gt; miller cooper))<br/>
+    (require (not (= (abs (- smith fletcher)) 1)))<br/>
+    (require (not (= (abs (- fletcher cooper)) 1)))<br/>
+    (list (list 'baker baker)<br/>
+          (list 'cooper cooper)<br/>
+          (list 'fletcher fletcher)<br/>
+          (list 'miller miller)<br/>
+          (list 'smith smith))))<br/></tt></p><p/><p/><p>Avaliando a expressão <tt>(multiple-dwelling)</tt> produz o resultado</p><p/><p><tt>((baker 3) (cooper 2) (fletcher 4) (miller 5) (smith 1))<br/></tt></p><p/><p>Embora este procedimento simples funcione, é muito lento. Exercícios <a href="#%_thm_4.39">4.39</a> e <a href="#%_thm_4.40">4.40</a> discutem algumas possíveis melhorias.</p><p>
+
+</p><p><a name="%_thm_4.38" id="%_thm_4.38"/>
+<b>Exercício 4.38.</b> Modifique o procedimento de moradia múltipla??? para omitir o requisito de que Smith e Fletcher não morem em pisos adjacentes. Quantas soluções existem para esse quebra-cabeça modificado?</p><p/><p>
+
+</p><p><a name="%_thm_4.39" id="%_thm_4.39"/>
+<b>Exercício 4.39.</b> A ordem das restrições no procedimento de moradia múltipla afeta a resposta? Isso afeta o tempo para encontrar uma resposta? Se você acha que isso importa, demonstre um programa mais rápido, obtido a partir de um dado, reordenando as restrições. Se você acha que isso não importa, discuta seu caso.</p><p/><p>
+
+</p><p><a name="%_thm_4.40" id="%_thm_4.40"/>
+<b>Exercício 4.40.</b> No problema da moradia múltipla, quantos conjuntos de atribuições existem de pessoas para andares, antes e depois da exigência de que as atribuições de andares sejam distintas? É muito ineficiente gerar todas as atribuições possíveis de pessoas para os pisos e, em seguida, deixar o retorno para eliminá-las. Por exemplo, a maioria das restrições depende de apenas uma ou duas das variáveis de piso de pessoa e, portanto, pode ser imposta antes que os pisos tenham sido selecionados para todas as pessoas. Escreva e demonstre um procedimento não determinístico muito mais eficiente que resolva esse problema com base na geração apenas das possibilidades que ainda não foram descartadas pelas restrições anteriores. (Dica: Isso exigirá um aninhamento de expressões <tt>let</tt>).</p><p/><p>
+
+</p><p><a name="%_thm_4.41" id="%_thm_4.41"/>
+<b>Exercício 4.41.</b> <a name="%_idx_4940" id="%_idx_4940"/>Escreva um programa comum do Scheme para resolver o quebra-cabeça de várias residências.</p><p/><p>
+
+</p><p><a name="%_thm_4.42" id="%_thm_4.42"/>
+<b>Exercício 4.42.</b> <a name="%_idx_4942" id="%_idx_4942"/>Resolva o seguinte quebra-cabeça “Mentirosos” (de Phillips 1934):</p><blockquote>Cinco alunas sentaram-se para um exame. Seus pais - assim pensavam - mostraram um grau indevido de interesse no resultado. Eles, portanto, concordaram que, ao escrever para casa sobre o exame, cada garota deveria fazer uma afirmação verdadeira e uma falsa. A seguir estão as passagens relevantes de suas cartas:<p/><ul><li>Betty: &quot;Kitty foi a segunda no exame. Eu era apenas o terceiro.&quot;</li><li>Ethel: “Você ficará feliz em saber que eu estava no topo. Joan foi a segunda&quot;.</li><li>Joan: &quot;Eu era o terceiro, e o pobre Ethel estava no fundo.&quot;</li><li>Kitty: &quot;Eu saí em segundo. Maria era apenas a quarta.&quot;</li><li>Maria: Eu era a quarta. O primeiro lugar foi ocupado por Betty.&quot;</li></ul><p>Qual foi de fato a ordem em que as cinco meninas foram colocadas?</p></blockquote>
+<p/><p>
+
+</p><p><a name="%_thm_4.43" id="%_thm_4.43"/>
+<b>Exercício 4.43.</b> Use o avaliador <tt>amb</tt> para resolver o seguinte quebra-cabeça:<a name="call_footnote_Temp_616" href="#footnote_Temp_616" id="call_footnote_Temp_616"><sup><small>49.</small></sup></a>
+</p><blockquote>O pai de Mary Ann Moore possui um iate, assim como cada um de seus quatro amigos: Coronel Downing, Sr. Hall, Sir Barnacle Hood e Dr. Parker. Cada um dos cinco também possui uma filha e cada um nomeou seu iate em homenagem à filha de um dos outros. O iate de Sir Barnacle é o Gabrielle, o Sr. Moore é dono da Lorna; Sr. Hall, o Rosalind. A Melissa, de propriedade do coronel Downing, recebeu o nome da filha de Sir Barnacle. O pai de Gabrielle é dono do iate que leva o nome da filha do Dr. Parker. Quem é o pai de Lorna?</blockquote>Tente escrever o programa para que ele funcione com eficiência (consulte o exercício <a href="#%_thm_4.40">4.40</a>) Determine também quantas soluções existem se não formos informados de que o sobrenome de Mary Ann é Moore.<p/><p>
+
+</p><p><a name="%_thm_4.44" id="%_thm_4.44"/>
+<b>Exercício 4.44.</b> <a name="%_idx_4944" id="%_idx_4944"/><a name="%_idx_4946" id="%_idx_4946"/><a name="%_idx_4948" id="%_idx_4948"/><a name="%_idx_4950" id="%_idx_4950"/>Exercício <a href="book-Z-H-15.html#%_thm_2.42">2.42</a> descreveu o “quebra-cabeça das oito rainhas” de colocar rainhas em um tabuleiro de xadrez para que não se atacassem duas. Escreva um programa não determinístico para resolver esse quebra-cabeça.</p><p/><p>
+
+<a name="%_sec_Temp_618" id="%_sec_Temp_618"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_618">Analisando a linguagem natural</a></h4><p>
+
+<a name="%_idx_4952" id="%_idx_4952"/><a name="%_idx_4954" id="%_idx_4954"/>Os programas projetados para aceitar a linguagem natural como entrada geralmente iniciam tentando <em>analisar</em> a entrada, isto é, para combinar a entrada com alguma estrutura gramatical. Por exemplo, podemos tentar reconhecer frases simples que consistem em um artigo seguido por um substantivo seguido por um verbo, como &quot;O gato come&quot;. Para realizar essa análise, devemos ser capazes de identificar as partes do discurso de palavras individuais. Poderíamos começar com algumas listas que classificam várias palavras:<a name="call_footnote_Temp_619" href="#footnote_Temp_619" id="call_footnote_Temp_619"><sup><small>50.</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_4956" id="%_idx_4956"/>(define nouns '(noun student professor cat class))<br/><a name="%_idx_4958" id="%_idx_4958"/>(define verbs '(verb studies lectures eats sleeps))<br/><a name="%_idx_4960" id="%_idx_4960"/>(define articles '(article the a))<br/></tt></p><p/><p>
+<a name="%_idx_4962" id="%_idx_4962"/>Também precisamos de uma <em>gramática</em>, ou seja, um conjunto de regras que descrevem como os elementos gramaticais são compostos a partir de elementos mais simples. Uma gramática muito simples pode estipular que uma sentença sempre consista em duas partes - uma frase substantiva seguida por um verbo - e que uma frase substantiva consista em um artigo seguido por um substantivo. Com esta gramática, a frase &quot;The cat eats&quot; é analisada da seguinte forma:</p><p>
+
+</p><p/><p><tt>(sentence (noun-phrase (article the) (noun cat))<br/>
+          (verb eats))<br/></tt></p><p/><p/><p>Podemos gerar essa análise com um programa simples que possui procedimentos separados para cada uma das regras gramaticais. Para analisar uma frase, identificamos suas duas partes constituintes e retornamos uma lista desses dois elementos, marcados com o símbolo <tt>sentence</tt>:</p><p>
+
+<a name="%_idx_4964" id="%_idx_4964"/></p><p/><p><tt>(define (parse-sentence)<br/>
+  (list 'sentence<br/>
+         (parse-noun-phrase)<br/>
+         (parse-word verbs)))<br/></tt></p><p/><p>Uma frase substantiva???, da mesma forma, é analisada encontrando um artigo seguido por um substantivo:</p><p/><p><tt>(define (parse-noun-phrase)<br/>
+  (list 'noun-phrase<br/>
+        (parse-word articles)<br/>
+        (parse-word nouns)))<br/></tt></p><p/><p/><p>No nível mais baixo, a análise se resume a verificar repetidamente que a próxima palavra não analisada é um membro da lista de palavras para a parte necessária da fala. Para implementar isso, mantemos uma variável global <tt>*unparsed*</tt>, que é a entrada que ainda não foi analisada. Cada vez que verificamos uma palavra, exigimos que <tt>*unparsed*</tt> deve estar vazio e deve começar com uma palavra da lista designada. Nesse caso, removemos essa palavra de <tt>*unparsed*</tt> e retorne a palavra junto com sua parte do discurso (que se encontra no início da lista):<a name="call_footnote_Temp_620" href="#footnote_Temp_620" id="call_footnote_Temp_620"><sup><small>51</small></sup></a></p><p>
+
+</p><p/><p><tt>(define (parse-word word-list)<br/>
+  (require (not (null? *unparsed*)))<br/>
+  (require (memq (car *unparsed*) (cdr word-list)))<br/>
+  (let ((found-word (car *unparsed*)))<br/>
+    (set! *unparsed* (cdr *unparsed*))<br/>
+    (list (car word-list) found-word)))<br/></tt></p><p/><p/><p>Para iniciar a análise, tudo o que precisamos fazer é definir <tt>*unparsed*</tt> para ser a entrada inteira, tente analisar uma frase e verifique se não resta nada:</p><p>
+
+</p><p/><p><tt>(define *unparsed* '())<br/><a name="%_idx_4966" id="%_idx_4966"/>(define (parse input)<br/>
+  (set! *unparsed* input)<br/>
+  (let ((sent (parse-sentence)))<br/>
+    (require (null? *unparsed*))<br/>
+    sent))<br/></tt></p><p/><p/><p>Agora podemos tentar o analisador e verificar se ele funciona para nossa simples sentença de teste:</p><p>
+
+</p><p/><p><tt><i>;;; Amb-Eval input:</i><br/>
+(parse '(the cat eats))<br/><i>;;; Starting a new problem</i><br/><i>;;; Amb-Eval value:</i><br/><i>(sentence (noun-phrase (article the) (noun cat)) (verb eats))</i><br/></tt></p><p/><p/><p>O avaliador <tt>amb</tt> é útil aqui, porque é conveniente expressar as restrições de análise com a ajuda de <tt>require</tt>. A pesquisa e o retorno automáticos realmente valem a pena, no entanto, quando consideramos gramáticas mais complexas, onde há opções de como as unidades podem ser decompostas.</p><p>Adicionaremos à nossa gramática uma lista de preposições:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4968" id="%_idx_4968"/>(define prepositions '(prep for to in by with))<br/></tt></p><p/><p>e defina uma frase preposicional (por exemplo, &quot;para o gato&quot;) como uma preposição seguida por uma frase substantiva:</p><p>
+
+</p><p/><p><tt>(define (parse-prepositional-phrase)<br/>
+  (list 'prep-phrase<br/>
+        (parse-word prepositions)<br/>
+        (parse-noun-phrase)))<br/></tt></p><p/><p>Agora podemos definir uma sentença como uma frase substantiva seguida por uma frase verbal, onde uma frase verbal pode ser um verbo ou uma frase verbal estendida por uma frase preposicional:<a name="call_footnote_Temp_621" href="#footnote_Temp_621" id="call_footnote_Temp_621"><sup><small>52</small></sup></a></p><p>
+
+</p><p/><p><tt>(define (parse-sentence)<br/>
+  (list 'sentence<br/>
+         (parse-noun-phrase)<br/>
+         (parse-verb-phrase)))<br/>
+(define (parse-verb-phrase)<br/>
+  (define (maybe-extend verb-phrase)<br/>
+    (amb verb-phrase<br/>
+         (maybe-extend (list 'verb-phrase<br/>
+                             verb-phrase<br/>
+                             (parse-prepositional-phrase)))))<br/>
+  (maybe-extend (parse-word verbs)))<br/></tt></p><p/><p/><p>Enquanto estamos nisso, também podemos elaborar a definição de frases substantivas para permitir algo como &quot;a cat in the class&quot;. O que costumávamos chamar de uma frase substantiva, agora denominamos uma frase substantiva simples, e uma frase substantiva agora será uma frase substantiva simples ou uma frase substantiva estendida por uma frase preposicional:</p><p>
+
+</p><p/><p><tt>(define (parse-simple-noun-phrase)<br/>
+  (list 'simple-noun-phrase<br/>
+        (parse-word articles)<br/>
+        (parse-word nouns)))<br/>
+(define (parse-noun-phrase)<br/>
+  (define (maybe-extend noun-phrase)<br/>
+    (amb noun-phrase<br/>
+         (maybe-extend (list 'noun-phrase<br/>
+                             noun-phrase<br/>
+                             (parse-prepositional-phrase)))))<br/>
+  (maybe-extend (parse-simple-noun-phrase)))<br/></tt></p><p/><p/><p>Nossa nova gramática permite analisar sentenças mais complexas. Por exemplo</p><p/><p><tt>(parse '(the student with the cat sleeps in the class))<br/></tt></p><p/><p>
+produces</p><p>
+
+</p><p/><p><tt>(sentence<br/>
+ (noun-phrase<br/>
+  (simple-noun-phrase (article the) (noun student))<br/>
+  (prep-phrase (prep with)<br/>
+               (simple-noun-phrase<br/>
+                (article the) (noun cat))))<br/>
+ (verb-phrase<br/>
+  (verb sleeps)<br/>
+  (prep-phrase (prep in)<br/>
+               (simple-noun-phrase<br/>
+                (article the) (noun class)))))<br/></tt></p><p/><p/><p>Observe que uma determinada entrada pode ter mais de uma análise legal. Na frase &quot;The professor lectures to the student with the cat&quot;, pode ser que o professor daria palestras com o gato ou que o aluno tenha o gato. Nosso programa não determinístico encontra as duas possibilidades:</p><p>
+
+</p><p/><p><tt>(parse '(the professor lectures to the student with the cat))<br/></tt></p><p/><p>
+produces</p><p>
+
+</p><p/><p><tt>(sentence<br/>
+ (simple-noun-phrase (article the) (noun professor))<br/>
+ (verb-phrase<br/>
+  (verb-phrase<br/>
+   (verb lectures)<br/>
+   (prep-phrase (prep to)<br/>
+                (simple-noun-phrase<br/>
+                 (article the) (noun student))))<br/>
+  (prep-phrase (prep with)<br/>
+               (simple-noun-phrase<br/>
+                (article the) (noun cat)))))<br/></tt></p><p/><p>Pedir ao avaliador para tentar novamente gera</p><p/><p><tt>(sentence<br/>
+ (simple-noun-phrase (article the) (noun professor))<br/>
+ (verb-phrase<br/>
+  (verb lectures)<br/>
+  (prep-phrase (prep to)<br/>
+               (noun-phrase<br/>
+                (simple-noun-phrase<br/>
+                 (article the) (noun student))<br/>
+                (prep-phrase (prep with)<br/>
+                             (simple-noun-phrase<br/>
+                              (article the) (noun cat)))))))<br/></tt></p><p/><p>
+</p><p>
+
+</p><p><a name="%_thm_4.45" id="%_thm_4.45"/>
+<b>Exercício 4.45.</b> Com a gramática dada acima, a seguinte frase pode ser analisada de cinco maneiras diferentes: &quot;The professor lectures to the student in the class with the cat&quot;. Dê as cinco análises e explique as diferenças de tons de significado entre elas.</p><p/><p>
+
+</p><p><a name="%_thm_4.46" id="%_thm_4.46"/>
+<b>Exercício 4.46.</b> <a name="%_idx_4970" id="%_idx_4970"/>Os avaliadores nas seções <a href="book-Z-H-26.html#%_sec_4.1">4.1</a> e <a href="book-Z-H-27.html#%_sec_4.2">4.2</a> não determine em que operandos de ordem são avaliados. Veremos que o avaliador <tt>amb</tt> da esquerda para a direita. Explique por que nosso programa de análise não funcionaria se os operandos fossem avaliados em alguma outra ordem.</p><p/><p>
+
+</p><p><a name="%_thm_4.47" id="%_thm_4.47"/>
+<b>Exercício 4.47.</b> Louis Reasoner sugere que, como uma frase de verbo é um verbo ou uma frase de verbo seguida de uma frase preposicional, seria muito mais simples definir o procedimento <tt>parse-verb-phrase</tt> da seguinte forma (e da mesma forma para frases substantivas):</p><p/><p><tt>(define (parse-verb-phrase)<br/>
+  (amb (parse-word verbs)<br/>
+       (list 'verb-phrase<br/>
+             (parse-verb-phrase)<br/>
+             (parse-prepositional-phrase))))<br/></tt></p><p/><p>Isto funciona? O comportamento do programa muda se trocarmos a ordem das expressões no campo <tt>amb</tt>?</p><p/><p>
+
+</p><p><a name="%_thm_4.48" id="%_thm_4.48"/>
+<b>Exercício 4.48.</b> Estenda a gramática dada acima para lidar com frases mais complexas. Por exemplo, você pode estender frases substantivas e verbais para incluir adjetivos e advérbios, ou lidar com frases compostas.<a name="call_footnote_Temp_626" href="#footnote_Temp_626" id="call_footnote_Temp_626"><sup><small>53</small></sup></a>
+</p><p/><p>
+
+</p><p><a name="%_thm_4.49" id="%_thm_4.49"/>
+<b>Exercício 4.49.</b> <a name="%_idx_4976" id="%_idx_4976"/>Alyssa P. Hacker está mais interessado em gerar frases interessantes do que em analisá-las. Ela argumenta que, simplesmente mudando o procedimento <tt>parse-word</tt> para que ele ignore a &quot;sentença de entrada&quot; e sempre tenha êxito e gere uma palavra apropriada, podemos usar os programas que criamos para analisar para gerar geração. Implemente a ideia de Alyssa e mostre a primeira meia dúzia de frases geradas.<a name="call_footnote_Temp_628" href="#footnote_Temp_628" id="call_footnote_Temp_628"><sup><small>54</small></sup></a>
+
+</p><p/><p>
+
+<a name="%_sec_4.3.3" id="%_sec_4.3.3"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_4.3.3">4.3.3 Implementando o avaliador <tt>Amb</tt></a></h3><p>
+
+
+<a name="%_idx_4978" id="%_idx_4978"/>A avaliação de uma expressão comum do Scheme pode retornar um valor, nunca pode terminar ou pode sinalizar um erro. No Scheme não determinístico, a avaliação de uma expressão também pode resultar na descoberta de um beco sem saída; nesse caso, a avaliação deve retornar a um ponto de escolha anterior. A interpretação do Scheme não determinístico é complicada por esse caso extra.</p><p>
+
+<a name="%_idx_4980" id="%_idx_4980"/>Construiremos o avaliador <tt>amb</tt> para Scheme não determinístico, modificando o avaliador analisador da seção <a href="book-Z-H-26.html#%_sec_4.1.7">4.1.7</a>.<a name="call_footnote_Temp_629" href="#footnote_Temp_629" id="call_footnote_Temp_629"><sup><small>55</small></sup></a> Como no avaliador analisador, a avaliação de uma expressão é realizada chamando-se um <a name="%_idx_4982" id="%_idx_4982"/>procedimento de execução produzido pela análise dessa expressão. A diferença entre a interpretação do Scheme comum e a interpretação do Scheme não determinístico será inteiramente nos procedimentos de execução.</p><p>
+
+<a name="%_sec_Temp_630" id="%_sec_Temp_630"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_630">Procedimentos de execução e continuações???</a></h4><p>
+
+<a name="%_idx_4984" id="%_idx_4984"/>
+<a name="%_idx_4986" id="%_idx_4986"/>Lembre-se de que os procedimentos de execução para o avaliador comum possuem um argumento: o ambiente de execução. Por outro lado, os procedimentos de execução no avaliador <tt>amb</tt> leva três argumentos: o ambiente e dois procedimentos chamados <em>procedimentos de continuação</em>. A avaliação de uma expressão terminará chamando uma destas duas continuações: Se a avaliação resultar em um valor, o valor <a name="%_idx_4988" id="%_idx_4988"/><em>continuação de sucesso</em> é chamado com esse valor; se a avaliação resultar na descoberta de um beco sem saída, o <a name="%_idx_4990" id="%_idx_4990"/><em>continuação de falha</em> é chamado???. Construir e chamar continuações apropriadas é o mecanismo pelo qual o avaliador não determinístico implementa o retorno.</p><p>O trabalho da continuação de sucesso é receber um valor e prosseguir com o cálculo. Juntamente com esse valor, a continuação de sucesso passa por outra continuação de falha, que deve ser chamada posteriormente se o uso desse valor levar a um beco sem saída.</p><p>O trabalho da continuação da falha é tentar outro ramo do processo não determinístico. A essência da linguagem não determinística está no fato de que expressões podem representar escolhas entre alternativas. A avaliação dessa expressão deve prosseguir com uma das opções alternativas indicadas, mesmo que não se saiba com antecedência quais escolhas levarão a resultados aceitáveis. Para lidar com isso, o avaliador escolhe uma das alternativas e passa esse valor para a continuação do sucesso. Juntamente com esse valor, o avaliador constrói e repassa uma continuação de falha que pode ser chamada posteriormente para escolher uma alternativa diferente.</p><p>Uma falha é acionada durante a avaliação (ou seja, uma continuação de falha é chamada) quando um programa do usuário rejeita explicitamente a linha de ataque atual (por exemplo, uma chamada para <tt>require</tt> pode resultar na execução de <tt>(amb)</tt>, uma expressão que sempre falha - consulte a seção <a href="#%_sec_4.3.1">4.3.1</a>) A continuação da falha em questão nesse ponto fará com que o ponto de escolha mais recente escolha outra alternativa. Se não houver mais alternativas a serem consideradas nesse ponto de escolha, uma falha em um ponto de escolha anterior será acionada e assim por diante. As continuações de falha também são invocadas pelo loop do driver em resposta a uma requisição <tt>try-again</tt>, para encontrar outro valor da expressão.</p><p>Além disso, se uma operação de efeito colateral (como a atribuição a uma variável) ocorrer em uma ramificação do processo resultante de uma escolha, pode ser necessário, quando o processo encontrar um beco sem saída, desfazer o efeito colateral antes de fazer uma nova escolha. Isso é conseguido com a operação de efeito colateral produzindo uma continuação de falha que desfaz o efeito colateral e propaga a falha.</p><p>Em resumo, continuações de falha são construídas por</p><p/><ul><li>expressões <tt>amb</tt> - para fornecer um mecanismo para fazer escolhas alternativas se a escolha atual feita pela expressão <tt>amb</tt> leva a um beco sem saída;<p>
+
+</p></li><li>o driver de nível superior - para fornecer um mecanismo para relatar falhas quando as opções estiverem esgotadas;<p>
+
+</p></li><li>atribuições - para interceptar falhas e desfazer atribuições durante o retorno.</li></ul><p/><p>As falhas são iniciadas apenas quando um beco sem saída é encontrado. Isto ocorre</p><p/><ul><li>se o programa do usuário executar <tt>(amb)</tt>;<p>
+
+</p></li><li>se o usuário digitar <tt>try-again</tt> no driver de nível superior.</li></ul><p/><p>As continuações de falha também são chamadas durante o processamento de uma falha:</p><p/><ul><li>Quando a continuação de falha criada por uma atribuição termina de desfazer um efeito colateral, ela chama a continuação de falha que interceptou, a fim de propagar a falha de volta ao ponto de escolha que levou a essa atribuição ou ao nível superior.<p>
+
+</p></li><li>Quando a continuação da falha por um <tt>amb</tt> ficar sem opções, chama a continuação de falha que foi originalmente dada ao <tt>amb</tt>, para propagar a falha de volta ao ponto de escolha anterior ou ao nível superior.</li></ul><p>
+</p><p>
+
+
+<a name="%_sec_Temp_631" id="%_sec_Temp_631"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_631">Estrutura do avaliador</a></h4><p>
+
+<a name="%_idx_4992" id="%_idx_4992"/>Os procedimentos de sintaxe e representação de dados para o avaliador <tt>amb</tt>, e também o procedimento <tt>analyze</tt> são idênticos aos do avaliador da seção <a href="book-Z-H-26.html#%_sec_4.1.7">4.1.7</a>, exceto pelo fato de precisarmos de procedimentos de sintaxe adicionais para reconhecer o <tt>amb</tt> forma especial:<a name="call_footnote_Temp_632" href="#footnote_Temp_632" id="call_footnote_Temp_632"><sup><small>56.</small></sup></a>
+</p><p/><p><tt>(define (amb? exp) (tagged-list? exp 'amb))<br/>
+(define (amb-choices exp) (cdr exp))<br/></tt></p><p/><p>Também devemos adicionar à expedição em <tt>analyze</tt> uma cláusula que reconhecerá esse formulário especial e gerará um procedimento de execução apropriado:</p><p>
+
+</p><p/><p><tt>((amb? exp) (analyze-amb exp))<br/></tt></p><p/><p/><p>O procedimento de nível superior <tt>ambeval</tt> (semelhante à versão do <tt>eval</tt> dado na seção <a href="book-Z-H-26.html#%_sec_4.1.7">4.1.7</a>) analisa a expressão fornecida e aplica o procedimento de execução resultante ao ambiente especificado, com duas continuações fornecidas:</p><p>
+
+</p><p/><p><tt><a name="%_idx_4994" id="%_idx_4994"/>(define (ambeval exp env succeed fail)<br/>
+  ((analyze exp) env succeed fail))<br/></tt></p><p/><p/><p>
+
+<a name="%_idx_4996" id="%_idx_4996"/><a name="%_idx_4998" id="%_idx_4998"/><a name="%_idx_5000" id="%_idx_5000"/>Uma continuação de sucesso é um procedimento de dois argumentos: o valor recém-obtido e outra continuação de falha a ser usada se esse valor levar a uma falha subsequente. Uma continuação de falha é um procedimento sem argumentos. Assim <a name="%_idx_5002" id="%_idx_5002"/>a forma geral de um procedimento de execução é</p><p>
+
+</p><p/><p><tt>(lambda (env succeed fail)<br/>
+  <em>;; <tt>succeed</tt> is <tt>(lambda (value fail) <tt>...</tt>)</tt></em><br/>
+  <em>;; <tt>fail</tt> is <tt>(lambda () <tt>...</tt>)</tt></em><br/>
+  <tt>...</tt>)<br/></tt></p><p/><p/><p>Por exemplo, executando</p><p>
+
+</p><p/><p><tt>(ambeval &lt;<em>exp</em>&gt;<br/>
+         the-global-environment<br/>
+         (lambda (value fail) value)<br/>
+         (lambda () 'failed))<br/></tt></p><p/><p>tentará avaliar a expressão especificada e retornará o valor da expressão (se a avaliação for bem-sucedida) ou o símbolo <tt>failed</tt> (se a avaliação falhar). A chamada para <tt>ambeval</tt> no loop do driver mostrado abaixo usa procedimentos de continuação muito mais complicados, que continuam o loop e suportam o <tt>try-again</tt> solicitação.</p><p>A maior parte da complexidade do avaliador <tt>amb</tt>resulta da mecânica de repassar as continuações à medida que os procedimentos de execução se chamam. Ao seguir o código a seguir, você deve comparar cada um dos procedimentos de execução com o procedimento correspondente para o avaliador comum, fornecido na seção <a href="book-Z-H-26.html#%_sec_4.1.7">4.1.7</a>.</p><p>
+
+<a name="%_sec_Temp_633" id="%_sec_Temp_633"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_633">Expressões simples</a></h4><p>Os procedimentos de execução para os tipos mais simples de expressões são essencialmente os mesmos do avaliador comum, exceto pela necessidade de gerenciar as continuações. Os procedimentos de execução simplesmente são bem-sucedidos com o valor da expressão, repassando a continuação da falha que foi passada a eles.</p><p>
+
+<a name="%_idx_5004" id="%_idx_5004"/>
+</p><p/><p><tt>(define (analyze-self-evaluating exp)<br/>
+  (lambda (env succeed fail)<br/>
+    (succeed exp fail)))<br/>
+(define (analyze-quoted exp)<br/>
+  (let ((qval (text-of-quotation exp)))<br/>
+    (lambda (env succeed fail)<br/>
+      (succeed qval fail))))<br/>
+(define (analyze-variable exp)<br/>
+  (lambda (env succeed fail)<br/>
+    (succeed (lookup-variable-value exp env)<br/>
+             fail)))<br/>
+(define (analyze-lambda exp)<br/>
+  (let ((vars (lambda-parameters exp))<br/>
+        (bproc (analyze-sequence (lambda-body exp))))<br/>
+    (lambda (env succeed fail)<br/>
+      (succeed (make-procedure vars bproc env)<br/>
+               fail))))<br/></tt></p><p/><p/><p>
+
+
+<a name="%_idx_5006" id="%_idx_5006"/>Observe que procurar uma variável sempre &quot;obtém êxito&quot;. E se <tt>lookup-variable-value</tt> falha ao encontrar a variável, sinaliza um erro, como de costume. Tal “falha” indica um erro do programa - uma referência a uma variável não ligada; não é uma indicação de que deveríamos tentar outra escolha não determinística em vez da que é tentada atualmente.</p><p>
+
+<a name="%_sec_Temp_634" id="%_sec_Temp_634"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_634">Condicionais e sequências</a></h4><p>Os condicionais também são tratados de maneira semelhante à do avaliador comum. O procedimento de execução gerado por <tt>analyze-if</tt> chama o procedimento de execução de predicado <tt>pproc</tt> com uma continuação de sucesso que verifica se o valor do predicado é verdadeiro e continua a executar o consequente ou o alternativo. Se a execução de <tt>pproc</tt> falha, a continuação da falha original para a expressão <tt>if</tt> é chamada.</p><p>
+
+
+</p><p/><p><tt>(define (analyze-if exp)<br/>
+  (let ((pproc (analyze (if-predicate exp)))<br/>
+        (cproc (analyze (if-consequent exp)))<br/>
+        (aproc (analyze (if-alternative exp))))<br/>
+    (lambda (env succeed fail)<br/>
+      (pproc env<br/>
+             <em>;; success continuation for evaluating the predicate</em><br/>
+             <em>;; to obtain <tt>pred-value</tt></em><br/>
+             (lambda (pred-value fail2)<br/>
+               (if (true? pred-value)<br/>
+                   (cproc env succeed fail2)<br/>
+                   (aproc env succeed fail2)))<br/>
+             <em>;; failure continuation for evaluating the predicate</em><br/>
+             fail))))<br/></tt></p><p/><p/><p>As sequências também são tratadas da mesma forma que no avaliador anterior, exceto para as maquinações no subprocedimento <tt>sequentially</tt> necessários para passar as continuações. Ou seja, executar sequencialmente <tt>a</tt> e depois <tt>b</tt>, chamamos <tt>a</tt> com uma continuação de sucesso que chama <tt>b</tt>.</p><p>
+
+</p><p/><p><tt>(define (analyze-sequence exps)<br/>
+  (define (sequentially a b)<br/>
+    (lambda (env succeed fail)<br/>
+      (a env<br/>
+         <em>;; success continuation for calling <tt>a</tt></em><br/>
+         (lambda (a-value fail2)<br/>
+           (b env succeed fail2))<br/>
+         <em>;; failure continuation for calling <tt>a</tt></em><br/>
+         fail)))<br/>
+  (define (loop first-proc rest-procs)<br/>
+    (if (null? rest-procs)<br/>
+        first-proc<br/>
+        (loop (sequentially first-proc (car rest-procs))<br/>
+              (cdr rest-procs))))<br/>
+  (let ((procs (map analyze exps)))<br/>
+    (if (null? procs)<br/>
+        (error &quot;Empty sequence -- ANALYZE&quot;))<br/>
+    (loop (car procs) (cdr procs))))<br/></tt></p><p/><p/><p>
+
+<a name="%_sec_Temp_635" id="%_sec_Temp_635"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_635">Definições e atribuições</a></h4><p>As definições são outro caso em que precisamos de alguns problemas para gerenciar as continuações, porque é necessário avaliar a expressão do valor da definição antes de realmente definir a nova variável. Para isso, o procedimento de execução do valor de definição <tt>vproc</tt> é chamado com o ambiente, uma continuação de sucesso e a continuação de falha. Se a execução de <tt>vproc</tt> obtém um valor <tt>val</tt> para a variável definida, a variável é definida e o sucesso é propagado:</p><p>
+
+</p><p/><p><tt>(define (analyze-definition exp)<br/>
+  (let ((var (definition-variable exp))<br/>
+        (vproc (analyze (definition-value exp))))<br/>
+    (lambda (env succeed fail)<br/>
+      (vproc env                        <br/>
+             (lambda (val fail2)<br/>
+               (define-variable! var val env)<br/>
+               (succeed 'ok fail2))<br/>
+             fail))))<br/></tt></p><p/><p/><p>
+
+
+<a name="%_idx_5008" id="%_idx_5008"/>As atribuições são mais interessantes. Este é o primeiro lugar em que realmente usamos as continuações, em vez de apenas repassá-las. O procedimento de execução para atribuições começa como o das definições. Ele primeiro tenta obter o novo valor a ser atribuído à variável. Se esta avaliação de <tt>vproc</tt> falha, a atribuição falha.</p><p>E se <tt>vproc</tt> tiver êxito, no entanto, e continuaremos a realizar a atribuição, devemos considerar a possibilidade de que esse ramo da computação falhe mais tarde, o que exigirá que voltemos atrás à atribuição. Portanto, precisamos providenciar para desfazer a atribuição como parte do processo de retorno.<a name="call_footnote_Temp_636" href="#footnote_Temp_636" id="call_footnote_Temp_636"><sup><small>57</small></sup></a></p><p>Isso é realizado dando <tt>vproc</tt> uma continuação de sucesso (marcada com o comentário &quot;*1 *&quot; abaixo) que salva o valor antigo da variável antes de atribuir o novo valor à variável e prosseguir com a atribuição. A continuação da falha que é passada junto com o valor da atribuição (marcada com o comentário &quot;*2 *&quot; abaixo) restaura o valor antigo da variável antes de continuar a falha. Ou seja, uma atribuição bem-sucedida fornece uma continuação de falha que interceptará uma falha subsequente; qualquer falha que teria chamado <tt>fail2</tt> chama esse procedimento, para desfazer a atribuição antes de realmente chamar <tt>fail2</tt>.</p><p>
+
+</p><p/><p><tt>(define (analyze-assignment exp)<br/>
+  (let ((var (assignment-variable exp))<br/>
+        (vproc (analyze (assignment-value exp))))<br/>
+    (lambda (env succeed fail)<br/>
+      (vproc env<br/>
+             (lambda (val fail2)        <em>; *1*</em><br/>
+               (let ((old-value<br/>
+                      (lookup-variable-value var env))) <br/>
+                 (set-variable-value! var val env)<br/>
+                 (succeed 'ok<br/>
+                          (lambda ()    <em>; *2*</em><br/>
+                            (set-variable-value! var<br/>
+                                                 old-value<br/>
+                                                 env)<br/>
+                            (fail2)))))<br/>
+             fail))))<br/></tt></p><p/><p/><p>
+
+<a name="%_sec_Temp_637" id="%_sec_Temp_637"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_637">Aplicações de procedimento</a></h4><p>O procedimento de execução para aplicações não contém novas ideias, exceto pela complexidade técnica do gerenciamento das continuações. Essa complexidade surge em <tt>analyze-application</tt>, devido à necessidade de acompanhar as continuações de sucesso e falha à medida que avaliamos os operandos. Usamos um procedimento <tt>get-args</tt> para avaliar a lista de operandos, em vez de um simples <tt>map</tt> como no avaliador comum.</p><p>
+
+</p><p/><p><tt>(define (analyze-application exp)<br/>
+  (let ((fproc (analyze (operator exp)))<br/>
+        (aprocs (map analyze (operands exp))))<br/>
+    (lambda (env succeed fail)<br/>
+      (fproc env<br/>
+             (lambda (proc fail2)<br/>
+               (get-args aprocs<br/>
+                         env<br/>
+                         (lambda (args fail3)<br/>
+                           (execute-application<br/>
+                            proc args succeed fail3))<br/>
+                         fail2))<br/>
+             fail))))<br/></tt></p><p/><p/><p>No <tt>get-args</tt>, Note como <tt>cdr</tt> abaixo a lista de procedimentos de execução <tt>aproc</tt> e a aplicação de <tt>cons</tt> na lista resultante de <tt>args</tt> é realizada chamando cada <tt>aproc</tt> na lista com uma continuação de sucesso que chama recursivamente <tt>get-args</tt>. Cada uma dessas chamadas recursivas para <tt>get-args</tt> possui uma continuação de sucesso cujo valor é o <tt>cons</tt> do argumento recém-obtido na lista de argumentos acumulados:</p><p>
+
+</p><p/><p><tt>(define (get-args aprocs env succeed fail)<br/>
+  (if (null? aprocs)<br/>
+      (succeed '() fail)<br/>
+      ((car aprocs) env<br/>
+                    <em>;; success continuation for this <tt>aproc</tt></em><br/>
+                    (lambda (arg fail2)<br/>
+                      (get-args (cdr aprocs)<br/>
+                                env<br/>
+                                <em>;; success continuation for recursive</em><br/>
+                                <em>;; call to <tt>get-args</tt></em><br/>
+                                (lambda (args fail3)<br/>
+                                  (succeed (cons arg args)<br/>
+                                           fail3))<br/>
+                                fail2))<br/>
+                    fail)))<br/></tt></p><p/><p/><p>A aplicação do procedimento real, realizada por <tt>execute-application</tt>, é realizado da mesma maneira que para o avaliador comum, exceto pela necessidade de gerenciar as continuações.</p><p>
+
+</p><p/><p><tt><a name="%_idx_5012" id="%_idx_5012"/>(define (execute-application proc args succeed fail)<br/>
+  (cond ((primitive-procedure? proc)<br/>
+         (succeed (apply-primitive-procedure proc args)<br/>
+                  fail))<br/>
+        ((compound-procedure? proc)<br/>
+         ((procedure-body proc)<br/>
+          (extend-environment (procedure-parameters proc)<br/>
+                              args<br/>
+                              (procedure-environment proc))<br/>
+          succeed<br/>
+          fail))<br/>
+        (else<br/>
+         (error<br/>
+          &quot;Unknown procedure type -- EXECUTE-APPLICATION&quot;<br/>
+          proc))))<br/></tt></p><p/><p/><p>
+
+<a name="%_sec_Temp_638" id="%_sec_Temp_638"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_638">Avaliando expressões <tt>amb</tt></a></h4><p>
+
+
+<a name="%_idx_5014" id="%_idx_5014"/>A forma <tt>amb</tt> especial é o elemento chave na linguagem não determinística. Aqui vemos a essência do processo de interpretação e a razão para acompanhar as continuações. O procedimento de execução para <tt>amb</tt> define um loop <tt>try-next</tt> que percorre os procedimentos de execução para todos os valores possíveis da expressão <tt>amb</tt>. Cada procedimento de execução é chamado com uma continuação de falha que tentará o próximo. Quando não há mais alternativas para tentar, toda a expressão <tt>amb</tt> falhar.</p><p>
+
+</p><p/><p><tt><a name="%_idx_5016" id="%_idx_5016"/>(define (analyze-amb exp)<br/>
+  (let ((cprocs (map analyze (amb-choices exp))))<br/>
+    (lambda (env succeed fail)<br/>
+      (define (try-next choices)<br/>
+        (if (null? choices)<br/>
+            (fail)<br/>
+            ((car choices) env<br/>
+                           succeed<br/>
+                           (lambda ()<br/>
+                             (try-next (cdr choices))))))<br/>
+      (try-next cprocs))))<br/></tt></p><p/><p/><p>
+
+<a name="%_sec_Temp_639" id="%_sec_Temp_639"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_639">Loop do driver</a></h4><p>
+
+<a name="%_idx_5018" id="%_idx_5018"/>
+<a name="%_idx_5020" id="%_idx_5020"/>O loop do driver para o avaliador <tt>amb</tt>é complexo, devido ao mecanismo que permite ao usuário tentar novamente na avaliação de uma expressão. O driver usa um procedimento chamado <tt>internal-loop</tt>, que assume como argumento um procedimento <tt>try-again</tt>. A intenção é que chamando <tt>try-again</tt> deve seguir para a próxima alternativa não experimentada na avaliação não determinística. <tt>Internal-loop</tt> quer ligar <tt>try-again</tt> em resposta ao usuário digitando <tt>try-again</tt> no loop do driver, ou então inicia uma nova avaliação chamando <tt>ambeval</tt>.</p><p>A continuação de falha para esta chamada para <tt>ambeval</tt> informa ao usuário que não há mais valores e reinicia o loop do driver.</p><p>A continuação de sucesso da chamada para <tt>ambeval</tt> é mais sutil. Imprimimos o valor obtido e, em seguida, chamamos o loop interno novamente com um procedimento <tt>try-again</tt> que poderá tentar a próxima alternativa. Este procedimento <tt>next-alternative</tt> é o segundo argumento que foi passado para a continuação de sucesso. Normalmente, pensamos nesse segundo argumento como uma continuação de falha a ser usada se o ramo de avaliação atual falhar posteriormente. Nesse caso, no entanto, concluímos uma avaliação bem-sucedida, para que possamos chamar a ramificação alternativa &quot;falha&quot; para procurar avaliações adicionais bem-sucedidas.</p><p>
+
+</p><p/><p><tt><a name="%_idx_5022" id="%_idx_5022"/>(define input-prompt &quot;;;; Amb-Eval input:&quot;)<br/>
+(define output-prompt &quot;;;; Amb-Eval value:&quot;)<br/><a name="%_idx_5024" id="%_idx_5024"/>(define (driver-loop)<br/>
+  (define (internal-loop try-again)<br/>
+    (prompt-for-input input-prompt)<br/>
+    (let ((input (read)))<br/>
+      (if (eq? input 'try-again)<br/>
+          (try-again)<br/>
+          (begin<br/>
+            (newline)<br/>
+            (display &quot;;;; Starting a new problem &quot;)<br/>
+            (ambeval input<br/>
+                     the-global-environment<br/>
+                     <em>;; <tt>ambeval</tt> success</em><br/>
+                     (lambda (val next-alternative)<br/>
+                       (announce-output output-prompt)<br/>
+                       (user-print val)<br/>
+                       (internal-loop next-alternative))<br/>
+                     <em>;; <tt>ambeval</tt> failure</em><br/>
+                     (lambda ()<br/>
+                       (announce-output<br/>
+                        &quot;;;; There are no more values of&quot;)<br/>
+                       (user-print input)<br/>
+                       (driver-loop)))))))<br/>
+  (internal-loop<br/>
+   (lambda ()<br/>
+     (newline)<br/>
+     (display &quot;;;; There is no current problem&quot;)<br/>
+     (driver-loop))))<br/></tt></p><p/><p>A chamada inicial para <tt>internal-loop</tt> usa um procedimento <tt>try-again</tt> que reclama que não há nenhum problema atual e reinicia o loop do driver. Esse é o comportamento que acontecerá se o usuário digitar <tt>try-again</tt> quando não há avaliação em andamento.</p><p>
+
+</p><p><a name="%_thm_4.50" id="%_thm_4.50"/>
+<b>Exercício 4.50.</b> Implementar um novo formulário especial <tt>ramb</tt> isso é como <tt>amb</tt> exceto que ele busca alternativas em uma ordem aleatória, e não da esquerda para a direita. Mostre como isso pode ajudar com o problema de Alyssa no exercício <a href="#%_thm_4.49">4.49</a>.</p><p/><p>
+
+</p><p><a name="%_thm_4.51" id="%_thm_4.51"/>
+<b>Exercício 4.51.</b> Implemente um novo tipo de atribuição chamado <tt>permanent-set!</tt> isso não é desfeito em caso de falha. Por exemplo, podemos escolher dois elementos distintos de uma lista e contar o número de tentativas necessárias para fazer uma escolha bem-sucedida da seguinte maneira:</p><p>
+
+</p><p/><p><tt>(define count 0)<br/>
+(let ((x (an-element-of '(a b c)))<br/>
+      (y (an-element-of '(a b c))))<br/>
+  (permanent-set! count (+ count 1))<br/>
+  (require (not (eq? x y)))<br/>
+  (list x y count))<br/><i>;;; Starting a new problem</i><br/><i>;;; Amb-Eval value:</i><br/><i>(a b 2)</i><br/><i>;;; Amb-Eval input:</i><br/>
+try-again<br/><i>;;; Amb-Eval value:</i><br/><i>(a c 3)</i><br/></tt></p><p/><p>Quais valores teriam sido exibidos se tivéssemos usado <tt>set!</tt> aqui em vez de <tt>permanent-set!</tt> ?</p><p/><p>
+
+</p><p><a name="%_thm_4.52" id="%_thm_4.52"/>
+<b>Exercício 4.52.</b> Implemente uma nova construção chamada <tt>if-fail</tt> que permite ao usuário detectar a falha de uma expressão. <tt>If-fail</tt> leva duas expressões. Ele avalia a primeira expressão como de costume e retorna como de costume se a avaliação for bem-sucedida. Se a avaliação falhar, no entanto, o valor da segunda expressão será retornado, como no exemplo a seguir:</p><p/><p><tt><i>;;; Amb-Eval input:</i><br/>
+(if-fail (let ((x (an-element-of '(1 3 5))))<br/>
+           (require (even? x))<br/>
+           x)<br/>
+         'all-odd)<br/><i>;;; Starting a new problem</i><br/><i>;;; Amb-Eval value:</i><br/><i>all-odd</i><br/><i>;;; Amb-Eval input:</i><br/>
+(if-fail (let ((x (an-element-of '(1 3 5 8))))<br/>
+           (require (even? x))<br/>
+           x)<br/>
+         'all-odd)<br/><i>;;; Starting a new problem</i><br/><i>;;; Amb-Eval value:</i><br/><i>8</i><br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_4.53" id="%_thm_4.53"/>
+<b>Exercício 4.53.</b> Com <tt>permanent-set!</tt> conforme descrito no exercício <a href="#%_thm_4.51">4.51</a> e <tt>if-fail</tt> como no exercício <a href="#%_thm_4.52">4.52</a>, qual será o resultado da avaliação</p><p/><p><tt>(let ((pairs '()))<br/>
+  (if-fail (let ((p (prime-sum-pair '(1 3 5 8) '(20 35 110))))<br/>
+             (permanent-set! pairs (cons p pairs))<br/>
+             (amb))<br/>
+           pairs))<br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_4.54" id="%_thm_4.54"/>
+<b>Exercício 4.54.</b> <a name="%_idx_5026" id="%_idx_5026"/>Se não tivéssemos percebido que <tt>require</tt> poderia ser implementado como um procedimento comum que usa <tt>amb</tt>, para ser definido pelo usuário como parte de um programa não determinístico, teríamos que implementá-lo como uma forma especial. Isso exigiria procedimentos de sintaxe</p><p>
+
+</p><p/><p><tt>(define (require? exp) (tagged-list? exp 'require))<br/><br/>
+(define (require-predicate exp) (cadr exp))<br/></tt></p><p/><p>e uma nova cláusula no despacho em <tt>analyze</tt></p><p>
+
+</p><p/><p><tt>((require? exp) (analyze-require exp))<br/></tt></p><p/><p>bem como o procedimento <tt>analyze-require</tt> que lida com expressões<tt>require</tt>. Complete a seguinte definição de <tt>analyze-require</tt>.</p><p>
+
+</p><p/><p><tt>(define (analyze-require exp)<br/>
+  (let ((pproc (analyze (require-predicate exp))))<br/>
+    (lambda (env succeed fail)<br/>
+      (pproc env<br/>
+             (lambda (pred-value fail2)<br/>
+               (if &lt;<em>??</em>&gt;<br/>
+                   &lt;<em>??</em>&gt;<br/>
+                   (succeed 'ok fail2)))<br/>
+             fail))))<br/></tt></p><p/><p>
+</p><p>
+</p><p>
+
+</p><p/><div class="smallprint"><hr/></div><p>
+</p><div class="footnote"><p><a name="footnote_Temp_598" href="#call_footnote_Temp_598" id="footnote_Temp_598"><sup><small>42.</small></sup></a> Assumimos que definimos anteriormente um procedimento <tt>prime?</tt> que testa se os números são primos. Mesmo com <tt>prime?</tt> definido, o procedimento <tt>prime-sum-pair</tt> pode parecer suspeito com a tentativa inútil de “pseudo-Lisp” para definir a função de raiz quadrada, que descrevemos no início da seção <a href="book-Z-H-10.html#%_sec_1.1.7">1.1.7</a>. De fato, um procedimento de raiz quadrada nessas linhas pode realmente ser formulado como um programa não determinístico. Ao incorporar um mecanismo de busca no avaliador, corroemos a <a name="%_idx_4816" id="%_idx_4816"/><a name="%_idx_4818" id="%_idx_4818"/>distinção entre descrições puramente declarativas e especificações imperativas de como calcular respostas. Iremos ainda mais longe nessa direção na seção <a href="book-Z-H-29.html#%_sec_4.4">4.4</a>.</p><p><a name="footnote_Temp_599" href="#call_footnote_Temp_599" id="footnote_Temp_599"><sup><small>43</small></sup></a> A ideia de <tt>amb</tt> para programação não determinística foi <a name="%_idx_4824" id="%_idx_4824"/>descrita pela primeira vez em 1961 por John McCarthy (ver McCarthy 1967).</p><p><a name="footnote_Temp_600" href="#call_footnote_Temp_600" id="footnote_Temp_600"><sup><small>44</small></sup></a> Na realidade, a distinção entre retornar não-deterministicamente uma única opção e retornar todas as opções depende um pouco do nosso ponto de vista. Da perspectiva do código que usa o valor, a opção não determinística retorna um único valor. Da perspectiva do programador que cria o código, a escolha não determinística potencialmente retorna todos os valores possíveis e os ramos da computação para que cada valor seja investigado separadamente.</p><p><a name="footnote_Temp_601" href="#call_footnote_Temp_601" id="footnote_Temp_601"><sup><small>45</small></sup></a> Alguém poderia contestar que este é um mecanismo irremediavelmente ineficiente. Pode exigir milhões de processadores para resolver algum problema facilmente declarado dessa maneira, e na maioria das vezes a maioria desses processadores fica ociosa. Essa objeção deve ser tomada no contexto da história. A memória costumava ser considerada uma mercadoria tão cara. <a name="%_idx_4838" id="%_idx_4838"/>Em 1964, um megabyte de RAM custou cerca de $400.000. Agora, todo computador pessoal possui muitos megabytes de RAM e, na maioria das vezes, a maior parte dessa RAM não é utilizada. É difícil subestimar o custo dos eletrônicos produzidos em massa.</p><p><a name="footnote_Temp_602" href="#call_footnote_Temp_602" id="footnote_Temp_602"><sup><small>46</small></sup></a> Automagicamente: &quot;Automaticamente, mas de uma maneira que, por algum motivo (normalmente porque é muito complicado, ou muito feio, ou talvez até trivial), o interlocutor não queira explicar.&quot; (Steele 1983, Raymond 1993)</p><p><a name="footnote_Temp_603" href="#call_footnote_Temp_603" id="footnote_Temp_603"><sup><small>47</small></sup></a> A integração de estratégias de busca automática <a name="%_idx_4860" id="%_idx_4860"/>em linguagens de programação teve uma história longa e problemática. As primeiras sugestões de que algoritmos não determinísticos podem ser elegantemente codificados em uma linguagem de programação com busca e retorno automático vieram de <a name="%_idx_4862" id="%_idx_4862"/>Robert Floyd (1967). <a name="%_idx_4864" id="%_idx_4864"/>Carl Hewitt (1969) inventou uma linguagem de programação chamada <a name="%_idx_4866" id="%_idx_4866"/>Planner que apoiou explicitamente o retorno automático cronológico, fornecendo uma estratégia de pesquisa profunda e integrada. <a name="%_idx_4868" id="%_idx_4868"/><a name="%_idx_4870" id="%_idx_4870"/><a name="%_idx_4872" id="%_idx_4872"/>Sussman, Winograd e Charniak (1971) implementaram um subconjunto dessa linguagem, chamado <a name="%_idx_4874" id="%_idx_4874"/>MicroPlanner, usado para apoiar o trabalho de resolução de problemas e planejamento de robôs. Ideias semelhantes, decorrentes da lógica e da prova de teoremas, levaram à gênese da linguagem elegante em Edinburgh e Marseille <a name="%_idx_4876" id="%_idx_4876"/>Prolog (que discutiremos na seção <a href="book-Z-H-29.html#%_sec_4.4">4.4.</a>). Após frustração suficiente com a pesquisa automática, <a name="%_idx_4878" id="%_idx_4878"/><a name="%_idx_4880" id="%_idx_4880"/>McDermott e Sussman (1972) desenvolveram uma linguagem chamada <a name="%_idx_4882" id="%_idx_4882"/>Conniver, que incluía mecanismos para colocar a estratégia de pesquisa sob controle do programador. Isto provou ser pesado???, no entanto, e <a name="%_idx_4884" id="%_idx_4884"/><a name="%_idx_4886" id="%_idx_4886"/>Sussman e Stallman (1975) encontraram uma abordagem mais tratável enquanto investigavam métodos de análise simbólica para circuitos elétricos. Eles desenvolveram um Scheme de retorno não cronológico baseado em rastrear as dependências lógicas que conectam os fatos, uma técnica que passou a ser conhecida como <a name="%_idx_4888" id="%_idx_4888"/><em>backtracking orientado à dependência</em>???. Embora o método deles fosse complexo, produzia programas razoavelmente eficientes porque fazia pouca pesquisa redundante. <a name="%_idx_4890" id="%_idx_4890"/><a name="%_idx_4892" id="%_idx_4892"/>Doyle (1979) e McAllester (1978, 1980) generalizaram e esclareceram os métodos de Stallman e Sussman, desenvolvendo um novo paradigma para a formulação de pesquisas que agora é chamado <a name="%_idx_4894" id="%_idx_4894"/><em>manutenção da verdade</em>. Todos os sistemas modernos de solução de problemas usam algum tipo de sistema de manutenção da verdade como substrato. Veja <a name="%_idx_4896" id="%_idx_4896"/><a name="%_idx_4898" id="%_idx_4898"/>Forbus e deKleer 1993 para uma discussão de maneiras elegantes de criar sistemas e aplicativos de manutenção da verdade usando a manutenção da verdade. <a name="%_idx_4900" id="%_idx_4900"/><a name="%_idx_4902" id="%_idx_4902"/><a name="%_idx_4904" id="%_idx_4904"/>Zabih, McAllester e Chapman 1987 descrevem uma extensão não determinística para Scheme, baseada em <tt>amb</tt>; é semelhante ao interpretador descrito nesta seção, mas é mais sofisticado, porque usa o backtracking dirigido por dependência em vez de cronológico <a name="%_idx_4906" id="%_idx_4906"/>retrocedendo. Winston 1992 fornece uma introdução aos dois tipos de retorno.</p><p><a name="footnote_Temp_609" href="#call_footnote_Temp_609" id="footnote_Temp_609"><sup><small>48.</small></sup></a> Nosso programa usa o seguinte procedimento para determinar se os elementos de uma lista são distintos:</p><p/><p><tt><a name="%_idx_4934" id="%_idx_4934"/>(define (distinct? items)<br/>
+  (cond ((null? items) true)<br/>
+        ((null? (cdr items)) true)<br/>
+        ((member (car items) (cdr items)) false)<br/>
+        (else (distinct? (cdr items)))))<br/></tt></p><p/><p>
+<a name="%_idx_4936" id="%_idx_4936"/><tt>Member</tt> é como <tt>memq</tt> exceto que ele usa <tt>equal?</tt> em vez de <tt>eq?</tt> para testar a igualdade.</p><p><a name="footnote_Temp_616" href="#call_footnote_Temp_616" id="footnote_Temp_616"><sup><small>49.</small></sup></a> Isso foi retirado de um livreto chamado &quot;Recriações problemáticas&quot;, publicado na década de 1960 pela Litton Industries, onde é atribuído ao <em>Kansas State Engineer</em>.</p><p><a name="footnote_Temp_619" href="#call_footnote_Temp_619" id="footnote_Temp_619"><sup><small>50.</small></sup></a> Aqui usamos a convenção de que o primeiro elemento de cada lista designa a parte do discurso para o restante das palavras da lista.</p><p><a name="footnote_Temp_620" href="#call_footnote_Temp_620" id="footnote_Temp_620"><sup><small>51</small></sup></a> Notar que <tt>parse-word</tt> usa <tt>set!</tt> para modificar a lista de entradas não analisadas. Para que isso funcione, nosso avaliador <tt>amb</tt> deve desfazer os efeitos de <tt>set!</tt> operações quando recuar.</p><p><a name="footnote_Temp_621" href="#call_footnote_Temp_621" id="footnote_Temp_621"><sup><small>52</small></sup></a> Observe que essa definição é recursiva - um verbo pode ser seguido por qualquer número de frases preposicionais.</p><p><a name="footnote_Temp_626" href="#call_footnote_Temp_626" id="footnote_Temp_626"><sup><small>53</small></sup></a> Esse tipo de gramática pode se tornar arbitrariamente complexo, mas <a name="%_idx_4972" id="%_idx_4972"/>é apenas um brinquedo no que diz respeito à compreensão da linguagem real. O entendimento real da linguagem natural por computador requer uma mistura elaborada de análise sintática e interpretação de significado. Por outro lado, até os analisadores de brinquedos podem ser úteis no suporte a linguagens de comando flexíveis para programas como sistemas de recuperação de informações. <a name="%_idx_4974" id="%_idx_4974"/>Winston 1992 discute abordagens computacionais para o entendimento de linguagem real e também as aplicações de gramáticas simples para comandar linguagens.</p><p><a name="footnote_Temp_628" href="#call_footnote_Temp_628" id="footnote_Temp_628"><sup><small>54</small></sup></a> Embora a ideia de Alyssa funcione bem (e seja surpreendentemente simples), as frases que ela gera são um pouco chatas - elas não provam as frases possíveis dessa linguagem de uma maneira muito interessante. De fato, a gramática é altamente recursiva em muitos lugares, e a técnica de Alyssa &quot;cai&quot; em uma dessas recursões e fica presa. Veja o exercício <a href="#%_thm_4.50">4.50</a> para uma maneira de lidar com isso.</p><p><a name="footnote_Temp_629" href="#call_footnote_Temp_629" id="footnote_Temp_629"><sup><small>55</small></sup></a> Optamos por implementar o avaliador preguiçoso na seção <a href="book-Z-H-27.html#%_sec_4.2">4.2</a> como uma modificação do avaliador metacircular comum da seção <a href="book-Z-H-26.html#%_sec_4.1.1">4.1.1</a>. Por outro lado, basearemos o avaliador <tt>amb</tt> no avaliador analisador da seção <a href="book-Z-H-26.html#%_sec_4.1.7">4.1.7</a>, porque os procedimentos de execução nesse avaliador fornecem uma estrutura conveniente para implementar o backtracking.</p><p><a name="footnote_Temp_632" href="#call_footnote_Temp_632" id="footnote_Temp_632"><sup><small>56.</small></sup></a> Assumimos que o avaliador suporta <tt>let</tt> (veja exercício <a href="book-Z-H-26.html#%_thm_4.22">4.22</a>), que usamos em nossos programas não determinísticos.</p><p><a name="footnote_Temp_636" href="#call_footnote_Temp_636" id="footnote_Temp_636"><sup><small>57</small></sup></a> Não nos preocupamos em desfazer as definições, pois podemos <a name="%_idx_5010" id="%_idx_5010"/>assumir que as definições internas sejam varridas (seção <a href="book-Z-H-26.html#%_sec_4.1.6">4.1.6</a>)</p></div>
+
+
+
+</body>
+</html>

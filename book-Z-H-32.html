@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops">
+<!-- Generated from TeX source by tex2page, v 4o,
+     (c) Dorai Sitaram, http://www.cs.rice.edu/~dorai/tex2page -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type: text/html; charset=utf-8"/>
+    <title>Estrutura e Interpretação de Programas de Computador</title>
+    <link rel="stylesheet" type="text/css" href="book-Z-C.css" title="default"/>
+  </head>
+  <body>
+
+
+
+<a name="%_sec_5.2" id="%_sec_5.2"/>
+<h2><a href="book-Z-H-4.html#%_toc_%_sec_5.2">5.2 Um simulador de máquina de registrador</a></h2><p>
+
+
+<a name="%_idx_5622" id="%_idx_5622"/><a name="%_idx_5624" id="%_idx_5624"/>Para obter um bom entendimento do projeto das máquinas de registrador, precisamos testar as máquinas que projetamos para ver se elas possuem o desempenho esperado. Uma maneira de testar um projeto é simular manualmente a operação do controlador, como no exercício <a href="book-Z-H-31.html#%_thm_5.5">5.5</a>. Mas isso é extremamente tedioso para todas, exceto as máquinas mais simples. Nesta seção, construímos um simulador para máquinas descritas na linguagem da máquina de registrador. O simulador é um programa do Scheme com quatro procedimentos de interface. O primeiro usa uma descrição de uma máquina de registradores para construir um modelo da máquina (uma estrutura de dados cujas partes correspondem às partes da máquina a serem simuladas), e os outros três permitem simular a máquina manipulando o modelo:</p><p>
+
+</p><blockquote>
+<p><a name="%_idx_5626" id="%_idx_5626"/><tt>(make-machine &lt;<em>register-names</em>&gt; &lt;<em>operations</em>&gt; &lt;<em>controller</em>&gt;)</tt><br/> constrói e retorna um modelo da máquina com os registradores, operações e controlador fornecidos.</p><p>
+
+</p><p><a name="%_idx_5628" id="%_idx_5628"/><tt>(set-register-contents! &lt;<em>machine-model</em>&gt; &lt;<em>register-name</em>&gt; &lt;<em>value</em>&gt;)</tt><br/> armazena um valor em um registrador simulado na máquina especificada.</p><p>
+
+<a name="%_idx_5630" id="%_idx_5630"/></p><p><tt>(get-register-contents &lt;<em>machine-model</em>&gt; &lt;<em>register-name</em>&gt;)</tt><br/> retorna o conteúdo de um registrador simulado na máquina especificada.</p><p>
+
+<a name="%_idx_5632" id="%_idx_5632"/></p><p><tt>(start &lt;<em>machine-model</em>&gt;)</tt><br/> simula a execução da máquina especificada, iniciando do início da sequência do controlador e parando quando atinge o final da sequência.</p></blockquote><p>
+
+As an example of how these procedures are used, we can define
+<tt>gcd-machine</tt> to be a model of the GCD machine
+of section <a href="book-Z-H-31.html#%_sec_5.1.1">5.1.1</a> as follows:</p><p>
+
+</p><p/><p><tt><a name="%_idx_5634" id="%_idx_5634"/>(define gcd-machine<br/>
+  (make-machine<br/>
+   '(a b t)<br/>
+   (list (list 'rem remainder) (list '= =))<br/>
+   '(test-b<br/>
+       (test (op =) (reg b) (const 0))<br/>
+       (branch (label gcd-done))<br/>
+       (assign t (op rem) (reg a) (reg b))<br/>
+       (assign a (reg b))<br/>
+       (assign b (reg t))<br/>
+       (goto (label test-b))<br/>
+     gcd-done)))<br/></tt></p><p/><p>O primeiro argumento para <tt>make-machine</tt> é uma lista de nomes de registrador. O próximo argumento é uma tabela (uma lista de listas de dois elementos) que emparelha cada nome de operação com um procedimento Scheme que implementa a operação (ou seja, produz o mesmo valor de saída, com os mesmos valores de entrada). O último argumento especifica o controlador como uma lista de etiquetas e instruções da máquina, como na seção <a href="book-Z-H-31.html#%_sec_5.1">5.1</a>.</p><p>Para calcular MDCs com esta máquina, configuramos os registradores de entrada, ligamos a máquina e examinamos o resultado quando a simulação termina:</p><p/><p><tt>(set-register-contents! gcd-machine 'a 206)<br/><i>done</i><br/>
+(set-register-contents! gcd-machine 'b 40)<br/><i>done</i><br/>
+(start gcd-machine)<br/><i>done</i><br/>
+(get-register-contents gcd-machine 'a)<br/><i>2</i><br/></tt></p><p/><p>Esse cálculo será executado muito mais lentamente do que um procedimento <tt>gcd</tt> escrito em Scheme, porque simularemos instruções de máquina de baixo nível, como <tt>assign</tt>, por operações muito mais complexas.</p><p>
+
+</p><p><a name="%_thm_5.7" id="%_thm_5.7"/>
+<b>Exercício 5.7.</b> Use o simulador para testar as máquinas que você projetou no exercício <a href="book-Z-H-31.html#%_thm_5.4">5.4</a>.</p><p/><p>
+
+<a name="%_sec_5.2.1" id="%_sec_5.2.1"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_5.2.1">5.2.1 O modelo da máquina</a></h3><p>
+
+</p><p>O modelo de máquina gerado por <tt>make-machine</tt> é representado como um procedimento com local usado as técnicas de passagem de mensagens desenvolvidas no capítulo 3. Para construir esse modelo, <tt>make-machine</tt> começa chamando o procedimento <tt>make-new-machine</tt> construir as partes do modelo de máquina comuns a todas as máquinas de registrador. Este modelo básico de máquina construído por <tt>make-new-machine</tt> é essencialmente um contêiner para alguns registradores e uma pilha, junto com um mecanismo de execução que processa as instruções do controlador uma por uma.</p><p>
+
+<tt>Make-machine</tt> em seguida, estende esse modelo básico (enviando mensagens) para incluir os registradores, operações e controlador da máquina específica que é definida. Primeiro, ele aloca um registrador na nova máquina para cada um dos nomes de registrador fornecidos e instala as operações designadas na máquina. Então ele usa um <a name="%_idx_5636" id="%_idx_5636"/><em>montador</em> (descrito abaixo na seção <a href="#%_sec_5.2.2">5.2.2</a>) para transformar a lista de controladores em instruções para a nova máquina e instala-as como a sequência de instruções da máquina. <tt>Make-machine</tt> retorna como valor o modelo de máquina modificado.</p><p>
+
+</p><p/><p><tt><a name="%_idx_5638" id="%_idx_5638"/>(define (make-machine register-names ops controller-text)<br/>
+  (let ((machine (make-new-machine)))<br/>
+    (for-each (lambda (register-name)<br/>
+                ((machine 'allocate-register) register-name))<br/>
+              register-names)<br/>
+    ((machine 'install-operations) ops)    <br/>
+    ((machine 'install-instruction-sequence)<br/>
+     (assemble controller-text machine))<br/>
+    machine))<br/></tt></p><p/><p/><p>
+
+<a name="%_sec_Temp_724" id="%_sec_Temp_724"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_724">Registradores</a></h4><p>
+
+<a name="%_idx_5640" id="%_idx_5640"/>Representaremos um registrador como um procedimento com o estado local, como no capítulo 3. O procedimento <tt>make-register</tt> cria um registrador que contém um valor que pode ser acessado ou alterado:</p><p>
+
+</p><p/><p><tt><a name="%_idx_5642" id="%_idx_5642"/>(define (make-register name)<br/>
+  (let ((contents '*unassigned*))<br/>
+    (define (dispatch message)<br/>
+      (cond ((eq? message 'get) contents)<br/>
+            ((eq? message 'set)<br/>
+             (lambda (value) (set! contents value)))<br/>
+            (else<br/>
+             (error &quot;Unknown request -- REGISTER&quot; message))))<br/>
+    dispatch))<br/></tt></p><p/><p>Os procedimentos a seguir são usados para acessar registradores:</p><p>
+
+</p><p/><p><tt><a name="%_idx_5644" id="%_idx_5644"/>(define (get-contents register)<br/>
+  (register 'get))<br/><br/><a name="%_idx_5646" id="%_idx_5646"/>(define (set-contents! register value)<br/>
+  ((register 'set) value))<br/></tt></p><p/><p/><p>
+
+<a name="%_sec_Temp_725" id="%_sec_Temp_725"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_725">A pilha</a></h4><p>
+
+<a name="%_idx_5648" id="%_idx_5648"/>Também podemos representar uma pilha como um procedimento com o estado local. O procedimento <tt>make-stack</tt> cria uma pilha cujo estado local consiste em uma lista dos itens na pilha. Uma pilha aceita solicitações para <tt>push</tt> um item na pilha, para <tt>pop</tt> o item superior da pilha e devolva-o e para usar <tt>initialize</tt> na pilha está vazia.</p><p>
+
+</p><p/><p><tt><a name="%_idx_5650" id="%_idx_5650"/>(define (make-stack)<br/>
+  (let ((s '()))<br/>
+    (define (push x)<br/>
+      (set! s (cons x s)))<br/>
+    (define (pop)<br/>
+      (if (null? s)<br/>
+          (error &quot;Empty stack -- POP&quot;)<br/>
+          (let ((top (car s)))<br/>
+            (set! s (cdr s))<br/>
+            top)))<br/>
+    (define (initialize)<br/>
+      (set! s '())<br/>
+      'done)<br/>
+    (define (dispatch message)<br/>
+      (cond ((eq? message 'push) push)<br/>
+            ((eq? message 'pop) (pop))<br/>
+            ((eq? message 'initialize) (initialize))<br/>
+            (else (error &quot;Unknown request -- STACK&quot;<br/>
+                         message))))<br/>
+    dispatch))<br/></tt></p><p/><p>Os procedimentos a seguir são usados para acessar pilhas:</p><p>
+
+</p><p/><p><tt><a name="%_idx_5652" id="%_idx_5652"/>(define (pop stack)<br/>
+  (stack 'pop))<br/><br/><a name="%_idx_5654" id="%_idx_5654"/>(define (push stack value)<br/>
+  ((stack 'push) value))<br/></tt></p><p/><p/><p>
+
+<a name="%_sec_Temp_726" id="%_sec_Temp_726"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_726">A máquina básica</a></h4><p>O procedimento <tt>make-new-machine</tt>, mostrado na figura <a href="#%_fig_5.13">5.13</a>, constrói um objeto cujo estado local consiste em uma pilha, uma sequência de instruções inicialmente vazia, uma lista de operações que inicialmente contém uma operação para <a name="%_idx_5656" id="%_idx_5656"/>inicializar a pilha e uma <a name="%_idx_5658" id="%_idx_5658"/><em>tabela de registradores</em> que inicialmente contém dois <a name="%_idx_5660" id="%_idx_5660"/><a name="%_idx_5662" id="%_idx_5662"/>registradores, nomeados <tt>flag</tt> e <tt>pc</tt><a name="%_idx_5664" id="%_idx_5664"/>(para &quot;contador de programa&quot;). O procedimento interno <tt>allocate-register</tt> adiciona novas entradas à tabela de registrador e o procedimento interno <tt>lookup-register</tt> procura registradores na tabela.</p><p>O registrador <tt>flag</tt> é usado para controlar a ramificação na máquina simulada. <tt>Test</tt> instruções definir o conteúdo de <tt>flag</tt> para o resultado do teste (verdadeiro ou falso). <tt>Branch</tt> instruções decidem se devem ou não ramificar examinando o conteúdo de <tt>flag</tt>.</p><p>O registrador <tt>pc</tt> determina a sequência de instruções à medida que a máquina é executada. Esse sequenciamento é implementado pelo procedimento interno <tt>execute</tt>. No modelo de simulação, cada instrução de máquina é uma estrutura de dados que inclui um procedimento sem argumentos, chamado de <a name="%_idx_5666" id="%_idx_5666"/><a name="%_idx_5668" id="%_idx_5668"/><em>procedimento de execução de instruções</em>, de modo que a chamada desse procedimento simule a execução da instrução. À medida que a simulação é executada, <tt>pc</tt> aponta para o local na sequência de instruções que começa com a próxima instrução a ser executada. <a name="%_idx_5670" id="%_idx_5670"/><tt>Execute</tt> obtém essa instrução, executa chamando o procedimento de execução da instrução e repete esse ciclo até que não haja mais instruções para executar (ou seja, até <tt>pc</tt> aponta para o final da sequência de instruções).</p><p>
+
+<a name="%_fig_5.13" id="%_fig_5.13"/></p><p/><div align="left"><table width="100%"><tr><td><p/><p><tt><a name="%_idx_5672" id="%_idx_5672"/>(define (make-new-machine)<br/>
+  (let ((pc (make-register 'pc))<br/>
+        (flag (make-register 'flag))<br/>
+        (stack (make-stack))<br/>
+        (the-instruction-sequence '()))<br/>
+    (let ((the-ops<br/>
+           (list (list 'initialize-stack<br/>
+                       (lambda () (stack 'initialize)))))<br/>
+          (register-table<br/>
+           (list (list 'pc pc) (list 'flag flag))))<br/>
+      (define (allocate-register name)<br/>
+        (if (assoc name register-table)<br/>
+            (error &quot;Multiply defined register: &quot; name)<br/>
+            (set! register-table<br/>
+                  (cons (list name (make-register name))<br/>
+                        register-table)))<br/>
+        'register-allocated)<br/>
+      (define (lookup-register name)<br/>
+        (let ((val (assoc name register-table)))<br/>
+          (if val<br/>
+              (cadr val)<br/>
+              (error &quot;Unknown register:&quot; name))))<br/>
+      (define (execute)<br/>
+        (let ((insts (get-contents pc)))<br/>
+          (if (null? insts)<br/>
+              'done<br/>
+              (begin<br/>
+                ((instruction-execution-proc (car insts)))<br/>
+                (execute)))))<br/>
+      (define (dispatch message)<br/>
+        (cond ((eq? message 'start)<br/>
+               (set-contents! pc the-instruction-sequence)<br/>
+               (execute))<br/>
+              ((eq? message 'install-instruction-sequence)<br/>
+               (lambda (seq) (set! the-instruction-sequence seq)))<br/>
+              ((eq? message 'allocate-register) allocate-register)<br/>
+              ((eq? message 'get-register) lookup-register)<br/>
+              ((eq? message 'install-operations)<br/>
+               (lambda (ops) (set! the-ops (append the-ops ops))))<br/>
+              ((eq? message 'stack) stack)<br/>
+              ((eq? message 'operations) the-ops)<br/>
+              (else (error &quot;Unknown request -- MACHINE&quot; message))))<br/>
+      dispatch)))<br/></tt></p><p/><p>
+</p><p/><p/></td></tr><caption align="bottom"><div align="left"><b>Figura 5.13:</b> O procedimento<tt>make-new-machine</tt>, que implementa o modelo básico da máquina.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Como parte de sua operação, cada procedimento de execução de instrução modifica <tt>pc</tt> para indicar a próxima instrução a ser executada. <tt>Branch</tt> e <tt>goto</tt> mudança de instruções <tt>pc</tt> para apontar para o novo destino. Todas as outras instruções simplesmente avançam <tt>pc</tt>, apontando para a próxima instrução na sequência. Observe que cada chamada para <tt>execute</tt> chamadas <tt>execute</tt> novamente, mas isso não produz um loop infinito porque a execução do procedimento de execução da instrução altera o conteúdo de <tt>pc</tt>.</p><p>
+
+<tt>Make-new-machine</tt> retorna um procedimento <tt>dispatch</tt> que implementa o acesso de passagem de mensagens ao estado interno. Observe que a partida da máquina é realizada definindo <tt>pc</tt> para o início da sequência de instruções e chamando <tt>execute</tt>.</p><p>Por conveniência, fornecemos uma interface processual alternativa para a máquina <tt>start</tt> operação, bem como procedimentos para definir e examinar o conteúdo do registrador, conforme especificado no início da seção <a href="#%_sec_5.2">5.2.</a>:</p><p>
+
+</p><p/><p><tt><a name="%_idx_5674" id="%_idx_5674"/>(define (start machine)<br/>
+  (machine 'start))<br/><a name="%_idx_5676" id="%_idx_5676"/>(define (get-register-contents machine register-name)<br/>
+  (get-contents (get-register machine register-name)))<br/><a name="%_idx_5678" id="%_idx_5678"/>(define (set-register-contents! machine register-name value)<br/>
+  (set-contents! (get-register machine register-name) value)<br/>
+  'done)<br/></tt></p><p/><p>Esses procedimentos (e muitos procedimentos nas seções <a href="#%_sec_5.2.2">5.2.2</a> e <a href="#%_sec_5.2.3">5.2.3</a>) use o seguinte para procurar o registrador com um determinado nome em uma determinada máquina:</p><p/><p><tt><a name="%_idx_5680" id="%_idx_5680"/>(define (get-register machine reg-name)<br/>
+  ((machine 'get-register) reg-name))<br/></tt></p><p/><p/><p>
+
+</p><p>
+
+<a name="%_sec_5.2.2" id="%_sec_5.2.2"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_5.2.2">5.2.2 O montador</a></h3><p>
+
+
+<a name="%_idx_5682" id="%_idx_5682"/>O montador transforma a sequência de expressões do controlador de uma máquina em uma lista correspondente de instruções da máquina, cada uma com seu procedimento de execução. No geral, o assembler é muito parecido com os avaliadores que estudamos no capítulo 4 - existe uma linguagem de entrada (neste caso, a linguagem da máquina de registrador) e devemos executar uma ação apropriada para cada tipo de expressão na linguagem.</p><p>
+
+<a name="%_idx_5684" id="%_idx_5684"/>A técnica de produzir um procedimento de execução para cada instrução é exatamente o que usamos na seção <a href="book-Z-H-26.html#%_sec_4.1.7">4.1.7</a> para acelerar o avaliador, separando a análise da execução em tempo de execução. Como vimos no capítulo 4, muitas análises úteis das expressões do Scheme podem ser realizadas sem conhecer os valores reais das variáveis. Aqui, analogamente, muitas análises úteis das expressões de registrador de máquina-linguagem podem ser realizadas sem conhecer o conteúdo real dos registradores de máquina. Por exemplo, podemos substituir referências a registradores por ponteiros para os objetos de registrador e podemos substituir referências a rótulos por ponteiros para o local na sequência de instruções que o rótulo designa.</p><p>Antes de poder gerar os procedimentos de execução das instruções, o montador deve saber a que todos os rótulos se referem e, portanto, começa varrendo o texto do controlador para separar os rótulos das instruções. Ao varrer o texto, ele constrói uma lista de instruções e uma tabela que associa cada rótulo a um ponteiro nessa lista. Em seguida, o montador incrementa a lista de instruções inserindo o procedimento de execução para cada instrução.</p><p>O procedimento <tt>assemble</tt> é a entrada principal do montador. Ele pega o texto do controlador e o modelo da máquina como argumentos e retorna a sequência de instruções a ser armazenada no modelo. <tt>Assemble</tt> chamadas <tt>extract-labels</tt> para criar a lista de instruções inicial e a tabela de etiquetas a partir do texto do controlador fornecido. O segundo argumento para <tt>extract-labels</tt> é um procedimento a ser chamado para processar estes resultados: Este procedimento usa <tt>update-insts!</tt> para gerar os procedimentos de execução das instruções, insira-os na lista de instruções e retorne a lista modificada.</p><p/><p><tt><a name="%_idx_5686" id="%_idx_5686"/>(define (assemble controller-text machine)<br/>
+  (extract-labels controller-text<br/>
+    (lambda (insts labels)<br/>
+      (update-insts! insts labels machine)<br/>
+      insts)))<br/></tt></p><p/><p/><p>
+
+<tt>Extract-labels</tt> toma como argumento uma lista <tt>text</tt> (a sequência de expressões de instruções do controlador) e um procedimento <tt>receive</tt>. <tt>Receive</tt> será chamado com dois valores: (1) uma lista <tt>insts</tt> de dados de instruções, cada uma contendo uma instrução de <tt>text</tt>; e (2) uma tabela chamada <tt>labels</tt>, que associa cada rótulo de <tt>text</tt> com a posição na lista <tt>insts</tt> que o rótulo designa.</p><p>
+
+</p><p/><p><tt><a name="%_idx_5688" id="%_idx_5688"/>(define (extract-labels text receive)<br/>
+  (if (null? text)<br/>
+      (receive '() '())<br/>
+      (extract-labels (cdr text)<br/>
+       (lambda (insts labels)<br/>
+         (let ((next-inst (car text)))<br/>
+           (if (symbol? next-inst)<br/>
+               (receive insts<br/>
+                        (cons (make-label-entry next-inst<br/>
+                                                insts)<br/>
+                              labels))<br/>
+               (receive (cons (make-instruction next-inst)<br/>
+                              insts)<br/>
+                        labels)))))))<br/></tt></p><p/><p>
+<tt>Extract-labels</tt> funciona varrendo sequencialmente os elementos do <tt>text</tt> e acumulando o <tt>insts</tt> e a <tt>labels</tt>. Se um elemento for um símbolo (e, portanto, um rótulo), uma entrada apropriada será adicionada ao <tt>labels</tt> tabela. Caso contrário, o elemento é acumulado no <tt>insts</tt> Lista.<a name="call_footnote_Temp_727" href="#footnote_Temp_727" id="call_footnote_Temp_727"><sup><small>4</small></sup></a></p><p>
+
+<tt>Update-insts!</tt> modifica a lista de instruções, que inicialmente contém apenas o texto das instruções, para incluir os procedimentos de execução correspondentes:</p><p>
+
+
+</p><p/><p><tt><a name="%_idx_5702" id="%_idx_5702"/>(define (update-insts! insts labels machine)<br/>
+  (let ((pc (get-register machine 'pc))<br/>
+        (flag (get-register machine 'flag))<br/>
+        (stack (machine 'stack))<br/>
+        (ops (machine 'operations)))<br/>
+    (for-each<br/>
+     (lambda (inst)<br/>
+       (set-instruction-execution-proc! <br/>
+        inst<br/>
+        (make-execution-procedure<br/>
+         (instruction-text inst) labels machine<br/>
+         pc flag stack ops)))<br/>
+     insts)))<br/></tt></p><p/><p/><p>A estrutura de dados da instrução da máquina simplesmente emparelha o texto da instrução com o procedimento de execução correspondente. O procedimento de execução ainda não está disponível quando <tt>extract-labels</tt> constrói a instrução e é inserido posteriormente por <tt>update-insts!</tt>.</p><p/><p><tt><a name="%_idx_5704" id="%_idx_5704"/>(define (make-instruction text)<br/>
+  (cons text '()))<br/><a name="%_idx_5706" id="%_idx_5706"/>(define (instruction-text inst)<br/>
+  (car inst))<br/><a name="%_idx_5708" id="%_idx_5708"/>(define (instruction-execution-proc inst)<br/>
+  (cdr inst))<br/><a name="%_idx_5710" id="%_idx_5710"/>(define (set-instruction-execution-proc! inst proc)<br/>
+  (set-cdr! inst proc))<br/></tt></p><p/><p>O texto de instruções não é utilizado pelo nosso simulador, mas é útil para depuração (consulte o exercício <a href="#%_thm_5.16">5.16</a>)</p><p>Os elementos da tabela de etiquetas são pares:</p><p/><p><tt><a name="%_idx_5712" id="%_idx_5712"/>(define (make-label-entry label-name insts)<br/>
+  (cons label-name insts))<br/></tt></p><p/><p>As entradas serão consultadas na tabela com</p><p/><p><tt><a name="%_idx_5714" id="%_idx_5714"/>(define (lookup-label labels label-name)<br/>
+  (let ((val (assoc label-name labels)))<br/>
+    (if val<br/>
+        (cdr val)<br/>
+        (error &quot;Undefined label -- ASSEMBLE&quot; label-name))))<br/></tt></p><p/><p/><p>
+
+</p><p><a name="%_thm_5.8" id="%_thm_5.8"/>
+<b>Exercício 5.8.</b> O seguinte código de máquina de registradores é ambíguo, porque o rótulo <tt>here</tt> é definido mais de uma vez:</p><p/><p><tt>start<br/>
+  (goto (label here))<br/>
+here<br/>
+  (assign a (const 3))<br/>
+  (goto (label there))<br/>
+here<br/>
+  (assign a (const 4))<br/>
+  (goto (label there))<br/>
+there<br/></tt></p><p/><p>Com o simulador como está escrito, qual será o conteúdo do registrador <tt>a</tt> seja quando o controle atingir <tt>there</tt>? Modifique o procedimento <tt>extract-labels</tt> para que o montador sinalize um erro se o mesmo nome de etiqueta for usado para indicar dois locais diferentes.</p><p>
+</p><p>
+
+<a name="%_sec_5.2.3" id="%_sec_5.2.3"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_5.2.3">5.2.3 Gerando procedimentos de execução para instruções</a></h3><p>
+
+
+<a name="%_idx_5716" id="%_idx_5716"/>O montador chama <tt>make-execution-procedure</tt> para gerar o procedimento de execução para uma instrução. Como o procedimento <tt>analyze</tt> no avaliador da seção <a href="book-Z-H-26.html#%_sec_4.1.7">4.1.7</a>, isso despacha o tipo de instrução para gerar o procedimento de execução apropriado.</p><p/><p><tt><a name="%_idx_5718" id="%_idx_5718"/>(define (make-execution-procedure inst labels machine<br/>
+                                  pc flag stack ops)<br/>
+  (cond ((eq? (car inst) 'assign)<br/>
+         (make-assign inst machine labels ops pc))<br/>
+        ((eq? (car inst) 'test)<br/>
+         (make-test inst machine labels ops flag pc))<br/>
+        ((eq? (car inst) 'branch)<br/>
+         (make-branch inst machine labels flag pc))<br/>
+        ((eq? (car inst) 'goto)<br/>
+         (make-goto inst machine labels pc))<br/>
+        ((eq? (car inst) 'save)<br/>
+         (make-save inst machine stack pc))<br/>
+        ((eq? (car inst) 'restore)<br/>
+         (make-restore inst machine stack pc))<br/>
+        ((eq? (car inst) 'perform)<br/>
+         (make-perform inst machine labels ops pc))<br/>
+        (else (error &quot;Unknown instruction type -- ASSEMBLE&quot;<br/>
+                     inst))))<br/></tt></p><p/><p/><p>Para cada tipo de instrução na linguagem da máquina de registrador, existe um gerador que cria um procedimento de execução apropriado. Os detalhes desses procedimentos determinam a sintaxe e o significado das instruções individuais na linguagem da máquina de registrador. Usamos a abstração de dados para isolar a sintaxe detalhada das expressões de máquina de registradores do mecanismo de execução geral, como fizemos com os avaliadores na seção <a href="book-Z-H-26.html#%_sec_4.1.2">4.1.2</a>, usando procedimentos de sintaxe para extrair e classificar as partes de uma instrução.</p><p>
+
+
+<a name="%_sec_Temp_729" id="%_sec_Temp_729"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_729"><tt>Assign</tt> instruções</a></h4><p>
+
+<a name="%_idx_5720" id="%_idx_5720"/>O procedimento <tt>make-assign</tt> trata <tt>assign</tt> instruções:</p><p/><p><tt><a name="%_idx_5722" id="%_idx_5722"/>(define (make-assign inst machine labels operations pc)<br/>
+  (let ((target<br/>
+         (get-register machine (assign-reg-name inst)))<br/>
+        (value-exp (assign-value-exp inst)))<br/>
+    (let ((value-proc<br/>
+           (if (operation-exp? value-exp)<br/>
+               (make-operation-exp<br/>
+                value-exp machine labels operations)<br/>
+               (make-primitive-exp<br/>
+                (car value-exp) machine labels))))<br/>
+      (lambda ()                <em>; execution procedure for <tt>assign</tt></em><br/>
+        (set-contents! target (value-proc))<br/>
+        (advance-pc pc)))))<br/></tt></p><p/><p>
+<tt>Make-assign</tt> extrai o nome do registrador de destino (o segundo elemento da instrução) e a expressão de valor (o restante da lista que forma a instrução) do <tt>assign</tt> instrução usando os seletores</p><p/><p><tt><a name="%_idx_5724" id="%_idx_5724"/>(define (assign-reg-name assign-instruction)<br/>
+  (cadr assign-instruction))<br/><a name="%_idx_5726" id="%_idx_5726"/>(define (assign-value-exp assign-instruction)<br/>
+  (cddr assign-instruction))<br/></tt></p><p/><p>O nome do registrador é procurado com <tt>get-register</tt> para produzir o objeto de registrador de destino. A expressão de valor é passada para <tt>make-operation-exp</tt> se o valor é o resultado de uma operação e para <tt>make-primitive-exp</tt> de outra forma. Esses procedimentos (mostrados abaixo) analisam a expressão do valor e produzem um procedimento de execução para o valor. Este é um procedimento sem argumentos, chamado <a name="%_idx_5728" id="%_idx_5728"/><tt>value-proc</tt>, que será avaliado durante a simulação para produzir o valor real a ser atribuído ao registrador. Observe que o trabalho de procurar o nome do registrador e analisar a expressão de valor é realizado apenas uma vez, no momento da montagem, nem sempre que a instrução é simulada. Essa economia de trabalho é a razão pela qual usamos os <a name="%_idx_5730" id="%_idx_5730"/>procedimentos de execução e corresponde diretamente à economia de trabalho obtida ao separar a análise do programa da execução no avaliador da seção <a href="book-Z-H-26.html#%_sec_4.1.7">4.1.7</a>.</p><p>O resultado retornado por <tt>make-assign</tt> é o procedimento de execução para o <tt>assign</tt> instrução. Quando esse procedimento é chamado (pelo modelo da máquina <tt>execute</tt>), define o conteúdo do registrador de destino como o resultado obtido pela execução <tt>value-proc</tt>. Então avança o <tt>pc</tt> para a próxima instrução executando o procedimento</p><p/><p><tt><a name="%_idx_5732" id="%_idx_5732"/>(define (advance-pc pc)<br/>
+  (set-contents! pc (cdr (get-contents pc))))<br/></tt></p><p/><p>
+<tt>Advance-pc</tt> é a terminação normal para todas as instruções, exceto <tt>branch</tt> e <tt>goto</tt>.</p><p>
+
+<a name="%_sec_Temp_730" id="%_sec_Temp_730"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_730"><tt>Test</tt>, <tt>branch</tt> e <tt>goto</tt> instruções</a></h4><p>
+
+<a name="%_idx_5734" id="%_idx_5734"/><tt>Make-test</tt> alças <tt>test</tt> instruções de maneira semelhante. Extrai a expressão que especifica a condição a ser testada e gera um procedimento de execução para ela. No momento da simulação, o procedimento para a condição é chamado, o resultado é atribuído ao registrador <tt>flag</tt> e o <tt>pc</tt> é avançado:</p><p/><p><tt><a name="%_idx_5736" id="%_idx_5736"/>(define (make-test inst machine labels operations flag pc)<br/>
+  (let ((condition (test-condition inst)))<br/>
+    (if (operation-exp? condition)<br/>
+        (let ((condition-proc<br/>
+               (make-operation-exp<br/>
+                condition machine labels operations)))<br/>
+          (lambda ()<br/>
+            (set-contents! flag (condition-proc))<br/>
+            (advance-pc pc)))<br/>
+        (error &quot;Bad TEST instruction -- ASSEMBLE&quot; inst))))<br/><a name="%_idx_5738" id="%_idx_5738"/>(define (test-condition test-instruction)<br/>
+  (cdr test-instruction))<br/></tt></p><p/><p/><p>
+
+<a name="%_idx_5740" id="%_idx_5740"/>O procedimento de execução para uma instrução <tt>branch</tt> verifica o conteúdo do registrador <tt>flag</tt> e define o conteúdo do <tt>pc</tt> para o destino da filial (se a filial for obtida) ou apenas avança o <tt>pc</tt> (se o ramo não for utilizado). Observe que o destino indicado em uma instrução <tt>branch</tt> deve ser um rótulo e o procedimento <tt>make-branch</tt> impõe isso. Observe também que a etiqueta é pesquisada no momento da montagem, e não sempre que a instrução <tt>branch</tt> é simulada.</p><p>
+
+</p><p/><p><tt><a name="%_idx_5742" id="%_idx_5742"/>(define (make-branch inst machine labels flag pc)<br/>
+  (let ((dest (branch-dest inst)))<br/>
+    (if (label-exp? dest)<br/>
+        (let ((insts<br/>
+               (lookup-label labels (label-exp-label dest))))<br/>
+          (lambda ()<br/>
+            (if (get-contents flag)<br/>
+                (set-contents! pc insts)<br/>
+                (advance-pc pc))))<br/>
+        (error &quot;Bad BRANCH instruction -- ASSEMBLE&quot; inst))))<br/><a name="%_idx_5744" id="%_idx_5744"/>(define (branch-dest branch-instruction)<br/>
+  (cadr branch-instruction))<br/></tt></p><p/><p/><p>
+
+<a name="%_idx_5746" id="%_idx_5746"/>A a instrução <tt>goto</tt> é semelhante a uma ramificação, exceto que o destino pode ser especificado como um rótulo ou como um registrador e não há condição para verificar - o <tt>pc</tt> está sempre definido para o novo destino.</p><p/><p><tt><a name="%_idx_5748" id="%_idx_5748"/>(define (make-goto inst machine labels pc)<br/>
+  (let ((dest (goto-dest inst)))<br/>
+    (cond ((label-exp? dest)<br/>
+           (let ((insts<br/>
+                  (lookup-label labels<br/>
+                                (label-exp-label dest))))<br/>
+             (lambda () (set-contents! pc insts))))<br/>
+          ((register-exp? dest)<br/>
+           (let ((reg<br/>
+                  (get-register machine<br/>
+                                (register-exp-reg dest))))<br/>
+             (lambda ()<br/>
+               (set-contents! pc (get-contents reg)))))<br/>
+          (else (error &quot;Bad GOTO instruction -- ASSEMBLE&quot;<br/>
+                       inst)))))<br/><a name="%_idx_5750" id="%_idx_5750"/>(define (goto-dest goto-instruction)<br/>
+  (cadr goto-instruction))<br/></tt></p><p/><p/><p>
+
+<a name="%_sec_Temp_731" id="%_sec_Temp_731"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_731">Outras instruções</a></h4><p>As instruções da pilha <tt>save</tt> e <tt>restore</tt> basta usar a pilha com o registrador designado e avançar o <tt>pc</tt>:</p><p/><p><tt><a name="%_idx_5752" id="%_idx_5752"/><a name="%_idx_5754" id="%_idx_5754"/>(define (make-save inst machine stack pc)<br/>
+  (let ((reg (get-register machine<br/>
+                           (stack-inst-reg-name inst))))<br/>
+    (lambda ()<br/>
+      (push stack (get-contents reg))<br/>
+      (advance-pc pc))))<br/><a name="%_idx_5756" id="%_idx_5756"/><a name="%_idx_5758" id="%_idx_5758"/>(define (make-restore inst machine stack pc)<br/>
+  (let ((reg (get-register machine<br/>
+                           (stack-inst-reg-name inst))))<br/>
+    (lambda ()<br/>
+      (set-contents! reg (pop stack))    <br/>
+      (advance-pc pc))))<br/><a name="%_idx_5760" id="%_idx_5760"/>(define (stack-inst-reg-name stack-instruction)<br/>
+  (cadr stack-instruction))<br/></tt></p><p/><p/><p>
+
+<a name="%_idx_5762" id="%_idx_5762"/>O tipo de instrução final, manipulado por <tt>make-perform</tt>, gera um procedimento de execução para a ação a ser executada. No momento da simulação, o procedimento de ação é executado e o <tt>pc</tt> avançado.</p><p/><p><tt><a name="%_idx_5764" id="%_idx_5764"/>(define (make-perform inst machine labels operations pc)<br/>
+  (let ((action (perform-action inst)))<br/>
+    (if (operation-exp? action)<br/>
+        (let ((action-proc<br/>
+               (make-operation-exp<br/>
+                action machine labels operations)))<br/>
+          (lambda ()<br/>
+            (action-proc)<br/>
+            (advance-pc pc)))<br/>
+        (error &quot;Bad PERFORM instruction -- ASSEMBLE&quot; inst))))<br/><a name="%_idx_5766" id="%_idx_5766"/>(define (perform-action inst) (cdr inst))<br/></tt></p><p/><p/><p>
+
+
+<a name="%_sec_Temp_732" id="%_sec_Temp_732"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_732">Procedimentos de execução para subexpressões</a></h4><p>
+
+<a name="%_idx_5768" id="%_idx_5768"/><a name="%_idx_5770" id="%_idx_5770"/><a name="%_idx_5772" id="%_idx_5772"/>O valor de um <tt>reg</tt>, <tt>label</tt> ou <tt>const</tt> pode ser necessária uma expressão para atribuir a um registrador (<tt>make-assign</tt>) ou para entrada em uma operação (<tt>make-operation-exp</tt>, abaixo). O procedimento a seguir gera procedimentos de execução para produzir valores para essas expressões durante a simulação:</p><p/><p><tt><a name="%_idx_5774" id="%_idx_5774"/>(define (make-primitive-exp exp machine labels)<br/>
+  (cond ((constant-exp? exp)<br/>
+         (let ((c (constant-exp-value exp)))<br/>
+           (lambda () c)))<br/>
+        ((label-exp? exp)<br/>
+         (let ((insts<br/>
+                (lookup-label labels<br/>
+                              (label-exp-label exp))))<br/>
+           (lambda () insts)))<br/>
+        ((register-exp? exp)<br/>
+         (let ((r (get-register machine<br/>
+                                (register-exp-reg exp))))<br/>
+           (lambda () (get-contents r))))<br/>
+        (else<br/>
+         (error &quot;Unknown expression type -- ASSEMBLE&quot; exp))))<br/></tt></p><p/><p>A sintaxe de expressões <tt>reg</tt>, <tt>label</tt> e <tt>const</tt> é determinada por</p><p/><p><tt><a name="%_idx_5776" id="%_idx_5776"/>(define (register-exp? exp) (tagged-list? exp 'reg))<br/><a name="%_idx_5778" id="%_idx_5778"/>(define (register-exp-reg exp) (cadr exp))<br/><a name="%_idx_5780" id="%_idx_5780"/>(define (constant-exp? exp) (tagged-list? exp 'const))<br/><a name="%_idx_5782" id="%_idx_5782"/>(define (constant-exp-value exp) (cadr exp))<br/><a name="%_idx_5784" id="%_idx_5784"/>(define (label-exp? exp) (tagged-list? exp 'label))<br/><a name="%_idx_5786" id="%_idx_5786"/>(define (label-exp-label exp) (cadr exp))<br/></tt></p><p/><p>
+</p><p>
+
+
+<a name="%_idx_5788" id="%_idx_5788"/><tt>Assign</tt>, <tt>perform</tt> e <tt>test</tt> As instruções podem incluir a aplicação de uma operação da máquina (especificada por uma expressão <tt>op</tt>) para alguns operandos (especificados por expressões <tt>reg</tt> e <tt>const</tt>). O procedimento a seguir produz um procedimento de execução para uma &quot;expressão de operação&quot; - uma lista que contém as expressões de operação e operando da instrução:</p><p/><p><tt><a name="%_idx_5790" id="%_idx_5790"/>(define (make-operation-exp exp machine labels operations)<br/>
+  (let ((op (lookup-prim (operation-exp-op exp) operations))<br/>
+        (aprocs<br/>
+         (map (lambda (e)<br/>
+                (make-primitive-exp e machine labels))<br/>
+              (operation-exp-operands exp))))<br/>
+    (lambda ()<br/>
+      (apply op (map (lambda (p) (p)) aprocs)))))<br/></tt></p><p/><p>A sintaxe das expressões de operação é determinada por</p><p/><p><tt><a name="%_idx_5792" id="%_idx_5792"/>(define (operation-exp? exp)<br/>
+  (and (pair? exp) (tagged-list? (car exp) 'op)))<br/><a name="%_idx_5794" id="%_idx_5794"/>(define (operation-exp-op operation-exp)<br/>
+  (cadr (car operation-exp)))<br/><a name="%_idx_5796" id="%_idx_5796"/>(define (operation-exp-operands operation-exp)<br/>
+  (cdr operation-exp))<br/></tt></p><p/><p>Observe que o tratamento das expressões de operação é muito parecido com o tratamento de aplicações de procedimentos pelo procedimento <tt>analyze-application</tt> no avaliador da seção <a href="book-Z-H-26.html#%_sec_4.1.7">4.1.7</a> em que geramos um procedimento de execução para cada operando. No momento da simulação, chamamos os procedimentos do operando e aplicamos o procedimento Scheme que simula a operação aos valores resultantes. O procedimento de simulação é encontrado consultando o nome da operação na tabela de operações da máquina:</p><p/><p><tt><a name="%_idx_5798" id="%_idx_5798"/>(define (lookup-prim symbol operations)<br/>
+  (let ((val (assoc symbol operations)))<br/>
+    (if val<br/>
+        (cadr val)<br/>
+        (error &quot;Unknown operation -- ASSEMBLE&quot; symbol))))<br/></tt></p><p/><p/><p>
+
+</p><p><a name="%_thm_5.9" id="%_thm_5.9"/>
+<b>Exercício 5.9.</b> O tratamento das operações da máquina acima permite que elas operem nas etiquetas, bem como nas constantes e no conteúdo dos registradores. Modifique os procedimentos de processamento de expressão para impor a condição de que as operações possam ser usadas apenas com registradores e constantes.</p><p/><p>
+
+</p><p><a name="%_thm_5.10" id="%_thm_5.10"/>
+<b>Exercício 5.10.</b> Crie uma nova sintaxe para obter instruções da máquina de registradores e modifique o simulador para usar sua nova sintaxe. Você pode implementar sua nova sintaxe sem alterar nenhuma parte do simulador, exceto os procedimentos de sintaxe nesta seção?</p><p/><p>
+
+</p><p><a name="%_thm_5.11" id="%_thm_5.11"/>
+<b>Exercício 5.11.</b> <a name="%_idx_5800" id="%_idx_5800"/><a name="%_idx_5802" id="%_idx_5802"/>Quando introduzimos <tt>save</tt> e <tt>restore</tt> na seção <a href="book-Z-H-31.html#%_sec_5.1.4">5.1.4</a>, não especificamos o que aconteceria se você tentasse restaurar um registrador que não fosse o último salvo, como na sequência</p><p>
+
+</p><p/><p><tt>(save y)<br/>
+(save x)<br/>
+(restore y)<br/></tt></p><p/><p>Existem várias possibilidades razoáveis para o significado de <tt>restore</tt>:</p><p>a.<tt>(restore y)</tt> coloca em <tt>y</tt> o último valor salvo na pilha, independentemente do registrador desse valor. É assim que nosso simulador se comporta. Mostre como tirar proveito desse comportamento para eliminar uma instrução da máquina da seção Fibonacci <a href="book-Z-H-31.html#%_sec_5.1.4">5.1.4</a> (figura <a href="book-Z-H-31.html#%_fig_5.12">5.12</a>)</p><p>b.<tt>(restore y)</tt> coloca em <tt>y</tt> o último valor salvo na pilha, mas somente se esse valor foi salvo de <tt>y</tt>; caso contrário, sinaliza um erro. Modifique o simulador para se comportar dessa maneira. Você terá que mudar <tt>save</tt> para colocar o nome do registrador na pilha junto com o valor</p><p>c.<tt>(restore y)</tt> coloca em <tt>y</tt> o último valor salvo de <tt>y</tt> independentemente do que outros registradores foram salvos após <tt>y</tt> e não restaurado. Modifique o simulador para se comportar dessa maneira. Você precisará associar uma pilha separada a cada registrador. Você deve fazer o <tt>initialize-stack</tt> A operação inicializa todas as pilhas de registradores.</p><p/><p>
+
+</p><p><a name="%_thm_5.12" id="%_thm_5.12"/>
+<b>Exercício 5.12.</b> O simulador pode ser usado para ajudar a determinar os caminhos de dados necessários para implementar uma máquina com um determinado controlador. Estenda o montador para armazenar as seguintes informações no modelo da máquina:</p><p/><ul><li>uma lista de todas as instruções, com duplicatas removidas, classificadas por tipo de instrução (<tt>assign</tt>, <tt>goto</tt>, e assim por diante);<p>
+
+</p></li><li>uma lista (sem duplicatas) dos registradores usados para armazenar pontos de entrada (esses são os registradores referenciados por <tt>goto</tt> instruções);<p>
+
+</p></li><li>uma lista (sem duplicatas) dos registradores que são <tt>save</tt> d ou <tt>restore</tt> d;<p>
+
+</p></li><li>para cada registrador, uma lista (sem duplicatas) das fontes às quais está atribuída (por exemplo, as fontes para registrador <tt>val</tt> na máquina fatorial da figura <a href="book-Z-H-31.html#%_fig_5.11">5.11</a> estão <tt>(const 1)</tt> e <tt>((op *) (reg n) (reg val))</tt>)</li></ul><p>Estenda a interface de passagem de mensagens à máquina para fornecer acesso a essas novas informações. Para testar seu analisador, defina a máquina Fibonacci da figura <a href="book-Z-H-31.html#%_fig_5.12">5.12</a> e examine as listas que você construiu.</p><p/><p>
+
+</p><p><a name="%_thm_5.13" id="%_thm_5.13"/>
+<b>Exercício 5.13.</b> Modifique o simulador para que ele use a sequência do controlador para determinar quais registradores a máquina possui, em vez de exigir uma lista de registradores como argumento para <tt>make-machine</tt>. Em vez de pré-alocar os registradores em <tt>make-machine</tt>, você pode alocá-los um de cada vez quando são vistos pela primeira vez durante a montagem das instruções.</p><p>
+
+<a name="%_sec_5.2.4" id="%_sec_5.2.4"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_5.2.4">5.2.4 Monitorando o desempenho da máquina</a></h3><p>
+
+
+<a name="%_idx_5804" id="%_idx_5804"/>
+<a name="%_idx_5806" id="%_idx_5806"/>A simulação é útil não apenas para verificar a correção de um projeto de máquina proposto, mas também para medir o desempenho da máquina. Por exemplo, podemos instalar em nosso programa de simulação um &quot;medidor&quot; que mede o número de operações de pilha usadas em um cálculo. Para fazer isso, modificamos nossa pilha simulada para acompanhar o número de vezes que os registradores são salvos na pilha e a profundidade máxima alcançada pela pilha, e adicionamos uma mensagem à interface da pilha que imprime as estatísticas, como mostrado abaixo. Também adicionamos uma operação ao modelo básico da máquina para imprimir as estatísticas da pilha, inicializando <tt>the-ops</tt> no <tt>make-new-machine</tt> para</p><p/><p><tt><a name="%_idx_5808" id="%_idx_5808"/><a name="%_idx_5810" id="%_idx_5810"/>(list (list 'initialize-stack<br/>
+            (lambda () (stack 'initialize)))<br/>
+      (list 'print-stack-statistics<br/>
+            (lambda () (stack 'print-statistics))))<br/></tt></p><p/><p>Aqui está a nova versão do <tt>make-stack</tt>:</p><p/><p><tt><a name="%_idx_5812" id="%_idx_5812"/>(define (make-stack)<br/>
+  (let ((s '())<br/>
+        (number-pushes 0)<br/>
+        (max-depth 0)<br/>
+        (current-depth 0))<br/>
+    (define (push x)<br/>
+      (set! s (cons x s))<br/>
+      (set! number-pushes (+ 1 number-pushes))<br/>
+      (set! current-depth (+ 1 current-depth))<br/>
+      (set! max-depth (max current-depth max-depth)))<br/>
+    (define (pop)<br/>
+      (if (null? s)<br/>
+          (error &quot;Empty stack -- POP&quot;)<br/>
+          (let ((top (car s)))<br/>
+            (set! s (cdr s))<br/>
+            (set! current-depth (- current-depth 1))<br/>
+            top)))    <br/>
+    (define (initialize)<br/>
+      (set! s '())<br/>
+      (set! number-pushes 0)<br/>
+      (set! max-depth 0)<br/>
+      (set! current-depth 0)<br/>
+      'done)<br/>
+    (define (print-statistics)<br/>
+      (newline)<br/>
+      (display (list 'total-pushes  '= number-pushes<br/>
+                     'maximum-depth '= max-depth)))<br/>
+    (define (dispatch message)<br/>
+      (cond ((eq? message 'push) push)<br/>
+            ((eq? message 'pop) (pop))<br/>
+            ((eq? message 'initialize) (initialize))<br/>
+            ((eq? message 'print-statistics)<br/>
+             (print-statistics))<br/>
+            (else<br/>
+             (error &quot;Unknown request -- STACK&quot; message))))<br/>
+    dispatch))<br/></tt></p><p/><p>
+</p><p>Exercícios <a href="#%_thm_5.15">5.15</a> através <a href="#%_thm_5.19">5.19</a> descreva outros recursos úteis de monitoramento e depuração que podem ser adicionados ao simulador de máquina de registrador.</p><p>
+
+</p><p>
+
+</p><p><a name="%_thm_5.14" id="%_thm_5.14"/>
+<b>Exercício 5.14.</b> <a name="%_idx_5814" id="%_idx_5814"/>Meça o número de pushes e a profundidade máxima da pilha necessária para calcular <em>n</em>! para vários pequenos valores de <em>n</em> usando a máquina fatorial mostrada na figura <a href="book-Z-H-31.html#%_fig_5.11">5.11</a>. A partir dos seus dados, determine as fórmulas em termos de <em>n</em> para o número total de operações push e a profundidade máxima da pilha usada na computação <em>n</em>! para qualquer <em>n</em> &gt; 1. Observe que cada um deles é uma função linear de <em>n</em> e é assim determinado por duas constantes. Para obter as estatísticas impressas, você precisará incrementar a máquina fatorial com instruções para inicializar a pilha e imprimir as estatísticas. Você também pode modificar a máquina para que ela leia repetidamente um valor para <em>n</em>, calcula o fatorial e imprime o resultado (como fizemos na máquina MDC na figura <a href="book-Z-H-31.html#%_fig_5.4">5.4</a>), para que você não precise invocar repetidamente <tt>get-register-contents</tt>, <tt>set-register-contents!</tt> e <tt>start</tt>.</p><p/><p>
+
+</p><p><a name="%_thm_5.15" id="%_thm_5.15"/>
+<b>Exercício 5.15.</b> Adicione <a name="%_idx_5816" id="%_idx_5816"/><em>contagem de instruções</em> para a simulação da máquina de registrador. Ou seja, faça com que o modelo da máquina acompanhe o número de instruções executadas. Estenda a interface do modelo da máquina para aceitar uma nova mensagem que imprima o valor da contagem de instruções e redefina a contagem para zero.</p><p/><p>
+
+</p><p><a name="%_thm_5.16" id="%_thm_5.16"/>
+<b>Exercício 5.16.</b> Incremente o simulador para fornecer <a name="%_idx_5818" id="%_idx_5818"/><a name="%_idx_5820" id="%_idx_5820"/><em>rastreamento de instruções</em>. Ou seja, antes de cada instrução ser executada, o simulador deve imprimir o texto da instrução. Faça o modelo da máquina aceitar <tt>trace-on</tt> e <tt>trace-off</tt> mensagens para ativar e desativar o rastreamento.</p><p/><p>
+
+</p><p><a name="%_thm_5.17" id="%_thm_5.17"/>
+<b>Exercício 5.17.</b> Amplie o rastreamento de instruções do exercício <a href="#%_thm_5.16">5.16</a> para que, antes de imprimir uma instrução, o simulador imprima qualquer etiqueta que preceda imediatamente essa instrução na sequência do controlador. Tenha cuidado ao fazer isso de uma maneira que não interfira na contagem de instruções (exercício <a href="#%_thm_5.15">5.15</a>) Você precisará fazer o simulador reter as informações de etiqueta necessárias.</p><p/><p>
+
+</p><p><a name="%_thm_5.18" id="%_thm_5.18"/>
+<b>Exercício 5.18.</b> <a name="%_idx_5822" id="%_idx_5822"/><a name="%_idx_5824" id="%_idx_5824"/>Modifique o procedimento <tt>make-register</tt> de seção <a href="#%_sec_5.2.1">5.2.1</a> para que os registradores possam ser rastreados. Os registradores devem aceitar mensagens que ativam e desativam o rastreamento. Quando um registrador é rastreado, a atribuição de um valor ao registrador deve imprimir o nome do registrador, o conteúdo antigo do registrador e o novo conteúdo sendo atribuído. Estenda a interface ao modelo da máquina para permitir ativar e desativar o rastreio nos registradores designados da máquina.</p><p/><p>
+
+</p><p><a name="%_thm_5.19" id="%_thm_5.19"/>
+<b>Exercício 5.19.</b> Alyssa P. Hacker quer um <a name="%_idx_5826" id="%_idx_5826"/><em>ponto de interrupção</em> recurso no simulador para ajudá-la a depurar seus projetos de máquinas. Você foi contratado para instalar esse recurso para ela. Ela deseja especificar um local na sequência do controlador em que o simulador irá parar e permitir que ela examine o estado da máquina. Você deve implementar um procedimento</p><p>
+
+</p><p>
+
+</p><p/><p><tt>(set-breakpoint &lt;<em>machine</em>&gt; &lt;<em>label</em>&gt; &lt;<em>n</em>&gt;)<br/></tt></p><p/><p>que define um ponto de interrupção antes do <em>n</em> ésima instrução após o rótulo fornecido. Por exemplo,</p><p>
+
+</p><p/><p><tt>(set-breakpoint gcd-machine 'test-b 4)<br/></tt></p><p/><p>instala um ponto de interrupção no <tt>gcd-machine</tt> pouco antes da atribuição ao registrador <tt>a</tt>. Quando o simulador atinge o ponto de interrupção, ele deve imprimir a etiqueta e o deslocamento do ponto de interrupção e interromper a execução das instruções. Alyssa pode então usar <tt>get-register-contents</tt> e <tt>set-register-contents!</tt> para manipular o estado da máquina simulada. Ela deve poder continuar a execução dizendo</p><p>
+
+</p><p/><p><tt>(proceed-machine &lt;<em>machine</em>&gt;)<br/></tt></p><p/><p>Ela também deve poder remover um ponto de interrupção específico por meio de</p><p>
+
+</p><p/><p><tt>(cancel-breakpoint &lt;<em>machine</em>&gt; &lt;<em>label</em>&gt; &lt;<em>n</em>&gt;)<br/></tt></p><p/><p>ou remover todos os pontos de interrupção por meio de</p><p>
+
+</p><p/><p><tt>(cancel-all-breakpoints &lt;<em>machine</em>&gt;)<br/></tt></p><p/><p>
+</p><p>
+</p><p>
+
+</p><p/><div class="smallprint"><hr/></div><p>
+</p><div class="footnote"><p><a name="footnote_Temp_727" href="#call_footnote_Temp_727" id="footnote_Temp_727"><sup><small>4</small></sup></a><a name="%_idx_5690" id="%_idx_5690"/>Usando o procedimento <tt>receive</tt> aqui é uma maneira de obter <tt>extract-labels</tt> para retornar efetivamente dois valores - <tt>labels</tt> e <tt>insts</tt> - sem criar explicitamente uma estrutura de dados composta para mantê-los. Uma implementação alternativa, que retorna um par explícito de valores, é</p><p/><p><tt><a name="%_idx_5692" id="%_idx_5692"/>(define (extract-labels text)<br/>
+  (if (null? text)<br/>
+      (cons '() '())<br/>
+      (let ((result (extract-labels (cdr text))))<br/>
+        (let ((insts (car result)) (labels (cdr result)))<br/>
+          (let ((next-inst (car text)))<br/>
+            (if (symbol? next-inst)<br/>
+                (cons insts<br/>
+                      (cons (make-label-entry next-inst insts) labels))<br/>
+                (cons (cons (make-instruction next-inst) insts)<br/>
+                      labels)))))))<br/></tt></p><p/><p>que seria chamado por <tt>assemble</tt> do seguinte modo:</p><p/><p><tt><a name="%_idx_5694" id="%_idx_5694"/>(define (assemble controller-text machine)<br/>
+  (let ((result (extract-labels controller-text)))<br/>
+    (let ((insts (car result)) (labels (cdr result)))<br/>
+      (update-insts! insts labels machine)<br/>
+      insts)))<br/></tt></p><p/><p>
+<a name="%_idx_5696" id="%_idx_5696"/><a name="%_idx_5698" id="%_idx_5698"/><a name="%_idx_5700" id="%_idx_5700"/>Você pode considerar o uso de <tt>receive</tt> como demonstrar uma maneira elegante de retornar vários valores, ou simplesmente uma desculpa para mostrar um truque de programação. Um argumento como <tt>receive</tt> esse é o próximo procedimento a ser chamado é chamado de &quot;continuação&quot;. Lembre-se de que também usamos continuações para implementar a estrutura de controle de retorno no avaliador <tt>amb</tt> na seção <a href="book-Z-H-28.html#%_sec_4.3.3">4.3.3</a>.</p></div>
+
+
+
+</body>
+</html>

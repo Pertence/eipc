@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops">
+<!-- Generated from TeX source by tex2page, v 4o,
+     (c) Dorai Sitaram, http://www.cs.rice.edu/~dorai/tex2page -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type: text/html; charset=utf-8"/>
+    <title>Estrutura e Interpretação de Programas de Computador</title>
+    <link rel="stylesheet" type="text/css" href="book-Z-C.css" title="default"/>
+  </head>
+  <body>
+
+
+
+<a name="%_sec_5.3" id="%_sec_5.3"/>
+<h2><a href="book-Z-H-4.html#%_toc_%_sec_5.3">5.3 Alocação de armazenamento e coleta de lixo</a></h2><p>
+
+
+<a name="%_idx_5828" id="%_idx_5828"/><a name="%_idx_5830" id="%_idx_5830"/>Na seção <a href="book-Z-H-34.html#%_sec_5.4">5.4</a>, mostraremos como implementar um avaliador do Scheme como uma máquina de registrador. Para simplificar a discussão, assumiremos que nossas máquinas de registrador podem ser equipadas com uma <em>memória estruturada em lista</em>, em que as operações básicas para manipular dados estruturados em lista são primitivas. Postular a existência dessa memória é uma abstração útil quando se foca nos mecanismos de controle de um interpretador do Scheme, mas isso não reflete uma visão realista das operações primitivas de dados reais dos computadores contemporâneos. Para obter uma imagem mais completa de como um sistema Lisp opera, devemos investigar como a estrutura da lista pode ser representada de uma maneira que seja compatível com as memórias de computador convencionais.</p><p>Há duas considerações na implementação da estrutura da lista. O primeiro é puramente uma questão de representação: como representar a estrutura “caixa e ponteiro” dos pares Lisp, usando apenas os recursos de armazenamento e endereçamento das memórias típicas de computador. A segunda questão diz respeito ao gerenciamento de memória à medida que a computação prossegue. A operação de um sistema Lisp depende crucialmente da capacidade de criar continuamente novos objetos de dados. Isso inclui objetos criados explicitamente pelos procedimentos Lisp que são interpretados, bem como estruturas criadas pelo próprio interpretador, como ambientes e listas de argumentos. Embora a criação constante de novos objetos de dados não represente nenhum problema em um computador com uma quantidade infinita de memória endereçável rapidamente, as memórias de computador estão disponíveis apenas em tamanhos finitos (mais uma pena). Os sistemas Lisp fornecem, assim, um recurso de <a name="%_idx_5832" id="%_idx_5832"/><em>alocação automática de armazenamento</em> para apoiar a ilusão de uma memória infinita. Quando um objeto de dados não é mais necessário, a memória alocada a ele é automaticamente reciclada e usada para construir novos objetos de dados. Existem várias técnicas para fornecer essa alocação automática de armazenamento. O método que discutiremos nesta seção é chamado <em>coleta de lixo</em>.</p><p>
+
+<a name="%_sec_5.3.1" id="%_sec_5.3.1"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_5.3.1">5.3.1 Memória como vetores</a></h3><p>
+
+</p><p>Uma memória de computador convencional pode ser vista como uma matriz de cubos, cada um dos quais pode conter uma informação. Cada cubículo possui um nome exclusivo, chamado <a name="%_idx_5834" id="%_idx_5834"/><em>endereço</em> ou <a name="%_idx_5836" id="%_idx_5836"/><em>localização</em>. Os sistemas de memória típicos fornecem duas operações primitivas: uma que busca os dados armazenados em um local especificado e outra que designa novos dados para um local especificado. Os endereços de memória podem ser incrementados para dar suporte ao acesso sequencial a algum conjunto de cubos. De maneira mais geral, muitas operações importantes de dados exigem que os endereços de memória sejam tratados como dados, que podem ser armazenados nos locais de memória e manipulados nos registradores da máquina. A representação da estrutura da lista é uma aplicação de tais <a name="%_idx_5838" id="%_idx_5838"/><a name="%_idx_5840" id="%_idx_5840"/><em>endereço aritmético</em>.</p><p>Para modelar a memória do computador, usamos um novo tipo de estrutura de dados chamado <a name="%_idx_5842" id="%_idx_5842"/><em>vetor</em>. Abstratamente, um vetor é um objeto de dados composto cujos elementos individuais podem ser acessados por meio de um índice inteiro em uma quantidade de tempo independente do índice.<a name="call_footnote_Temp_744" href="#footnote_Temp_744" id="call_footnote_Temp_744"><sup><small>5</small></sup></a> Para descrever operações de memória, usamos dois procedimentos primitivos do Scheme para manipular vetores:</p><p>
+
+</p><p/><ul><a name="%_idx_5844" id="%_idx_5844"/><a name="%_idx_5846" id="%_idx_5846"/><li><tt>(vector-ref &lt;<em>vector</em>&gt; &lt;<em>n</em>&gt;)</tt> returns the <em>n</em>th
+element of the vector.<p>
+
+<a name="%_idx_5848" id="%_idx_5848"/><a name="%_idx_5850" id="%_idx_5850"/></p></li><li><tt>(vector-set! &lt;<em>vector</em>&gt; &lt;<em>n</em>&gt; &lt;<em>value</em>&gt;)</tt> sets
+the <em>n</em>th element of the vector to the designated value.
+</li></ul><p>Por exemplo, se <tt>v</tt> é um vetor, então <tt>(vector-ref v 5)</tt> obtém a quinta entrada no vetor <tt>v</tt> e <tt>(vector-set! v 5 7)</tt> altera o valor da quinta entrada do vetor <tt>v</tt> para 7.<a name="call_footnote_Temp_745" href="#footnote_Temp_745" id="call_footnote_Temp_745"><sup><small>6</small></sup></a> Para a memória do computador, esse acesso pode ser implementado através do uso da aritmética de endereços para combinar uma <em>endereço base</em> que especifica o local inicial de um vetor na memória com um <em>índice</em> que especifica o deslocamento de um elemento específico do vetor.</p><p>
+
+<a name="%_sec_Temp_746" id="%_sec_Temp_746"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_746">Representando dados Lisp</a></h4><p>
+
+<a name="%_idx_5852" id="%_idx_5852"/><a name="%_idx_5854" id="%_idx_5854"/>Podemos usar vetores para implementar as estruturas básicas de pares necessárias para uma memória estruturada em lista. Imaginaremos que a memória do computador seja dividida em dois vetores: <a name="%_idx_5856" id="%_idx_5856"/><tt>the-cars</tt> e <a name="%_idx_5858" id="%_idx_5858"/><tt>the-cdrs</tt>. Representaremos a estrutura da lista da seguinte maneira: Um ponteiro para um par é um índice para os dois vetores. o <tt>car</tt> do par é a entrada em <tt>the-cars</tt> com o índice designado e o <tt>cdr</tt> do par é a entrada em <tt>the-cdrs</tt> com o índice designado. Também precisamos de uma representação para objetos que não sejam pares (como números e símbolos) e uma maneira de distinguir um tipo de dados de outro. Existem muitos métodos para fazer isso, mas todos eles se reduzem ao uso de <a name="%_idx_5860" id="%_idx_5860"/><a name="%_idx_5862" id="%_idx_5862"/><em>ponteiros digitados</em>, ou seja, para estender a noção de &quot;ponteiro&quot; para incluir informações sobre o tipo de dados.<a name="call_footnote_Temp_747" href="#footnote_Temp_747" id="call_footnote_Temp_747"><sup><small>7</small></sup></a> O tipo de dados permite ao sistema distinguir um ponteiro para um par (que consiste no tipo de dados &quot;par&quot; e um índice nos vetores de memória) dos ponteiros para outros tipos de dados (que consistem em algum outro tipo de dado e o que fosse usado para representar dados desse tipo). Dois objetos de dados são <a name="%_idx_5868" id="%_idx_5868"/>considerados o mesmo (<tt>eq?</tt>) se seus ponteiros forem idênticos.<a name="call_footnote_Temp_748" href="#footnote_Temp_748" id="call_footnote_Temp_748"><sup><small>8</small></sup></a> Figura <a href="#%_fig_5.14">5.14</a> ilustra o uso desse método para representar a lista <tt>((1 2) 3 4)</tt>, cujo diagrama de caixa e ponteiro também é mostrado. Usamos prefixos de letras para indicar as informações do tipo de dados. Assim, um ponteiro para o par com o índice 5 é indicado <tt>p5</tt>, a lista vazia é indicada pelo ponteiro <tt>e0</tt> e um ponteiro para o número 4 é indicado <tt>n4</tt>. No diagrama de caixa e ponteiro, indicamos no canto inferior esquerdo de cada par o índice vetorial que especifica onde o <tt>car</tt> e <tt>cdr</tt> do par são armazenados. Os locais em branco no <tt>the-cars</tt> e <tt>the-cdrs</tt> pode conter partes de outras estruturas de lista (sem interesse aqui).</p><p>
+
+<a name="%_fig_5.14" id="%_fig_5.14"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch5-Z-G-7.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 5.14:</b> Representações de caixa e ponteiro e vetor de memória da lista <tt>((1 2) 3 4)</tt>.</div></caption><tr><td>
+
+</td></tr></table></div><p>                                                         </p><p>Um ponteiro para um número, como <tt>n4</tt>, pode consistir em um tipo que indica dados numéricos, com a representação real do número 4.<a name="call_footnote_Temp_749" href="#footnote_Temp_749" id="call_footnote_Temp_749"><sup><small>9</small></sup></a> Para lidar com números grandes demais para serem representados na quantidade fixa de espaço alocado para um único ponteiro, poderíamos usar um tipo de dados distinto <a name="%_idx_5880" id="%_idx_5880"/><em>bignum</em>, para o qual o ponteiro designa uma lista na qual as partes do número são armazenadas.<a name="call_footnote_Temp_750" href="#footnote_Temp_750" id="call_footnote_Temp_750"><sup><small>10</small></sup></a></p><p>
+
+
+<a name="%_idx_5882" id="%_idx_5882"/>Um símbolo pode ser representado como um ponteiro digitado que designa uma sequência dos caracteres que formam a representação impressa do símbolo. Essa sequência é construída pelo leitor Lisp quando a cadeia de caracteres é encontrada inicialmente na entrada. Como queremos que duas instâncias de um símbolo sejam reconhecidas como o &quot;mesmo&quot; símbolo por <tt>eq?</tt> e <a name="%_idx_5884" id="%_idx_5884"/>queremos que <tt>eq?</tt> Para ser um teste simples de igualdade de ponteiros, devemos garantir que, se o leitor vir a mesma cadeia de caracteres duas vezes, ele usará o mesmo ponteiro (para a mesma sequência de caracteres) para representar as duas ocorrências. Para conseguir isso, o leitor mantém uma tabela, tradicionalmente chamada de <a name="%_idx_5886" id="%_idx_5886"/><em>oblíquo</em>, de todos os símbolos que já encontrou.??? Quando o leitor encontra uma sequência de caracteres e está prestes a construir um símbolo, ele verifica a matriz para ver se alguma vez viu a mesma sequência de caracteres. Caso contrário, ele usa os caracteres para construir um novo símbolo (um ponteiro digitado para uma nova sequência de caracteres) e insere esse ponteiro na matriz. Se o leitor já viu a sequência antes, ela retorna o ponteiro do símbolo armazenado na matriz. Esse processo de substituição de cadeias de caracteres por ponteiros exclusivos é chamado <a name="%_idx_5888" id="%_idx_5888"/><a name="%_idx_5890" id="%_idx_5890"/><em>interning</em> símbolos???</p><p>
+
+
+<a name="%_sec_Temp_751" id="%_sec_Temp_751"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_751">Implementando as Operações da Lista Primitiva</a></h4><p>
+
+</p><p>
+
+<a name="%_idx_5892" id="%_idx_5892"/><a name="%_idx_5894" id="%_idx_5894"/>Dado o esquema de representação acima, podemos substituir cada operação de lista “primitiva” de uma máquina de registradores por uma ou mais operações vetoriais primitivas. Usaremos dois registradores, <tt>the-cars</tt> e <tt>the-cdrs</tt>, para identificar os vetores de memória e assumirá que <tt>vector-ref</tt> e <tt>vector-set!</tt> estão disponíveis como operações primitivas. Também assumimos que as operações numéricas nos ponteiros (como incrementar um ponteiro, usar um ponteiro de par para indexar um vetor ou adicionar dois números) usam apenas a parte do índice do ponteiro digitado.</p><p>Por exemplo, podemos fazer com que uma máquina de registradores suporte as instruções</p><p>
+
+<a name="%_idx_5896" id="%_idx_5896"/><a name="%_idx_5898" id="%_idx_5898"/>
+</p><p/><p><tt>(assign &lt;<em>reg<sub>1</sub></em>&gt; (op car) (reg &lt;<em>reg<sub>2</sub></em>&gt;))<br/><br/>
+(assign &lt;<em>reg<sub>1</sub></em>&gt; (op cdr) (reg &lt;<em>reg<sub>2</sub></em>&gt;))<br/></tt></p><p/><p>se os implementarmos, respectivamente, como</p><p>
+
+
+</p><p/><p><tt>(assign &lt;<em>reg<sub>1</sub></em>&gt; (op vector-ref) (reg the-cars) (reg &lt;<em>reg<sub>2</sub></em>&gt;))<br/><br/>
+(assign &lt;<em>reg<sub>1</sub></em>&gt; (op vector-ref) (reg the-cdrs) (reg &lt;<em>reg<sub>2</sub></em>&gt;))<br/></tt></p><p/><p>As instruções</p><p>
+
+<a name="%_idx_5900" id="%_idx_5900"/><a name="%_idx_5902" id="%_idx_5902"/>
+</p><p/><p><tt>(perform (op set-car!) (reg &lt;<em>reg<sub>1</sub></em>&gt;) (reg &lt;<em>reg<sub>2</sub></em>&gt;))<br/><br/>
+(perform (op set-cdr!) (reg &lt;<em>reg<sub>1</sub></em>&gt;) (reg &lt;<em>reg<sub>2</sub></em>&gt;))<br/></tt></p><p/><p>são implementados como</p><p/><p><tt>(perform<br/>
+ (op vector-set!) (reg the-cars) (reg &lt;<em>reg<sub>1</sub></em>&gt;) (reg &lt;<em>reg<sub>2</sub></em>&gt;))<br/><br/>
+(perform<br/>
+ (op vector-set!) (reg the-cdrs) (reg &lt;<em>reg<sub>1</sub></em>&gt;) (reg &lt;<em>reg<sub>2</sub></em>&gt;))<br/></tt></p><p/><p>
+</p><p>
+
+<a name="%_idx_5904" id="%_idx_5904"/><tt>Cons</tt> é realizada alocando um índice não utilizado e armazenando os argumentos para <tt>cons</tt> no <tt>the-cars</tt> e <tt>the-cdrs</tt> nessa posição do vetor indexado. Presumimos que exista um registrador especial, <a name="%_idx_5906" id="%_idx_5906"/><tt>free</tt>, que sempre mantém um ponteiro de par contendo o próximo índice disponível e que podemos incrementar a parte do índice desse ponteiro para encontrar o próximo local livre.<a name="call_footnote_Temp_752" href="#footnote_Temp_752" id="call_footnote_Temp_752"><sup><small>11</small></sup></a> Por exemplo, a instrução</p><p>
+
+</p><p/><p><tt>(assign &lt;<em>reg<sub>1</sub></em>&gt; (op cons) (reg &lt;<em>reg<sub>2</sub></em>&gt;) (reg &lt;<em>reg<sub>3</sub></em>&gt;))<br/></tt></p><p/><p>é implementado como a seguinte sequência de operações de vetor:<a name="call_footnote_Temp_753" href="#footnote_Temp_753" id="call_footnote_Temp_753"><sup><small>12</small></sup></a></p><p>
+
+</p><p/><p><tt>(perform<br/>
+ (op vector-set!) (reg the-cars) (reg free) (reg &lt;<em>reg<sub>2</sub></em>&gt;))<br/>
+(perform<br/>
+ (op vector-set!) (reg the-cdrs) (reg free) (reg &lt;<em>reg<sub>3</sub></em>&gt;))<br/>
+(assign &lt;<em>reg<sub>1</sub></em>&gt; (reg free))<br/>
+(assign free (op +) (reg free) (const 1))<br/></tt></p><p/><p>o <tt>eq?</tt> Operação</p><p>
+
+</p><p/><p><tt>(op eq?) (reg &lt;<em>reg<sub>1</sub></em>&gt;) (reg &lt;<em>reg<sub>2</sub></em>&gt;)<br/></tt></p><p/><p>simplesmente testa a igualdade de todos os campos nos registradores e <a name="%_idx_5910" id="%_idx_5910"/><a name="%_idx_5912" id="%_idx_5912"/><a name="%_idx_5914" id="%_idx_5914"/><a name="%_idx_5916" id="%_idx_5916"/>predicados como <tt>pair?</tt>, <tt>null?</tt>, <tt>symbol?</tt> e <tt>number?</tt> só precisa verificar o campo de tipo.</p><p>
+
+<a name="%_sec_Temp_754" id="%_sec_Temp_754"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_754">Implementando pilhas</a></h4><p>
+
+<a name="%_idx_5918" id="%_idx_5918"/>Embora nossas máquinas de registrador usem pilhas, não precisamos fazer nada de especial aqui, pois as pilhas podem ser modeladas em termos de listas. A pilha pode ser uma lista dos valores salvos, apontados por um registrador especial <tt>the-stack</tt>. Portanto, <tt>(save &lt;<em>reg</em>&gt;)</tt> pode ser implementado como</p><p>
+
+<a name="%_idx_5920" id="%_idx_5920"/></p><p/><p><tt>(assign the-stack (op cons) (reg &lt;<em>reg</em>&gt;) (reg the-stack))<br/></tt></p><p/><p>
+<a name="%_idx_5922" id="%_idx_5922"/>Similarmente, <tt>(restore &lt;<em>reg</em>&gt;)</tt> pode ser implementado como</p><p/><p><tt>(assign &lt;<em>reg</em>&gt; (op car) (reg the-stack))<br/>
+(assign the-stack (op cdr) (reg the-stack))<br/></tt></p><p/><p>e <tt>(perform (op initialize-stack))</tt> pode ser implementado como</p><p/><p><tt>(assign the-stack (const ()))<br/></tt></p><p/><p>Essas operações podem ser expandidas ainda mais em termos das operações de vetor fornecidas acima. Nas arquiteturas de computadores convencionais, no entanto, geralmente é vantajoso alocar a pilha como um vetor separado. Em seguida, pressionar e estourar a pilha pode ser realizado incrementando ou diminuindo um índice nesse vetor.</p><p>
+
+</p><p><a name="%_thm_5.20" id="%_thm_5.20"/>
+<b>Exercício 5.20.</b> Desenhe a representação de caixa e ponteiro e a representação de vetor de memória (como na figura <a href="#%_fig_5.14">5.14</a>) da estrutura da lista produzida por</p><p>
+
+</p><p/><p><tt>(define x (cons 1 2))<br/>
+(define y (list x x))<br/></tt></p><p/><p>com o ponteiro <tt>free</tt> inicialmente <tt>p1</tt>. What is the final value of <tt>free</tt> ? Quais ponteiros representam os valores de <tt>x</tt> e <tt>y</tt> ?</p><p/><p>
+
+</p><p><a name="%_thm_5.21" id="%_thm_5.21"/>
+<b>Exercício 5.21.</b> <a name="%_idx_5924" id="%_idx_5924"/>Implemente máquinas de registrador para os seguintes procedimentos. Suponha que as operações de memória da estrutura de lista estejam disponíveis como primitivas da máquina.</p><p>
+
+</p><p/><p>a. Recursive <tt>count-leaves</tt>:</p><p>
+
+</p><p/><p><tt>(define (count-leaves tree)<br/>
+  (cond ((null? tree) 0)<br/>
+        ((not (pair? tree)) 1)<br/>
+        (else (+ (count-leaves (car tree))<br/>
+                 (count-leaves (cdr tree))))))<br/></tt></p><p/><p>
+</p><p/><p>b. Recursive <tt>count-leaves</tt> with explicit counter:</p><p>
+
+</p><p/><p><tt>(define (count-leaves tree)<br/>
+  (define (count-iter tree n)<br/>
+    (cond ((null? tree) n)<br/>
+          ((not (pair? tree)) (+ n 1))<br/>
+          (else (count-iter (cdr tree)<br/>
+                            (count-iter (car tree) n)))))<br/>
+  (count-iter tree 0))<br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_5.22" id="%_thm_5.22"/>
+<b>Exercício 5.22.</b> <a name="%_idx_5926" id="%_idx_5926"/><a name="%_idx_5928" id="%_idx_5928"/>Exercício <a href="book-Z-H-22.html#%_thm_3.12">3.12</a> da seção <a href="book-Z-H-22.html#%_sec_3.3.1">3.3.1</a> apresentou um procedimento <tt>append</tt> que anexa duas listas para formar uma nova lista e um procedimento <tt>append!</tt> que une duas listas. Projete uma máquina de registradores para implementar cada um desses procedimentos. Suponha que as operações de memória da estrutura de lista estejam disponíveis como operações primitivas.</p><p>
+
+<a name="%_sec_5.3.2" id="%_sec_5.3.2"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_5.3.2">5.3.2 Mantendo a ilusão de memória infinita</a></h3><p>
+
+<a name="%_idx_5930" id="%_idx_5930"/></p><p>O método de representação descrito na seção <a href="#%_sec_5.3.1">5.3.1</a> resolve o problema de implementar a estrutura da lista, desde que tenhamos uma quantidade infinita de memória. Com um computador real, eventualmente ficaremos sem espaço livre para construir novos pares.<a name="call_footnote_Temp_758" href="#footnote_Temp_758" id="call_footnote_Temp_758"><sup><small>13</small></sup></a> No entanto, a maioria dos pares gerados em uma computação típica é usada apenas para manter resultados intermediários. Depois que esses resultados são acessados, os pares não são mais necessários - eles são <em>lixo</em>. Por exemplo, o cálculo</p><p>
+
+</p><p/><p><tt>(accumulate + 0 (filter odd? (enumerate-interval 0 n)))<br/></tt></p><p/><p>constrói duas listas: a enumeração e o resultado da filtragem da enumeração. Quando a acumulação estiver concluída, essas listas não serão mais necessárias e a memória alocada poderá ser recuperada. Se conseguirmos coletar todo o lixo periodicamente, e se isso reciclar memória na mesma velocidade em que construímos novos pares, teremos preservado a ilusão de que há uma quantidade infinita de memória.</p><p>Para reciclar pares, precisamos ter uma maneira de determinar quais pares alocados não são necessários (no sentido de que seu conteúdo não pode mais influenciar o futuro da computação). O método que examinaremos para realizar isso é conhecido como <em>coleta de lixo</em>. A coleta de lixo é baseada na observação de que, a qualquer momento na interpretação do Lisp, os únicos objetos que podem afetar o futuro do cálculo são aqueles que podem ser alcançados por alguma sucessão de <tt>car</tt> e <tt>cdr</tt> operações iniciadas pelos ponteiros que estão atualmente nos registradores da máquina.<a name="call_footnote_Temp_759" href="#footnote_Temp_759" id="call_footnote_Temp_759"><sup><small>14</small></sup></a> Qualquer célula de memória que não seja tão acessível pode ser reciclada.</p><p>Existem muitas maneiras de executar a coleta de lixo. O método que examinaremos aqui é chamado <a name="%_idx_5932" id="%_idx_5932"/><a name="%_idx_5934" id="%_idx_5934"/><em>parar e copiar</em>. A ideia básica é dividir a memória em duas metades: &quot;memória de trabalho&quot; e &quot;memória livre&quot;. Quando <tt>cons</tt> constrói pares, os aloca na memória de trabalho. Quando a memória de trabalho está cheia, realizamos a coleta de lixo, localizando todos os pares úteis na memória de trabalho e copiando-os em locais consecutivos na memória livre. (Os pares úteis são localizados rastreando todas as <tt>car</tt> e ponteiros <tt>cdr</tt>, começando com os registradores da máquina). Como não copiamos o lixo, presumivelmente haverá memória livre adicional que podemos usar para alocar novos pares. Além disso, nada na memória de trabalho é necessário, pois todos os pares úteis nela foram copiados. Assim, se trocarmos os papéis da memória de trabalho e da memória livre, podemos continuar processando; novos pares serão alocados na nova memória de trabalho (que era a antiga memória livre). Quando estiver cheio, podemos copiar os pares úteis para a nova memória livre (que era a antiga memória de trabalho).<a name="call_footnote_Temp_760" href="#footnote_Temp_760" id="call_footnote_Temp_760"><sup><small>15</small></sup></a></p><p>
+
+<a name="%_sec_Temp_761" id="%_sec_Temp_761"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_761">Implementação de um coletor de lixo de parada e cópia</a></h4><p>Agora usamos nossa linguagem de máquina de registradores para descrever o algoritmo de parar e copiar com mais detalhes. Assumiremos que existe um registrador chamado <a name="%_idx_5966" id="%_idx_5966"/><tt>root</tt> que contém um ponteiro para uma estrutura que eventualmente aponta para todos os dados acessíveis. Isso pode ser organizado armazenando o conteúdo de todos os registradores da máquina em uma lista pré-alocada, apontada por <tt>root</tt> pouco antes de iniciar a coleta de lixo.<a name="call_footnote_Temp_762" href="#footnote_Temp_762" id="call_footnote_Temp_762"><sup><small>16</small></sup></a> Também assumimos que, além da memória de trabalho atual, há memória livre disponível na qual podemos copiar os dados úteis. A memória de trabalho atual consiste em vetores cujos endereços base estão em <a name="%_idx_5968" id="%_idx_5968"/><a name="%_idx_5970" id="%_idx_5970"/>registradores chamados <tt>the-cars</tt> e <tt>the-cdrs</tt> e a memória livre está nos registradores chamados <a name="%_idx_5972" id="%_idx_5972"/><a name="%_idx_5974" id="%_idx_5974"/><tt>new-cars</tt> e <tt>new-cdrs</tt>.</p><p>A coleta de lixo é acionada quando esgotamos as células livres na memória de trabalho atual, ou seja, quando um <tt>cons</tt> operação tenta incrementar o ponteiro <tt>free</tt> além do final do vetor de memória. Quando o processo de coleta de lixo estiver concluído, o ponteiro <tt>root</tt> apontará para a nova memória, todos os objetos acessíveis a partir do <tt>root</tt> foram movidos para a nova memória e os o ponteiro <tt>free</tt>indicará o próximo local na nova memória onde um novo par pode ser alocado. Além disso, os papéis da memória de trabalho e da nova memória serão trocados - novos pares serão construídos na nova memória, começando no local indicado por <tt>free</tt>, e a memória de trabalho (anterior) estará disponível como a nova memória para a próxima coleta de lixo. Figura <a href="#%_fig_5.15">5.15</a> mostra o arranjo da memória imediatamente antes e logo após a coleta de lixo.</p><p>
+
+<a name="%_fig_5.15" id="%_fig_5.15"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch5-Z-G-8.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 5.15:</b> Reconfiguração da memória pelo processo de coleta de lixo.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>
+
+<a name="%_idx_5976" id="%_idx_5976"/><a name="%_idx_5978" id="%_idx_5978"/>O estado do processo de coleta de lixo é controlado mantendo dois ponteiros: <tt>free</tt> e <tt>scan</tt>. Eles são inicializados para apontar para o início da nova memória. O algoritmo começa realocando o par apontado por <tt>root</tt> para o início da nova memória. O par é copiado, o ponteiro <tt>root</tt>é ajustado para apontar para o novo local e o ponteiro <tt>free</tt> é incrementado. Além disso, o local antigo do par é marcado para mostrar que seu conteúdo foi movido. Essa marcação é feita da seguinte maneira: <tt>car</tt> posição, colocamos uma etiqueta especial que sinaliza que este é um objeto já movido. (Esse objeto é tradicionalmente chamado de <a name="%_idx_5980" id="%_idx_5980"/><em>coração partido</em>).<a name="call_footnote_Temp_763" href="#footnote_Temp_763" id="call_footnote_Temp_763"><sup><small>17</small></sup></a> No <tt>cdr</tt> posição colocamos um <a name="%_idx_5988" id="%_idx_5988"/><em>endereço de encaminhamento</em> que aponta para o local para o qual o objeto foi movido.</p><p>Após realocar a raiz, o coletor de lixo entra em seu ciclo básico. Em cada etapa do algoritmo, o ponteiro <tt>scan</tt> (apontando inicialmente para a raiz realocada) aponta para um par que foi movido para a nova memória, mas cuja <tt>car</tt> e ponteiros <tt>cdr</tt> ainda se referem a objetos na memória antiga. Esses objetos são realocados e os ponteiro <tt>scan</tt> é incrementado. Para realocar um objeto (por exemplo, o objeto indicado pelo ponteiro <tt>car</tt> do par que estamos varrendo), verificamos se o objeto já foi movido (conforme indicado pela presença de uma etiqueta de coração partido no <tt>car</tt> posição do objeto). Se o objeto ainda não foi movido, copiamos para o local indicado por <tt>free</tt> atualização <tt>free</tt>, configure um coração partido no local antigo do objeto e atualize o ponteiro para o objeto (neste exemplo, o ponteiro <tt>car</tt> do par que estamos varrendo) para apontar para o novo local. Se o objeto já foi movido, seu endereço de encaminhamento (encontrado no <tt>cdr</tt> posição do coração partido) é substituído pelo ponteiro no par que é varrido. Eventualmente, todos os objetos acessíveis serão movidos e verificados; nesse ponto, o ponteiro <tt>scan</tt> ultrapassará o ponteiro <tt>free</tt> e o processo será encerrado.</p><p>
+
+</p><p>Podemos especificar o algoritmo de parar e copiar como uma sequência de instruções para uma máquina de registrador. A etapa básica de realocar um objeto é realizada por uma sub-rotina chamada <tt>relocate-old-result-in-new</tt>. Essa sub-rotina obtém seu argumento, um ponteiro para o objeto a ser realocado, de um registrador chamado <a name="%_idx_5990" id="%_idx_5990"/><tt>old</tt>. Ele realoca o objeto designado (aumentando <tt>free</tt> no processo), coloca um ponteiro para o objeto realocado em um registrador chamado <a name="%_idx_5992" id="%_idx_5992"/><tt>new</tt> e retorna ramificando para o ponto de entrada armazenado no registrador <tt>relocate-continue</tt>. Para iniciar a coleta de lixo, invocamos essa sub-rotina para realocar o ponteiro <tt>root</tt>, após inicializar <tt>free</tt> e <tt>scan</tt>. Quando a realocação de <tt>root</tt> foi realizado, instalamos o novo ponteiro como o novo <tt>root</tt> e insira o loop principal do coletor de lixo.</p><p>
+
+</p><p/><p><tt>begin-garbage-collection<br/>
+  (assign free (const 0))<br/>
+  (assign scan (const 0))<br/>
+  (assign old (reg root))<br/>
+  (assign relocate-continue (label reassign-root))<br/>
+  (goto (label relocate-old-result-in-new))<br/>
+reassign-root<br/>
+  (assign root (reg new))<br/>
+  (goto (label gc-loop))<br/></tt></p><p/><p/><p>No loop principal do coletor de lixo, devemos determinar se há mais objetos a serem verificados. Fazemos isso testando se o ponteiro <tt>scan</tt> é coincidente com o ponteiro <tt>free</tt>. Se os ponteiros forem iguais, todos os objetos acessíveis foram realocados e ramificamos para <tt>gc-flip</tt>, que deixa mais claro para que possamos continuar o cálculo interrompido. Se ainda houver pares a serem verificados, chamamos a sub-rotina relocate para realocar o <tt>car</tt> do próximo par (colocando o ponteiro <tt>car</tt> em <tt>old</tt>) O registrador <tt>relocate-continue</tt> é configurado para que a sub-rotina retorne para atualizar o ponteiro <tt>car</tt>.</p><p>
+
+</p><p/><p><tt>gc-loop<br/>
+  (test (op =) (reg scan) (reg free))<br/>
+  (branch (label gc-flip))<br/>
+  (assign old (op vector-ref) (reg new-cars) (reg scan))<br/>
+  (assign relocate-continue (label update-car))<br/>
+  (goto (label relocate-old-result-in-new))<br/></tt></p><p/><p/><p>
+
+</p><p>At <tt>update-car</tt>, modificamos o ponteiro <tt>car</tt> do par que é varrido, prossiga para realocar o <tt>cdr</tt> do par. Voltamos a <tt>update-cdr</tt> quando essa realocação tiver sido realizada. Após realocar e atualizar o <tt>cdr</tt>, terminamos de varrer esse par e continuamos com o loop principal.</p><p>
+
+</p><p/><p><tt>update-car<br/>
+  (perform<br/>
+   (op vector-set!) (reg new-cars) (reg scan) (reg new))<br/>
+  (assign old (op vector-ref) (reg new-cdrs) (reg scan))<br/>
+  (assign relocate-continue (label update-cdr))<br/>
+  (goto (label relocate-old-result-in-new))<br/><br/>
+update-cdr<br/>
+  (perform<br/>
+   (op vector-set!) (reg new-cdrs) (reg scan) (reg new))<br/>
+  (assign scan (op +) (reg scan) (const 1))<br/>
+  (goto (label gc-loop))<br/></tt></p><p/><p/><p>A sub-rotina <tt>relocate-old-result-in-new</tt> realoca os objetos da seguinte maneira: Se o objeto a ser realocado (apontado por <tt>old</tt>) não é um par, retornamos o mesmo ponteiro para o objeto inalterado (em <tt>new</tt>) (Por exemplo, podemos analisar um par cujo <tt>car</tt> é o número 4 Se representamos o <tt>car</tt> de <tt>n4</tt>, conforme descrito na seção <a href="#%_sec_5.3.1">5.3.1</a>, então queremos o &quot;realocado&quot; o ponteiro <tt>car</tt> para ainda ser <tt>n4</tt>). Caso contrário, devemos executar a realocação. Se a posição <tt>car</tt>do par a ser realocado contém uma etiqueta de coração partido, então o par já foi movido e, portanto, recuperamos o endereço de encaminhamento (do <tt>cdr</tt> posição do coração partido) e devolva-o em <tt>new</tt>. Se o ponteiro em <tt>old</tt> aponta para um par ainda imóvel, movemos o par para a primeira célula livre na nova memória (apontada por <tt>free</tt>) e configure o coração partido, armazenando uma etiqueta de coração partido e um endereço de encaminhamento no local antigo. <tt>Relocate-old-result-in-new</tt> usa um registrador <a name="%_idx_5994" id="%_idx_5994"/><tt>oldcr</tt> para segurar o <tt>car</tt> ou o <tt>cdr</tt> do objeto apontado por <tt>old</tt>.<a name="call_footnote_Temp_764" href="#footnote_Temp_764" id="call_footnote_Temp_764"><sup><small>18</small></sup></a></p><p>
+
+</p><p/><p><tt>relocate-old-result-in-new<br/>
+  (test (op pointer-to-pair?) (reg old))<br/>
+  (branch (label pair))<br/>
+  (assign new (reg old))<br/>
+  (goto (reg relocate-continue))<br/>
+pair<br/>
+  (assign oldcr (op vector-ref) (reg the-cars) (reg old))<br/>
+  (test (op broken-heart?) (reg oldcr))<br/>
+  (branch (label already-moved))<br/>
+  (assign new (reg free)) <em>; new location for pair</em><br/>
+  <em>;; Update <tt>free</tt> pointer.</em><br/>
+  (assign free (op +) (reg free) (const 1))<br/>
+  <em>;; Copy the <tt>car</tt> and <tt>cdr</tt> to new memory.</em><br/>
+  (perform (op vector-set!)<br/>
+           (reg new-cars) (reg new) (reg oldcr))<br/>
+  (assign oldcr (op vector-ref) (reg the-cdrs) (reg old))<br/>
+  (perform (op vector-set!)<br/>
+           (reg new-cdrs) (reg new) (reg oldcr))<br/>
+  <em>;; Construct the broken heart.</em><br/>
+  (perform (op vector-set!)<br/>
+           (reg the-cars) (reg old) (const broken-heart))<br/>
+  (perform<br/>
+   (op vector-set!) (reg the-cdrs) (reg old) (reg new))<br/>
+  (goto (reg relocate-continue))<br/>
+already-moved<br/>
+  (assign new (op vector-ref) (reg the-cdrs) (reg old))<br/>
+  (goto (reg relocate-continue))<br/></tt></p><p/><p/><p>No final do processo de coleta de lixo, trocamos o papel das memórias antigas e novas trocando ponteiros: trocando <tt>the-cars</tt> com <tt>new-cars</tt> e <tt>the-cdrs</tt> com <tt>new-cdrs</tt>. Estaremos prontos para executar outra coleta de lixo na próxima vez que a memória acabar.</p><p>
+
+</p><p/><p><tt>gc-flip<br/>
+  (assign temp (reg the-cdrs))<br/>
+  (assign the-cdrs (reg new-cdrs))<br/>
+  (assign new-cdrs (reg temp))<br/>
+  (assign temp (reg the-cars))<br/>
+  (assign the-cars (reg new-cars))<br/>
+  (assign new-cars (reg temp))<br/></tt></p><p/><p>
+
+</p><p>
+
+</p><p/><div class="smallprint"><hr/></div><p>
+</p><div class="footnote"><p><a name="footnote_Temp_744" href="#call_footnote_Temp_744" id="footnote_Temp_744"><sup><small>5</small></sup></a> Poderíamos representar a memória como listas de itens. No entanto, o tempo de acesso não seria independente do índice, pois o acesso ao <em>n</em> ésimo elemento de uma lista requer <em>n</em> - 1 <tt>cdr</tt> operações.</p><p><a name="footnote_Temp_745" href="#call_footnote_Temp_745" id="footnote_Temp_745"><sup><small>6</small></sup></a> Para completar, devemos especificar um <tt>make-vector</tt> operação que constrói vetores. No entanto, na presente aplicação, usaremos vetores apenas para modelar divisões fixas da memória do computador.</p><p><a name="footnote_Temp_747" href="#call_footnote_Temp_747" id="footnote_Temp_747"><sup><small>7</small></sup></a> É exatamente a mesma <a name="%_idx_5864" id="%_idx_5864"/><a name="%_idx_5866" id="%_idx_5866"/>ideia de “dados marcados” que introduzimos no capítulo 2 para lidar com operações genéricas. Aqui, no entanto, os tipos de dados são incluídos no nível da máquina primitiva, em vez de construídos através do uso de listas.</p><p><a name="footnote_Temp_748" href="#call_footnote_Temp_748" id="footnote_Temp_748"><sup><small>8</small></sup></a> As informações de tipo podem ser codificadas de várias maneiras, dependendo dos detalhes da máquina na qual o sistema Lisp será implementado. A eficiência de execução dos programas Lisp dependerá fortemente de como essa escolha é esperta, mas é difícil formular regras gerais de projeto para boas escolhas. A maneira mais direta de implementar ponteiros digitados é alocar um conjunto fixo de bits em cada ponteiro para ser um <a name="%_idx_5870" id="%_idx_5870"/><em>campo de tipo</em> que codifica o tipo de dados. Questões importantes a serem abordadas ao projetar essa representação incluem o seguinte: Quantos bits de tipo são necessários? Qual deve ser o tamanho dos índices vetoriais? Com que eficiência as instruções primitivas da máquina podem ser usadas para manipular os campos de tipo dos ponteiros? Diz-se que máquinas que incluem hardware especial para o manuseio eficiente de campos de tipos <a name="%_idx_5872" id="%_idx_5872"/><em>arquiteturas marcadas</em>???.</p><p><a name="footnote_Temp_749" href="#call_footnote_Temp_749" id="footnote_Temp_749"><sup><small>9</small></sup></a> Esta decisão sobre a <a name="%_idx_5874" id="%_idx_5874"/><a name="%_idx_5876" id="%_idx_5876"/><a name="%_idx_5878" id="%_idx_5878"/>representação de números determina se <tt>eq?</tt>, que testa a igualdade de ponteiros, pode ser usado para testar a igualdade de números. Se o ponteiro contiver o próprio número, números iguais terão o mesmo ponteiro. Mas se o ponteiro contiver o índice de um local em que o número está armazenado, será garantido que números iguais tenham ponteiros iguais apenas se formos cuidadosos para nunca armazenar o mesmo número em mais de um local.</p><p><a name="footnote_Temp_750" href="#call_footnote_Temp_750" id="footnote_Temp_750"><sup><small>10</small></sup></a> É como escrever um número como uma sequência de dígitos, exceto que cada &quot;dígito&quot; é um número entre 0 e o maior número que pode ser armazenado em um único ponteiro.</p><p><a name="footnote_Temp_752" href="#call_footnote_Temp_752" id="footnote_Temp_752"><sup><small>11</small></sup></a> Existem outras maneiras de encontrar armazenamento gratuito. Por exemplo, poderíamos ligar todos os pares não utilizados em uma <a name="%_idx_5908" id="%_idx_5908"/><em>lista livre</em>. Nossos locais gratuitos são consecutivos (e, portanto, podem ser acessados incrementando um ponteiro) porque usamos um coletor de lixo compactador, como veremos na seção <a href="#%_sec_5.3.2">5.3.2</a>.</p><p><a name="footnote_Temp_753" href="#call_footnote_Temp_753" id="footnote_Temp_753"><sup><small>12</small></sup></a> Esta é essencialmente a implementação de <tt>cons</tt> em termos de <tt>set-car!</tt> e <tt>set-cdr!</tt>, conforme descrito na seção <a href="book-Z-H-22.html#%_sec_3.3.1">3.3.1</a>. A operação <tt>get-new-pair</tt> usado nessa implementação é realizado aqui pelo ponteiro <tt>free</tt>.</p><p><a name="footnote_Temp_758" href="#call_footnote_Temp_758" id="footnote_Temp_758"><sup><small>13</small></sup></a> Isso pode não ser verdade eventualmente, porque as memórias podem ficar grandes o suficiente para que seria impossível ficar sem memória livre durante a vida útil do computador. Por exemplo, existem cerca de 3 × 10<sup>13</sup>, microssegundos em um ano, então, se quisermos <tt>cons</tt> uma vez por microssegundo precisaríamos de 10<sup>15</sup> células de memória para construir uma máquina que poderia operar por 30 anos sem ficar sem memória. Essa quantidade de memória parece absurdamente grande para os padrões atuais, mas não é fisicamente impossível. Por outro lado, os processadores ficão mais rápidos e um computador futuro pode ter um grande número de processadores operando em paralelo em uma única memória; portanto, pode ser possível usar a memória muito mais rapidamente do que postulamos.</p><p><a name="footnote_Temp_759" href="#call_footnote_Temp_759" id="footnote_Temp_759"><sup><small>14</small></sup></a> Assumimos aqui que a pilha é representada como uma lista, conforme descrito na seção <a href="#%_sec_5.3.1">5.3.1</a>, para que os itens na pilha sejam acessíveis através do ponteiro no registrador da pilha.</p><p><a name="footnote_Temp_760" href="#call_footnote_Temp_760" id="footnote_Temp_760"><sup><small>15</small></sup></a> Esta ideia foi inventada e implementada pela primeira vez <a name="%_idx_5936" id="%_idx_5936"/>Minsky, como parte da implementação do <a name="%_idx_5938" id="%_idx_5938"/>Lisp para o PDP-1 no <a name="%_idx_5940" id="%_idx_5940"/>Laboratório de Pesquisa Eletrônica do MIT. Foi mais desenvolvido por <a name="%_idx_5942" id="%_idx_5942"/><a name="%_idx_5944" id="%_idx_5944"/>Fenichel e Yochelson (1969) para uso na implementação Lisp para <a name="%_idx_5946" id="%_idx_5946"/>o sistema de compartilhamento de tempo Multics. Mais tarde, <a name="%_idx_5948" id="%_idx_5948"/>Baker (1978) desenvolveu uma versão em tempo real do método, que não requer que o cálculo seja interrompido durante a coleta de lixo. A ideia de Baker foi estendida por <a name="%_idx_5950" id="%_idx_5950"/><a name="%_idx_5952" id="%_idx_5952"/><a name="%_idx_5954" id="%_idx_5954"/>Hewitt, Lieberman e Moon (ver Lieberman e Hewitt 1983) para aproveitar o fato de que uma estrutura é mais volátil e outra é mais permanente.</p><p>Uma técnica alternativa de coleta de lixo comumente usada é o método <a name="%_idx_5956" id="%_idx_5956"/><a name="%_idx_5958" id="%_idx_5958"/><em>marca-varredura</em>. Isso consiste em rastrear toda a estrutura acessível a partir dos registradores da máquina e marcar cada par que alcançamos. Em seguida, examinamos toda a memória, e qualquer local que não esteja marcado é &quot;varrido&quot; como lixo e disponibilizado para reutilização. Uma<a name="%_idx_5960" id="%_idx_5960"/> discussão completa sobre o método de varredura de marcas pode ser encontrada em Allen 1978.</p><p>O algoritmo Minsky-Fenichel-Yochelson é o algoritmo dominante em uso em sistemas de memória grande, porque examina apenas a parte útil da memória. Isso contrasta com a varredura de marca, na qual a fase de varredura deve verificar toda a memória. Uma segunda vantagem do stop-and-copy é que é um coletor de lixo de <a name="%_idx_5962" id="%_idx_5962"/><a name="%_idx_5964" id="%_idx_5964"/><em>compactação</em>. Ou seja, no final da fase de coleta de lixo, os dados úteis serão movidos para locais de memória consecutivos, com todos os pares de lixo compactados. Isso pode ser uma consideração de desempenho extremamente importante em máquinas com memória virtual, nas quais acessos a endereços de memória amplamente separados podem exigir operações extras de paginação.</p><p><a name="footnote_Temp_762" href="#call_footnote_Temp_762" id="footnote_Temp_762"><sup><small>16</small></sup></a> Esta lista de registradores não inclui os registradores usados pelo sistema de alocação de armazenamento - <tt>root</tt>, <tt>the-cars</tt>, <tt>the-cdrs</tt> e os outros registradores que serão introduzidos nesta seção.</p><p><a name="footnote_Temp_763" href="#call_footnote_Temp_763" id="footnote_Temp_763"><sup><small>17</small></sup></a> O termo <em><a name="%_idx_5982" id="%_idx_5982"/>coração partido</em> foi cunhado por David Cressey, que escreveu um coletor de lixo para <a name="%_idx_5984" id="%_idx_5984"/><a name="%_idx_5986" id="%_idx_5986"/>MDL, um dialeto do Lisp desenvolvido no MIT no início dos anos 70.</p><p><a name="footnote_Temp_764" href="#call_footnote_Temp_764" id="footnote_Temp_764"><sup><small>18</small></sup></a> O coletor de lixo usa o predicado de baixo nível <tt>pointer-to-pair?</tt> em vez da estrutura da lista <tt>pair?</tt> operação porque em um sistema real pode haver vários elementos que são tratados como pares para fins de coleta de lixo. Por exemplo, em um sistema do Scheme que esteja em conformidade com o padrão IEEE, um objeto de procedimento pode ser implementado como um tipo especial de &quot;par&quot; que não satisfaz a <tt>pair?</tt> predicado. Para fins de simulação, <tt>pointer-to-pair?</tt> pode ser implementado como <tt>pair?</tt>.</p></div>
+
+
+
+</body>
+</html>

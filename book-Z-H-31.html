@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops">
+<!-- Generated from TeX source by tex2page, v 4o,
+     (c) Dorai Sitaram, http://www.cs.rice.edu/~dorai/tex2page -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type: text/html; charset=utf-8"/>
+    <title>Estrutura e Interpretação de Programas de Computador</title>
+    <link rel="stylesheet" type="text/css" href="book-Z-C.css" title="default"/>
+  </head>
+  <body>
+
+
+
+<a name="%_sec_5.1" id="%_sec_5.1"/>
+<h2><a href="book-Z-H-4.html#%_toc_%_sec_5.1">5.1 Projetando máquinas de registrador</a></h2><p>
+
+
+<a name="%_idx_5462" id="%_idx_5462"/><a name="%_idx_5464" id="%_idx_5464"/><a name="%_idx_5466" id="%_idx_5466"/><a name="%_idx_5468" id="%_idx_5468"/><a name="%_idx_5470" id="%_idx_5470"/><a name="%_idx_5472" id="%_idx_5472"/>Para projetar uma máquina de registrador, precisamos projetar seus <em>caminhos de dados</em> (registradores e operações) e o <em>controlador</em> que sequencia essas operações. Para ilustrar o projeto de uma máquina de registradores simples, examinaremos o Algoritmo de Euclides, que é usado para calcular <a name="%_idx_5474" id="%_idx_5474"/>o maior divisor comum (MDC) de dois números inteiros. Como vimos na <a name="%_idx_5476" id="%_idx_5476"/>seção <a href="book-Z-H-11.html#%_sec_1.2.5">1.2.5</a>, O algoritmo de Euclides pode ser realizado por um processo iterativo, conforme especificado pelo seguinte procedimento:</p><p>
+
+
+</p><p/><p><tt>(define (gcd a b)<br/>
+  (if (= b 0)<br/>
+      a<br/>
+      (gcd b (remainder a b))))<br/></tt></p><p/><p/><p>Uma máquina para executar esse algoritmo deve acompanhar dois números, <em>a</em> e <em>b</em>, então suponhamos que esses números sejam armazenados em dois registradores com esses nomes. As operações básicas necessárias estão testando se o conteúdo do registrador <tt>b</tt> é zero e calcula o restante do conteúdo do registrador <tt>a</tt> dividido pelo conteúdo do registrador <tt>b</tt>. A operação restante é um processo complexo, mas suponha que, por enquanto, tenhamos um dispositivo primitivo que calcula os restantes. Em cada ciclo do algoritmo MDC, o conteúdo do registrador <tt>a</tt> deve ser substituído pelo conteúdo do registrador <tt>b</tt> e o conteúdo de <tt>b</tt> deve ser substituído pelo restante do conteúdo antigo do <tt>a</tt> dividido pelo conteúdo antigo de <tt>b</tt>. Seria conveniente se essas substituições pudessem ser feitas simultaneamente, mas em nosso modelo de máquinas de registrador, assumiremos que apenas um registrador pode receber um novo valor a cada etapa. Para realizar as substituições, nossa máquina usará um terceiro registrador &quot;temporário&quot;, que chamamos de <tt>t</tt>. (Primeiro, o restante será colocado em <tt>t</tt>, então o conteúdo de <tt>b</tt> será colocado em <tt>a</tt> e, finalmente, o restante armazenado em <tt>t</tt> será colocado em <tt>b</tt>).</p><p>
+
+<a name="%_idx_5478" id="%_idx_5478"/><a name="%_idx_5480" id="%_idx_5480"/>Podemos ilustrar os registradores e operações necessários para esta máquina usando o diagrama de caminho de dados mostrado na figura <a href="#%_fig_5.1">5.1</a>. Neste diagrama, os registradores (<tt>a</tt>, <tt>b</tt> e <tt>t</tt>) são representados por retângulos. Cada maneira de atribuir um valor a um registrador é indicada por uma seta com um <tt>X</tt> atrás da cabeça, apontando da fonte de dados para o registrador. Podemos pensar no <tt>X</tt> como um botão que, quando pressionado, permite que o valor na fonte “flua” para o registrador designado. O rótulo ao lado de cada botão é o nome que usaremos para nos referir ao botão. Os nomes são arbitrários e podem ser escolhidos para ter valor mnemônico (por exemplo, <tt>a&lt;-b</tt> indica pressionar o botão que atribui o conteúdo do registrador <tt>b</tt> ao registrador <tt>a</tt>) A fonte de dados para um registrador pode ser outro registrador (como no <tt>a&lt;-b</tt> atribuição), um resultado da operação (como no <tt>t&lt;-r</tt> atribuição) ou uma constante (um valor interno que não pode ser alterado, representado em um diagrama de caminho de dados por um triângulo que contém a constante).</p><p>Uma operação que calcula um valor a partir de constantes e o conteúdo dos registradores é representada em um diagrama de caminho de dados por um trapézio contendo um nome para a operação. Por exemplo, a caixa marcada <tt>rem</tt> na figura <a href="#%_fig_5.1">5.1</a> representa uma operação que calcula o restante do conteúdo dos registradores <tt>a</tt> e <tt>b</tt> ao qual está anexado. As setas (sem botões) apontam dos registradores e constantes de entrada para a caixa e as setas conectam o valor de saída da operação aos registradores. Um teste é representado por um círculo que contém um nome para o teste. Por exemplo, nossa máquina MDC possui uma operação que testa se o conteúdo do registrador <tt>b</tt> é zero. Um teste também possui setas de seus <a name="%_idx_5482" id="%_idx_5482"/><a name="%_idx_5484" id="%_idx_5484"/>registradores e constantes de entrada, mas não possui setas de saída; seu valor é usado pelo controlador e não pelos caminhos de dados. No geral, o diagrama do caminho dos dados mostra os registradores e operações necessárias para a máquina e como eles devem ser conectados. Se visualizarmos as setas como fios e o <tt>X</tt> Como botões, o diagrama de caminho de dados é muito parecido com o diagrama de fiação de uma máquina que pode ser construída a partir de componentes elétricos.</p><p>
+
+</p><p>
+
+<a name="%_fig_5.1" id="%_fig_5.1"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch5-Z-G-1.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 5.1:</b> Caminhos de dados para uma máquina MDC.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>
+
+<a name="%_idx_5486" id="%_idx_5486"/><a name="%_idx_5488" id="%_idx_5488"/>Para que os caminhos de dados efetivamente calculem os MDCs, os botões devem ser pressionados na sequência correta. Descreveremos essa sequência em termos de um diagrama de controlador, conforme ilustrado na figura <a href="#%_fig_5.2">5.2.</a>. Os elementos do diagrama do controlador indicam como os componentes do caminho de dados devem ser operados. As caixas retangulares no diagrama do controlador identificam os botões do caminho de dados a serem pressionados e as setas descrevem o sequenciamento de uma etapa para a seguinte. O diamante no diagrama representa uma decisão. Uma das duas setas de sequência será seguida, dependendo do valor do teste de caminho de dados identificado no diamante. Podemos interpretar o controlador em termos de uma analogia física: pense no diagrama como um labirinto no qual uma bola de gude está rolando. Quando o mármore rola em uma caixa, ele aperta o botão do caminho de dados que é nomeado pela caixa. Quando o mármore rola para um nó de decisão (como o teste para <tt>b</tt> = 0), deixa o nó no caminho determinado pelo resultado do teste indicado. Tomados em conjunto, os caminhos de dados e o controlador descrevem completamente uma máquina para calcular MDCs. Iniciamos o controlador (o mármore rolante) no local marcado <tt>start</tt>, depois de colocar números nos registradores <tt>a</tt> e <tt>b</tt>. Quando o controlador atingir <tt>done</tt>, encontraremos o valor do MDC no registrador <tt>a</tt>.<a name="%_fig_5.2" id="%_fig_5.2"/></p><p/><div align="left"><table width="100%"><tr><td>
+<img src="images/ch5-Z-G-2.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 5.2:</b> Controlador para uma máquina MDC.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>
+
+</p><p><a name="%_thm_5.1" id="%_thm_5.1"/>
+<b>Exercício 5.1.</b> <a name="%_idx_5490" id="%_idx_5490"/>Projete uma máquina de registradores para calcular fatoriais usando o algoritmo iterativo especificado pelo procedimento a seguir. Desenhe diagramas de caminho de dados e controlador para esta máquina.</p><p>
+
+</p><p/><p><tt>(define (factorial n)<br/>
+  (define (iter product counter)<br/>
+    (if (&gt; counter n)<br/>
+        product<br/>
+        (iter (* counter product)<br/>
+              (+ counter 1))))<br/>
+  (iter 1 1))<br/></tt></p><p/><p>
+</p><p>
+</p><p>
+
+<a name="%_sec_5.1.1" id="%_sec_5.1.1"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_5.1.1">5.1.1 Uma linguagem para descrever máquinas de registradores</a></h3><p>
+
+
+<a name="%_idx_5492" id="%_idx_5492"/>Os diagramas de caminho de dados e controlador são adequados para representar máquinas simples, como o MDC, mas são difíceis de descrever para máquinas grandes, como um interpretador Lisp. Para tornar possível lidar com máquinas complexas, criaremos uma linguagem que apresentará, em forma de texto, todas as informações fornecidas pelos diagramas de caminho de dados e controlador. Começaremos com uma notação que espelha diretamente os diagramas.</p><p>
+
+</p><p>Definimos os caminhos de dados de uma máquina descrevendo os registradores e as operações. Para descrever um registrador, damos-lhe um nome e especificamos os botões que controlam a atribuição a ele. Atribuímos um nome a cada um desses botões e especificamos a fonte dos dados que entram no registrador sob o controle do botão. (A fonte é um registrador, uma constante ou uma operação). Para descrever uma operação, fornecemos um nome e especificamos suas entradas (registradores ou constantes).</p><p>Definimos o controlador de uma máquina como uma sequência de <a name="%_idx_5494" id="%_idx_5494"/><em>instruções</em> junto com <a name="%_idx_5496" id="%_idx_5496"/><a name="%_idx_5498" id="%_idx_5498"/><em>etiquetas</em> que identificam <em>pontos de entrada</em> na sequência. Uma instrução é uma das seguintes:</p><p/><ul><li>O nome de um botão do caminho de dados a ser pressionado para atribuir um valor a um registrador. (Isso corresponde a uma caixa no diagrama do controlador).<p>
+
+<a name="%_idx_5500" id="%_idx_5500"/><a name="%_idx_5502" id="%_idx_5502"/></p></li><li>A <tt>test</tt> instrução, que executa um teste especificado.<p>
+
+<a name="%_idx_5504" id="%_idx_5504"/><a name="%_idx_5506" id="%_idx_5506"/><a name="%_idx_5508" id="%_idx_5508"/><a name="%_idx_5510" id="%_idx_5510"/></p></li><li>Uma ramificação condicional (<tt>branch</tt> instruções) para um local indicado por uma etiqueta do controlador, com base no resultado do teste anterior. (O teste e a ramificação juntos correspondem a um diamante no diagrama do controlador). Se o teste for falso, o controlador deverá continuar com a próxima instrução na sequência. Caso contrário, o controlador deve continuar com as instruções após o rótulo.<p>
+
+<a name="%_idx_5512" id="%_idx_5512"/><a name="%_idx_5514" id="%_idx_5514"/></p></li><li>Uma ramificação incondicional (<tt>goto</tt>) nomeando um rótulo de controlador no qual continuar a execução.</li></ul><p>A máquina inicia no início da sequência de instruções do controlador e para quando a execução chega ao final da sequência. Exceto quando uma ramificação altera o fluxo de controle, as instruções são executadas na ordem em que estão listadas.</p><p>
+
+<a name="%_fig_5.3" id="%_fig_5.3"/></p><p/><div align="left"><table width="100%"><tr><td><p/><p><tt>(data-paths<br/>
+ (registers<br/>
+  ((name a)<br/>
+   (buttons ((name a&lt;-b) (source (register b)))))<br/>
+  ((name b)<br/>
+   (buttons ((name b&lt;-t) (source (register t)))))<br/>
+  ((name t)<br/>
+   (buttons ((name t&lt;-r) (source (operation rem))))))<br/><br/>
+ (operations<br/>
+  ((name rem)<br/>
+   (inputs (register a) (register b)))<br/>
+  ((name =)<br/>
+   (inputs (register b) (constant 0)))))<br/><br/>
+(controller<br/>
+ test-b                           <em>; label</em><br/>
+   (test =)                       <em>; test</em><br/>
+   (branch (label gcd-done))      <em>; conditional branch</em><br/>
+   (t&lt;-r)                         <em>; button push</em><br/>
+   (a&lt;-b)                         <em>; button push</em><br/>
+   (b&lt;-t)                         <em>; button push</em><br/>
+   (goto (label test-b))          <em>; unconditional branch</em><br/>
+ gcd-done)                        <em>; label</em><br/></tt></p><p/><p>
+</p><p/><p/></td></tr><caption align="bottom"><div align="left"><b>Figura 5.3:</b> Uma especificação da máquina MDC.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Figura <a href="#%_fig_5.3">5.3</a> mostra a máquina MDC descrita desta maneira. Este exemplo apenas sugere a generalidade dessas descrições, uma vez que a máquina MDC é um caso muito simples: cada registrador possui apenas um botão e cada botão e teste é usado apenas uma vez no controlador.</p><p>Infelizmente, é difícil ler essa descrição. Para entender as instruções do controlador, devemos nos referir constantemente às definições dos nomes dos botões e dos nomes das operações, e para entender quais são os botões, podemos ter que nos referir às definições dos nomes das operações. Assim, transformaremos nossa notação para combinar as informações das descrições do caminho de dados e do controlador, para que possamos ver todas juntas.</p><p>Para obter essa forma de descrição, substituiremos o botão arbitrário e os nomes das operações pelas definições de seu comportamento. Ou seja, em vez de dizer (no controlador) &quot;Botão de pressão <tt>t&lt;-r</tt>”E dizendo separadamente (nos caminhos de dados)“ Botão <tt>t&lt;-r</tt> atribui o valor do <tt>rem</tt> operação para o registrador <tt>t</tt>&quot; e as <tt>rem</tt> as entradas da operação são o conteúdo dos registradores <a name="%_idx_5516" id="%_idx_5516"/><a name="%_idx_5518" id="%_idx_5518"/><a name="%_idx_5520" id="%_idx_5520"/><a name="%_idx_5522" id="%_idx_5522"/><a name="%_idx_5524" id="%_idx_5524"/><a name="%_idx_5526" id="%_idx_5526"/><tt>a</tt> e <tt>b</tt>, &quot;Diremos (no controlador)&quot; Pressione o botão que atribui para o registrador <tt>t</tt> o valor do <tt>rem</tt> operação sobre o conteúdo dos registradores <tt>a</tt> e <tt>b</tt>. ” Da mesma forma, em vez de dizer (no controlador) “Execute o <tt>=</tt> teste ”e dizendo separadamente (nos caminhos de dados)“ O <tt>=</tt> teste opera com o conteúdo do registrador <tt>b</tt> e a constante 0 &quot;, diremos&quot; Executar o <tt>=</tt> teste no <a name="%_idx_5528" id="%_idx_5528"/><a name="%_idx_5530" id="%_idx_5530"/>conteúdo do registrador <tt>b</tt> e o constante 0. &quot; Omitiremos a descrição do caminho de dados, deixando apenas a sequência do controlador. Assim, a máquina MDC é descrita da seguinte maneira:</p><p>
+
+</p><p/><p><tt>(controller<br/>
+ test-b<br/>
+   (test (op =) (reg b) (const 0))<br/>
+   (branch (label gcd-done))<br/>
+   (assign t (op rem) (reg a) (reg b))<br/>
+   (assign a (reg b))<br/>
+   (assign b (reg t))<br/>
+   (goto (label test-b))<br/>
+ gcd-done)<br/></tt></p><p/><p/><p>Essa forma de descrição é mais fácil de ler do que o tipo ilustrado na figura <a href="#%_fig_5.3">5.3</a>, mas também possui desvantagens:</p><p/><ul><p>
+
+</p><li>É mais detalhado para máquinas grandes, porque descrições completas dos elementos do caminho de dados são repetidas sempre que os elementos são mencionados na sequência de instruções do controlador. (Isso não é um problema no exemplo do MDC, porque cada operação e botão são usados apenas uma vez). Além disso, a repetição das descrições do caminho de dados oculta a estrutura real do caminho de dados da máquina; não é óbvio para uma máquina grande quantos registradores, operações e botões existem e como eles estão interconectados.<p>
+
+</p></li><li>Como as instruções do controlador em uma definição de máquina se parecem com expressões Lisp, é fácil esquecer que elas não são expressões arbitrárias de Lisp. Eles podem notar apenas operações legais da máquina. Por exemplo, as operações podem operar diretamente apenas em constantes e no conteúdo de registradores, não nos resultados de outras operações.</li></ul><p>Apesar dessas desvantagens, usaremos essa linguagem de máquina de registradores ao longo deste capítulo, porque estaremos mais preocupados em entender os controladores do que em entender os elementos e as conexões nos caminhos de dados. Devemos ter em mente, no entanto, que o projeto do caminho de dados é crucial no projeto de máquinas reais.</p><p>
+
+</p><p><a name="%_thm_5.2" id="%_thm_5.2"/>
+<b>Exercício 5.2.</b> <a name="%_idx_5532" id="%_idx_5532"/>Use a linguagem da máquina de registradores para descrever a máquina fatorial iterativa do exercício <a href="#%_thm_5.1">5.1</a>.</p><p/><p>
+
+
+<a name="%_sec_Temp_714" id="%_sec_Temp_714"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_714">Ações</a></h4><p>
+
+<a name="%_idx_5534" id="%_idx_5534"/><a name="%_idx_5536" id="%_idx_5536"/>Modificaremos a máquina MDC para que possamos digitar os números cujo MDC queremos e obter a resposta impressa em nosso terminal. Não discutiremos como fabricar uma máquina capaz de ler e imprimir, mas assumiremos (como fazemos quando usamos <tt>read</tt> e <tt>display</tt> no Scheme) que eles estão disponíveis como operações primitivas.<a name="call_footnote_Temp_715" href="#footnote_Temp_715" id="call_footnote_Temp_715"><sup><small>1</small></sup></a></p><p>
+
+<a name="%_idx_5538" id="%_idx_5538"/><tt>Read</tt> é como as operações que estamos usando, pois produz um valor que pode ser armazenado em um registrador. Mas <tt>read</tt> não recebe entradas de nenhum registrador; seu valor depende de algo que acontece fora das partes da máquina que estamos projetando. Permitiremos que as operações de nossa máquina tenham esse comportamento e, portanto, atrairemos e notificaremos o uso de <tt>read</tt> assim como fazemos qualquer outra operação que calcule um valor.</p><p>
+
+<a name="%_idx_5540" id="%_idx_5540"/><tt>Print</tt>, por outro lado, difere das operações que usamos de maneira fundamental: não produz um valor de saída para ser armazenado em um registrador. Embora tenha um efeito, esse efeito não está em uma parte da máquina que estamos projetando. Vamos nos referir a esse tipo de operação como uma <em>ação</em>. Representaremos uma ação em um diagrama de caminho de dados, assim como representamos uma operação que calcula um valor - como um trapézio que contém o nome da ação. As setas apontam para a caixa de ação a partir de quaisquer entradas (registradores ou constantes). Também associamos um botão à ação. Pressionar o botão faz a ação acontecer. Para fazer um controlador pressionar um <a name="%_idx_5542" id="%_idx_5542"/><a name="%_idx_5544" id="%_idx_5544"/>botão de ação, usamos um novo tipo de instrução chamado <tt>perform</tt>. Assim, a ação de imprimir o conteúdo do registrador <tt>a</tt> é representado em uma sequência do controlador pela instrução</p><p>
+
+</p><p/><p><tt>(perform (op print) (reg a))<br/></tt></p><p/><p/><p>Figura <a href="#%_fig_5.4">5.4</a> mostra os caminhos de dados e o controlador para a nova máquina MDC. Em vez de deixar a máquina parar de imprimir a resposta, fizemos com que ela recomeçasse, para que ele lesse repetidamente um par de números, calculasse seu MDC e imprimisse o resultado. Essa estrutura é como os loops do driver que usamos nos interpretadores do capítulo 4.</p><p>
+
+<a name="%_fig_5.4" id="%_fig_5.4"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch5-Z-G-3.gif" border="0"/><p/><p><tt> (controller<br/>
+  gcd-loop<br/>
+    (assign a (op read))<br/>
+    (assign b (op read))<br/>
+  test-b<br/>
+    (test (op =) (reg b) (const 0))<br/>
+    (branch (label gcd-done))<br/>
+    (assign t (op rem) (reg a) (reg b))<br/>
+    (assign a (reg b))<br/>
+    (assign b (reg t))<br/>
+    (goto (label test-b))<br/>
+  gcd-done<br/>
+    (perform (op print) (reg a))<br/>
+    (goto (label gcd-loop)))<br/></tt></p><p/><p>
+</p><p/><p/></td></tr><caption align="bottom"><div align="left"><b>Figura 5.4:</b> Uma máquina MDC que lê entradas e imprime resultados.</div></caption><tr><td>
+
+</td></tr></table></div><p>
+
+<a name="%_sec_5.1.2" id="%_sec_5.1.2"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_5.1.2">5.1.2 Abstração no projeto da máquina</a></h3><p>
+
+<a name="%_idx_5546" id="%_idx_5546"/>Muitas vezes, definiremos uma máquina para incluir operações &quot;primitivas&quot; que são realmente muito complexas. Por exemplo, nas seções <a href="book-Z-H-34.html#%_sec_5.4">5.4</a> e <a href="book-Z-H-35.html#%_sec_5.5">5.5</a> trataremos as manipulações do ambiente do Scheme como primitivas. Essa abstração é valiosa porque nos permite ignorar os detalhes de partes de uma máquina para que possamos nos concentrar em outros aspectos do design. O fato de termos varrido muita complexidade para debaixo do tapete, no entanto, não significa que o projeto de uma máquina não seja realista. Sempre podemos substituir os complexos &quot;primitivos&quot; por operações primitivas mais simples.</p><p>Considere a máquina MDC. A máquina possui uma instrução que calcula o restante do conteúdo dos registradores <tt>a</tt> e <tt>b</tt> e atribui o resultado ao registrador <tt>t</tt>. Se queremos construir a máquina MDC sem usar uma operação primitiva de restante, devemos especificar como calcular os restantes em termos de operações mais simples, como subtração. De fato, podemos escrever um procedimento Scheme que encontre os restos desta maneira:</p><p>
+
+</p><p/><p><tt>(define (remainder n d)<br/>
+  (if (&lt; n d)<br/>
+      n<br/>
+      (remainder (- n d) d)))<br/></tt></p><p/><p>Assim, podemos substituir a operação restante nos caminhos de dados da máquina MDC por uma operação de subtração e um teste de comparação. Figura <a href="#%_fig_5.5">5.5</a> mostra os caminhos de dados e o controlador da máquina elaborada. A instrução</p><p>
+
+<a name="%_fig_5.5" id="%_fig_5.5"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch5-Z-G-4.gif" border="0"/></td></tr><caption align="bottom"><div align="left"><b>Figura 5.5:</b> Caminhos de dados e controlador para a máquina MDC elaborada.</div></caption><tr><td>
+
+
+</td></tr></table></div><p>                                </p><p>
+
+</p><p/><p><tt>(assign t (op rem) (reg a) (reg b))<br/></tt></p><p/><p>na definição do controlador MDC é substituída por uma sequência de instruções que contém um loop, conforme mostrado na figura <a href="#%_fig_5.6">5.6</a>.</p><p>
+
+<a name="%_fig_5.6" id="%_fig_5.6"/></p><p/><div align="left"><table width="100%"><tr><td><p/><p><tt>(controller<br/>
+ test-b<br/>
+   (test (op =) (reg b) (const 0))<br/>
+   (branch (label gcd-done))<br/>
+   (assign t (reg a))<br/>
+ rem-loop<br/>
+   (test (op &lt;) (reg t) (reg b))<br/>
+   (branch (label rem-done))<br/>
+   (assign t (op -) (reg t) (reg b))<br/>
+   (goto (label rem-loop))<br/>
+ rem-done<br/>
+   (assign a (reg b))<br/>
+   (assign b (reg t))<br/>
+   (goto (label test-b))<br/>
+ gcd-done)<br/></tt></p><p/><p>
+</p><p/><p/></td></tr><caption align="bottom"><div align="left"><b>Figura 5.6:</b> Sequência de instruções do controlador para a máquina MDC na figura <a href="#%_fig_5.5">5.5</a>.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>
+
+</p><p><a name="%_thm_5.3" id="%_thm_5.3"/>
+<b>Exercício 5.3.</b> <a name="%_idx_5548" id="%_idx_5548"/>Projete uma máquina para calcular raízes quadradas usando o método de Newton, conforme descrito na seção <a href="book-Z-H-10.html#%_sec_1.1.7">1.1.7</a>:</p><p>
+
+</p><p/><p><tt>(define (sqrt x)<br/>
+  (define (good-enough? guess)<br/>
+    (&lt; (abs (- (square guess) x)) 0.001))<br/>
+  (define (improve guess)<br/>
+    (average guess (/ x guess)))<br/>
+  (define (sqrt-iter guess)<br/>
+    (if (good-enough? guess)<br/>
+        guess<br/>
+        (sqrt-iter (improve guess))))<br/>
+  (sqrt-iter 1.0))<br/></tt></p><p/><p>Comece assumindo que <tt>good-enough?</tt> e <tt>improve</tt> operações estão disponíveis como primitivas. Em seguida, mostre como expandi-las em termos de operações aritméticas. Descreva cada versão do projeto <tt>sqrt</tt> da máquina desenhando um diagrama de caminho de dados e escrevendo uma definição de controlador na linguagem da máquina de registrador.</p><p>
+</p><p>
+
+<a name="%_sec_5.1.3" id="%_sec_5.1.3"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_5.1.3">5.1.3 Sub-rotinas</a></h3><p>
+
+
+<a name="%_idx_5550" id="%_idx_5550"/><a name="%_idx_5552" id="%_idx_5552"/>Ao projetar uma máquina para executar uma computação, geralmente preferimos organizar componentes para serem compartilhados por diferentes partes da computação, em vez de duplicar os componentes. Considere uma máquina que inclua dois cálculos de MDC - um que encontre o MDC do conteúdo dos registradores <tt>a</tt> e <tt>b</tt> e um que encontre o CDG do conteúdo dos registradores <tt>c</tt> e <tt>d</tt>. Podemos começar assumindo que temos um primitivo <tt>gcd</tt> operação, expanda as duas instâncias de <tt>gcd</tt> em termos de operações mais primitivas. Figura <a href="#%_fig_5.7">5.7</a> mostra apenas as partes MDC dos caminhos de dados da máquina resultante, sem mostrar como elas se conectam ao restante da máquina. A figura também mostra as partes correspondentes da sequência do controlador da máquina.</p><p>
+
+<a name="%_fig_5.7" id="%_fig_5.7"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch5-Z-G-5.gif" border="0"/><p/><p><tt>gcd-1<br/>
+ (test (op =) (reg b) (const 0))<br/>
+ (branch (label after-gcd-1))<br/>
+ (assign t (op rem) (reg a) (reg b))<br/>
+ (assign a (reg b))<br/>
+ (assign b (reg t))<br/>
+ (goto (label gcd-1))<br/>
+after-gcd-1<br/>
+   ⋮ <br/>
+gcd-2<br/>
+ (test (op =) (reg d) (const 0))<br/>
+ (branch (label after-gcd-2))<br/>
+ (assign s (op rem) (reg c) (reg d))<br/>
+ (assign c (reg d))<br/>
+ (assign d (reg s))<br/>
+ (goto (label gcd-2))<br/>
+after-gcd-2<br/></tt></p><p/><p>
+</p><p/><p/></td></tr><caption align="bottom"><div align="left"><b>Figura 5.7:</b> Partes dos caminhos de dados e sequência do controlador para uma máquina com dois cálculos MDC.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Esta máquina possui duas caixas de operação restantes e duas caixas para testar a igualdade. Se os componentes duplicados forem complicados, assim como a caixa restante, essa não será uma maneira econômica de construir a máquina. Podemos evitar duplicar os componentes do caminho de dados usando os mesmos componentes para os dois cálculos do MDC, desde que isso não afete o restante do cálculo da máquina maior. Se os valores nos registradores <tt>a</tt> e <tt>b</tt> não são necessários no momento em que o controlador chega <tt>gcd-2</tt> (ou se esses valores puderem ser movidos para outros registradores para proteção), podemos mudar a máquina para que ela use registradores <tt>a</tt> e <tt>b</tt>, em vez de registradores <tt>c</tt> e <tt>d</tt>, na computação do segundo MDC e do primeiro. Se fizermos isso, obteremos a sequência do controlador mostrada na figura <a href="#%_fig_5.8">5.8</a>.</p><p>Removemos os componentes duplicados do caminho de dados (para que os caminhos de dados sejam novamente como na figura <a href="#%_fig_5.1">5.1</a>), mas o controlador agora possui duas sequências MDC que diferem apenas nos rótulos dos pontos de entrada. Seria melhor substituir essas duas sequências por ramificações para uma única sequência - uma <tt>gcd</tt><em>sub-rotina</em> - no final do qual voltamos ao local correto na sequência de instruções principal. Podemos fazer isso da seguinte maneira: Antes de ramificar para <tt>gcd</tt>, colocamos um valor distinto (como 0 ou 1) em um registrador especial, <a name="%_idx_5554" id="%_idx_5554"/><tt>continue</tt>. No final de <tt>gcd</tt> sub-rotina voltamos a <tt>after-gcd-1</tt> ou para <tt>after-gcd-2</tt>, dependendo do valor do registrador <tt>continue</tt>. Figura <a href="#%_fig_5.9">5.9</a> mostra a parte relevante da sequência resultante do controlador, que inclui apenas uma única cópia do <tt>gcd</tt> instruções.</p><p>
+
+<a name="%_fig_5.8" id="%_fig_5.8"/></p><p/><div align="left"><table width="100%"><tr><td><p/><p><tt>gcd-1<br/>
+ (test (op =) (reg b) (const 0))<br/>
+ (branch (label after-gcd-1))<br/>
+ (assign t (op rem) (reg a) (reg b))<br/>
+ (assign a (reg b))<br/>
+ (assign b (reg t))<br/>
+ (goto (label gcd-1))<br/>
+after-gcd-1<br/>
+  ⋮<br/>
+gcd-2<br/>
+ (test (op =) (reg b) (const 0))<br/>
+ (branch (label after-gcd-2))<br/>
+ (assign t (op rem) (reg a) (reg b))<br/>
+ (assign a (reg b))<br/>
+ (assign b (reg t))<br/>
+ (goto (label gcd-2))<br/>
+after-gcd-2<br/></tt></p><p/><p>
+</p><p/><p/></td></tr><caption align="bottom"><div align="left"><b>Figura 5.8:</b> Partes da sequência do controlador para uma máquina que usa os mesmos componentes do caminho de dados para dois cálculos MDC diferentes.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>
+
+<a name="%_fig_5.9" id="%_fig_5.9"/></p><p/><div align="left"><table width="100%"><tr><td><p/><p><tt>gcd<br/>
+ (test (op =) (reg b) (const 0))<br/>
+ (branch (label gcd-done))<br/>
+ (assign t (op rem) (reg a) (reg b))<br/>
+ (assign a (reg b))<br/>
+ (assign b (reg t))<br/>
+ (goto (label gcd))<br/>
+gcd-done<br/>
+ (test (op =) (reg continue) (const 0))       <br/>
+ (branch (label after-gcd-1))<br/>
+ (goto (label after-gcd-2))<br/>
+  ⋮<br/><em>;; Before branching to <tt>gcd</tt> from the first place where</em><br/><em>;; it is needed, we place 0 in the <tt>continue</tt> register</em><br/>
+ (assign continue (const 0))<br/>
+ (goto (label gcd))<br/>
+after-gcd-1<br/>
+  ⋮<br/><em>;; Before the second use of <tt>gcd</tt>, we place 1 in the <tt>continue</tt> register</em><br/>
+ (assign continue (const 1))<br/>
+ (goto (label gcd))<br/>
+after-gcd-2<br/></tt></p><p/><p>
+</p><p/><p/></td></tr><caption align="bottom"><div align="left"><b>Figure 5.9:</b>  Using a <tt>continue</tt> register to avoid
+the duplicate controller sequence in figure <a href="#%_fig_5.8">5.8</a>.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>
+
+<a name="%_fig_5.10" id="%_fig_5.10"/></p><p/><div align="left"><table width="100%"><tr><td><p/><p>
+</p><p/><p><tt>gcd<br/>
+ (test (op =) (reg b) (const 0))<br/>
+ (branch (label gcd-done))<br/>
+ (assign t (op rem) (reg a) (reg b))<br/>
+ (assign a (reg b))<br/>
+ (assign b (reg t))<br/>
+ (goto (label gcd))<br/>
+gcd-done<br/>
+ (goto (reg continue))<br/>
+   ⋮<br/><em>;; Before calling <tt>gcd</tt>, we assign to <tt>continue</tt></em><br/><em>;; the label to which <tt>gcd</tt> should return.</em><br/>
+ (assign continue (label after-gcd-1))<br/>
+ (goto (label gcd))<br/>
+after-gcd-1<br/>
+   ⋮<br/><em>;; Here is the second call to <tt>gcd</tt>, with a different continuation.</em><br/>
+ (assign continue (label after-gcd-2))<br/>
+ (goto (label gcd))<br/>
+after-gcd-2<br/></tt></p><p/><p>
+</p><p/><p/></td></tr><caption align="bottom"><div align="left"><b>Figura 5.10:</b> Atribuindo etiquetas do registrador <tt>continue</tt> simplifica e generaliza a estratégia mostrada na figura <a href="#%_fig_5.9">5.9</a>.</div></caption><tr><td>
+
+</td></tr></table></div><p/><p>Essa é uma abordagem razoável para lidar com pequenos problemas, mas seria estranho se houvesse muitas instâncias de cálculos do MDC na sequência do controlador. Para decidir onde continuar executando após o <tt>gcd</tt> sub-rotina, precisaríamos de testes nos caminhos de dados e instruções de ramificação no controlador para todos os locais que usam <tt>gcd</tt>. Um método mais poderoso para implementar sub-rotinas é ter o registador <tt>continue</tt> mantenha o rótulo do ponto de entrada na sequência do controlador na qual a execução deve continuar quando a sub-rotina for concluída. A implementação dessa estratégia requer um novo tipo de conexão entre os caminhos de dados e o controlador de uma máquina de registradores : deve haver uma maneira de atribuir a um registrador uma etiqueta na sequência do controlador, de forma que esse valor possa ser buscado no registrador e usado para continuar a execução no ponto de entrada designado.</p><p>
+
+<a name="%_idx_5556" id="%_idx_5556"/><a name="%_idx_5558" id="%_idx_5558"/>Para refletir essa capacidade, estenderemos o <tt>assign</tt> instrução da linguagem da máquina de registradores para permitir que um registrador seja atribuído como valor a uma etiqueta da sequência do controlador (como um tipo especial de constante). Também estenderemos o <tt>goto</tt> instrução para permitir que a execução continue no ponto de entrada descrito pelo conteúdo de um registrador, e não apenas no ponto de entrada descrito por um rótulo constante. Usando essas novas construções, podemos encerrar o <tt>gcd</tt> sub-rotina com uma ramificação para o local armazenado no registrador <tt>continue</tt>. Isso leva à sequência do controlador mostrada na figura <a href="#%_fig_5.10">5.10</a>.</p><p>Uma máquina com mais de uma sub-rotina pode usar vários registradores de continuação (por exemplo, <tt>gcd-continue</tt>, <tt>factorial-continue</tt>) ou poderíamos ter todas as sub-rotinas compartilhando um único registrador <tt>continue</tt>. Compartilhar é mais econômico, mas devemos ter cuidado se tivermos uma sub-rotina (<tt>sub1</tt>) que chama outra sub-rotina (<tt>sub2</tt>) A menos que <tt>sub1</tt> salva o conteúdo de <tt>continue</tt> em algum outro registrador antes de configurar <tt>continue</tt> para a chamada para <tt>sub2</tt>, <tt>sub1</tt> não saberá para onde ir quando terminar. O mecanismo desenvolvido na próxima seção para lidar com a recursão também fornece uma solução melhor para esse problema de chamadas de sub-rotina aninhadas.</p><p>
+
+<a name="%_sec_5.1.4" id="%_sec_5.1.4"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_5.1.4">5.1.4 Usando uma pilha para implementar recursão</a></h3><p>
+
+
+<a name="%_idx_5560" id="%_idx_5560"/><a name="%_idx_5562" id="%_idx_5562"/><a name="%_idx_5564" id="%_idx_5564"/>
+<a name="%_idx_5566" id="%_idx_5566"/>Com as ideias ilustradas até agora, podemos implementar qualquer processo iterativo especificando uma máquina de registradores que tenha um registrador correspondente a cada variável de estado do processo. A máquina executa repetidamente um loop do controlador, alterando o conteúdo dos registradores, até que alguma condição de terminação seja satisfeita. Em cada ponto da sequência do controlador, o estado da máquina (representando o estado do processo iterativo) é completamente determinado pelo conteúdo dos registradores (os valores das variáveis de estado).</p><p>
+
+
+<a name="%_idx_5568" id="%_idx_5568"/><a name="%_idx_5570" id="%_idx_5570"/><a name="%_idx_5572" id="%_idx_5572"/>A implementação de processos recursivos, no entanto, requer um mecanismo adicional. Considere o seguinte método recursivo para calcular fatoriais, que examinamos pela primeira vez na seção <a href="book-Z-H-11.html#%_sec_1.2.1">1.2.1</a>:</p><p>
+
+</p><p/><p><tt>(define (factorial n)<br/>
+  (if (= n 1)<br/>
+      1<br/>
+      (* (factorial (- n 1)) n)))<br/></tt></p><p/><p>Como vemos no procedimento, a computação <em>n</em>! requer computação (<em>n</em> - 1)!. Nossa máquina MDC, modelada no procedimento</p><p>
+
+</p><p/><p><tt>(define (gcd a b)<br/>
+  (if (= b 0)<br/>
+      a<br/>
+      (gcd b (remainder a b))))<br/></tt></p><p/><p>da mesma forma teve que calcular outro MDC. Mas há uma diferença importante entre o procedimento <tt>gcd</tt>, que reduz o cálculo original para um novo cálculo MDC, e <tt>factorial</tt>, o que requer computar outro fatorial como um subproblema. No MDC, a resposta para o novo cálculo do MDC é a resposta para o problema original. Para calcular o próximo MDC, simplesmente colocamos os novos argumentos nos registradores de entrada da máquina MDC e reutilizamos os caminhos de dados da máquina executando a mesma sequência de controlador. Quando a máquina termina de resolver o problema final do MDC, ela conclui todo o cálculo.</p><p>No caso de fatorial (ou qualquer processo recursivo), a resposta para o novo subproblema fatorial não é a resposta para o problema original. O valor obtido para (<em>n</em> 1)! deve ser multiplicado por <em>n</em> para obter a resposta final. Se tentarmos imitar o projeto da MDC e resolver o subproblema fatorial, diminuindo o registrador <tt>n</tt> e executar novamente a máquina fatorial, não teremos mais disponível o antigo valor de <tt>n</tt> pelo qual multiplicar o resultado. Portanto, precisamos de uma segunda máquina fatorial para trabalhar no subproblema. Essa segunda computação fatorial possui um subproblema fatorial, que requer uma terceira máquina fatorial, e assim por diante. Como cada máquina fatorial contém outra máquina fatorial, a máquina total contém um aninhamento infinito de máquinas semelhantes e, portanto, não pode ser construída a partir de um número fixo e finito de peças.</p><p>No entanto, podemos implementar o processo fatorial como uma máquina de registrador, se conseguirmos usar os mesmos componentes para cada instância aninhada da máquina. Especificamente, a máquina que calcula <em>n</em>! deve usar os mesmos componentes para trabalhar no subproblema da computação (<em>n</em> - 1) !, no subproblema para (<em>n</em> - 2)! E assim por diante. Isso é plausível porque, embora o processo fatorial determine que um número ilimitado de cópias da mesma máquina seja necessário para executar um cálculo, apenas uma dessas cópias precisa estar ativa a qualquer momento. Quando a máquina encontra um subproblema recursivo, ela pode suspender o trabalho no problema principal, reutilizar as mesmas partes físicas para trabalhar no subproblema e continuar o cálculo suspenso.</p><p>No subproblema, o conteúdo dos registradores será diferente do que estava no problema principal. (Nesse caso, o registrador <tt>n</tt> é decrementado). Para poder continuar o cálculo suspenso, a máquina deve salvar o conteúdo de todos os registradores necessários após a resolução do subproblema, para que possam ser restaurados para continuar o cálculo suspenso. No caso de fatorial, salvaremos o valor antigo de <tt>n</tt>, a ser restaurado quando terminarmos de calcular o fatorial do registro <tt>n</tt> decrementado.<a name="call_footnote_Temp_717" href="#footnote_Temp_717" id="call_footnote_Temp_717">&lt;s4 &gt;<small>2</small></sup></a></p><p>Como não há <em>a priori</em> Para limitar a profundidade das chamadas recursivas aninhadas, talvez seja necessário salvar um número arbitrário de valores de registrador. Esses valores devem ser restaurados no sentido inverso da ordem em que foram salvos, pois em um aninhamento de recursões o último subproblema a ser inserido é o primeiro a ser concluído. Isso determina o uso de uma <em>pilha</em>, ou “último a entrar, primeiro a sair”, para salvar os valores do registrador. Podemos estender a linguagem da máquina de registradores para incluir uma pilha adicionando dois tipos de instruções: Os valores são colocados <a name="%_idx_5574" id="%_idx_5574"/><a name="%_idx_5576" id="%_idx_5576"/><a name="%_idx_5578" id="%_idx_5578"/><a name="%_idx_5580" id="%_idx_5580"/>na pilha usando um <tt>save</tt> instruções e restaurado da pilha usando um <tt>restore</tt> instrução. Após uma sequência de valores ter sido <tt>save</tt> d na pilha, uma sequência de <tt>restore</tt> s recuperará esses valores na ordem inversa.<a name="call_footnote_Temp_718" href="#footnote_Temp_718" id="call_footnote_Temp_718"><sup><small>3</small></sup></a></p><p>Com o auxílio da pilha, podemos reutilizar uma única cópia dos caminhos de dados da máquina fatorial para cada subproblema fatorial. Há um problema de projeto semelhante ao reutilizar a sequência do controlador que opera os caminhos de dados. Para reexecutar a computação fatorial, o controlador não pode simplesmente voltar ao início, como em um processo iterativo, porque depois de resolver o (<em>n</em> 1)! subproblema a máquina ainda deve multiplicar o resultado por <em>n</em>. O controlador deve suspender seu cálculo de <em>n</em>!, resolva o (<em>n</em> 1)! subproblema, continue seu cálculo de <em>n</em>!. Esta visão da computação fatorial sugere o uso do mecanismo de sub-rotina descrito na seção <a href="#%_sec_5.1.3">5.1.3</a>, que faz com que o controlador use um registrador <a name="%_idx_5582" id="%_idx_5582"/><tt>continue</tt> para transferir para a parte da sequência que resolve um subproblema e continue de onde parou no problema principal. Assim, podemos fazer uma sub-rotina fatorial que retorna ao ponto de entrada armazenado no registrador <tt>continue</tt>. Em cada chamada de sub-rotina, salvamos e restauramos <tt>continue</tt> assim como fazemos o registrador <tt>n</tt>, uma vez que cada “nível” da computação fatorial usará o mesmo registrador <tt>continue</tt>. Ou seja, a sub-rotina fatorial deve colocar um novo valor em <tt>continue</tt> quando se chama um subproblema, mas precisará do valor antigo para retornar ao local que o chamou para resolver um subproblema.</p><p>Figura <a href="#%_fig_5.11">5.11</a> mostra os caminhos de dados e o controlador de uma máquina que implementa o procedimento recursivo <tt>factorial</tt>. A máquina possui uma pilha e três registradores, chamados <tt>n</tt>, <tt>val</tt> e <tt>continue</tt>. Para simplificar o diagrama do caminho de dados, não nomeamos os botões de atribuição de registrador, apenas os botões de operação de pilha (<tt>sc</tt> e <tt>sn</tt> para salvar registradores, <tt>rc</tt> e <tt>rn</tt> restaurar registradores). Para operar a máquina, colocamos em registrador <tt>n</tt> o número cujo fatorial queremos calcular e iniciar a máquina. Quando a máquina atinge <tt>fact-done</tt>, o cálculo está concluído e a resposta será encontrada no registrador <tt>val</tt>. Na sequência do controlador, <tt>n</tt> e <tt>continue</tt> são salvos antes de cada chamada recursiva e restaurados após o retorno da chamada. O retorno de uma chamada é realizado ramificando-se para o local armazenado em <tt>continue</tt>. <tt>Continue</tt> é inicializado quando a máquina inicia, para que o último retorno vá para <tt>fact-done</tt>. O registrador <tt>val</tt>, que contém o resultado da computação fatorial, não é salvo antes da chamada recursiva, porque o conteúdo antigo de <tt>val</tt> não é útil após o retorno da sub-rotina. Somente o novo valor, que é o valor produzido pela subcomputação, é necessário. Embora, em princípio, a computação fatorial exija uma máquina infinita, a máquina na figura <a href="#%_fig_5.11">5.11</a> é realmente finito, exceto pela pilha, que é potencialmente ilimitada. Qualquer implementação física específica de uma pilha, no entanto, será de tamanho finito e isso limitará a profundidade das chamadas recursivas que podem ser tratadas pela máquina. Essa implementação do fatorial ilustra a estratégia geral para a realização de algoritmos recursivos como máquinas de registrador comuns incrementadas por pilhas. Quando um subproblema recursivo é encontrado, salvamos na pilha os registradores cujos valores atuais serão necessários após a resolução do subproblema, resolvemos o subproblema recursivo, restauramos os registradores salvos e continuamos a execução no problema principal. O registrador <tt>continue</tt> deve sempre ser salvo. A existência de outros registradores que precisam ser salvos depende da máquina específica, pois nem todos os cálculos recursivos precisam dos valores originais dos registradores que são modificados durante a solução do subproblema (consulte o exercício <a href="#%_thm_5.4">5.4</a>)</p><p>
+
+<a name="%_sec_Temp_719" id="%_sec_Temp_719"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_719">Uma recursão dupla</a></h4><p>
+
+<a name="%_idx_5584" id="%_idx_5584"/>Examinaremos um processo recursivo mais complexo, o cálculo árvore-recursivo dos números de Fibonacci, que introduzimos na seção <a href="book-Z-H-11.html#%_sec_1.2.2">1.2.2</a>:</p><p/><p><tt>(define (fib n)<br/>
+  (if (&lt; n 2)<br/>
+      n<br/>
+      (+ (fib (- n 1)) (fib (- n 2)))))<br/></tt></p><p/><p>Assim como no fatorial, podemos implementar a computação recursiva de Fibonacci como uma máquina de registradores com registradores <tt>n</tt>, <tt>val</tt> e <tt>continue</tt>. A máquina é mais complexa que a fatorial, porque há dois locais na sequência do controlador em que precisamos executar chamadas recursivas - uma vez para calcular Fib (<em>n</em> - 1) e uma vez para calcular Fib (<em>n</em> 2) Para configurar cada uma dessas chamadas, salvamos os registradores cujos valores serão necessários posteriormente, defina o registador <tt>n</tt> para o número cujo Fib precisamos calcular recursivamente (<em>n</em> - 1 ou <em>n</em> - 2) e atribuir a <tt>continue</tt> ao ponto de entrada na sequência principal para a qual retornar (<tt>afterfib-n-1</tt> ou <tt>afterfib-n-2</tt>, respectivamente). Depois vamos para <tt>fib-loop</tt>. Quando retornamos da chamada recursiva, a resposta está em <tt>val</tt>. Figura <a href="#%_fig_5.12">5.12</a> mostra a sequência do controlador para esta máquina.</p><p>
+
+<a name="%_fig_5.11" id="%_fig_5.11"/></p><p/><div align="left"><table width="100%"><tr><td><img src="images/ch5-Z-G-6.gif" border="0"/><p/><p><tt>(controller<br/>
+   (assign continue (label fact-done))     <em>; set up final return address</em><br/>
+ fact-loop<br/>
+   (test (op =) (reg n) (const 1))<br/>
+   (branch (label base-case))<br/>
+   <em>;; Set up for the recursive call by saving <tt>n</tt> and <tt>continue</tt>.</em><br/>
+   <em>;; Set up <tt>continue</tt> so that the computation will continue</em><br/>
+   <em>;; at <tt>after-fact</tt> when the subroutine returns.</em><br/>
+   (save continue)<br/>
+   (save n)<br/>
+   (assign n (op -) (reg n) (const 1))<br/>
+   (assign continue (label after-fact))<br/>
+   (goto (label fact-loop))<br/>
+ after-fact<br/>
+   (restore n)<br/>
+   (restore continue)<br/>
+   (assign val (op *) (reg n) (reg val))   <em>; <tt>val</tt> now contains</em> <em>n</em>(<em>n</em> - 1)!<br/>
+   (goto (reg continue))                   <em>; return to caller</em><br/>
+ base-case<br/>
+   (assign val (const 1))                  <em>; base case: </em>1! = 1<br/>
+   (goto (reg continue))                   <em>; return to caller</em><br/>
+ fact-done)<br/></tt></p><p/><p>
+</p><p/><p/></td></tr><caption align="bottom"><div align="left"><b>Figure 5.11:</b>  A recursive factorial machine.</div></caption><tr><td>
+<a name="%_idx_5586" id="%_idx_5586"/>
+</td></tr></table></div><p/><p>
+
+<a name="%_fig_5.12" id="%_fig_5.12"/></p><p/><div align="left"><table width="100%"><tr><td><p/><p><tt>(controller<br/>
+   (assign continue (label fib-done))<br/>
+ fib-loop<br/>
+   (test (op &lt;) (reg n) (const 2))<br/>
+   (branch (label immediate-answer))<br/>
+   <em>;; set up to compute <em>F</em><em>i</em><em>b</em>(<em>n</em> - 1)</em><br/>
+   (save continue)<br/>
+   (assign continue (label afterfib-n-1))<br/>
+   (save n)                           <em>; save old value of <tt>n</tt></em><br/>
+   (assign n (op -) (reg n) (const 1))<em>; clobber <tt>n</tt> to <em>n</em> - 1</em><br/>
+   (goto (label fib-loop))            <em>; perform recursive call</em><br/>
+ afterfib-n-1                         <em>; upon return, <tt>val</tt> contains <em>F</em><em>i</em><em>b</em>(<em>n</em> - 1)</em><br/>
+   (restore n)<br/>
+   (restore continue)<br/>
+   <em>;; set up to compute <em>F</em><em>i</em><em>b</em>(<em>n</em> - 2)</em><br/>
+   (assign n (op -) (reg n) (const 2))<br/>
+   (save continue)<br/>
+   (assign continue (label afterfib-n-2))<br/>
+   (save val)                         <em>; save <em>F</em><em>i</em><em>b</em>(<em>n</em> - 1)</em><br/>
+   (goto (label fib-loop))<br/>
+ afterfib-n-2                         <em>; upon return, <tt>val</tt> contains <em>F</em><em>i</em><em>b</em>(<em>n</em> - 2)</em><br/>
+   (assign n (reg val))               <em>; <tt>n</tt> now contains <em>F</em><em>i</em><em>b</em>(<em>n</em> - 2)</em><br/>
+   (restore val)                      <em>; <tt>val</tt> now contains <em>F</em><em>i</em><em>b</em>(<em>n</em> - 1)</em><br/>
+   (restore continue)<br/>
+   (assign val                        <em>;  <em>F</em><em>i</em><em>b</em>(<em>n</em> - 1) +  <em>F</em><em>i</em><em>b</em>(<em>n</em> - 2)</em><br/>
+           (op +) (reg val) (reg n)) <br/>
+   (goto (reg continue))              <em>; return to caller, answer is in <tt>val</tt></em><br/>
+ immediate-answer<br/>
+   (assign val (reg n))               <em>; base case:  <em>F</em><em>i</em><em>b</em>(<em>n</em>) = <em>n</em></em><br/>
+   (goto (reg continue))<br/>
+ fib-done)<br/></tt></p><p/><p>
+</p><p/><p/></td></tr><caption align="bottom"><div align="left"><b>Figura 5.12:</b> Controlador de uma máquina para calcular números de Fibonacci.</div></caption><tr><td>
+<a name="%_idx_5588" id="%_idx_5588"/>
+</td></tr></table></div><p/><p>
+
+</p><p><a name="%_thm_5.4" id="%_thm_5.4"/>
+<b>Exercício 5.4.</b> Especifique as máquinas de registrador que implementam cada um dos procedimentos a seguir. Para cada máquina, escreva uma sequência de instruções do controlador e desenhe um diagrama mostrando os caminhos dos dados.</p><p>
+
+</p><p/><p>a. Exponenciação recursiva:</p><p>
+
+</p><p/><p><tt><a name="%_idx_5590" id="%_idx_5590"/>(define (expt b n)<br/>
+  (if (= n 0)<br/>
+      1<br/>
+      (* b (expt b (- n 1)))))<br/></tt></p><p/><p>
+</p><p/><p>b. Exponenciação iterativa:</p><p>
+
+</p><p/><p><tt>(define (expt b n)<br/>
+  (define (expt-iter counter product)<br/>
+    (if (= counter 0)<br/>
+        product<br/>
+        (expt-iter (- counter 1) (* b product))))<br/>
+  (expt-iter n 1))<br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_5.5" id="%_thm_5.5"/>
+<b>Exercício 5.5.</b> Simule manualmente as máquinas fatoriais e Fibonacci, usando alguma entrada não trivial (exigindo a execução de, pelo menos, uma chamada recursiva). Mostre o conteúdo da pilha em cada ponto significativo da execução.</p><p/><p>
+
+</p><p><a name="%_thm_5.6" id="%_thm_5.6"/>
+<b>Exercício 5.6.</b> Ben Bitdiddle observa que a sequência do controlador da máquina Fibonacci possui um extra <tt>save</tt> e um extra <tt>restore</tt>, que pode ser removido para criar uma máquina mais rápida. Onde estão essas instruções?</p><p>
+
+<a name="%_sec_5.1.5" id="%_sec_5.1.5"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_5.1.5">5.1.5 Resumo das instruções</a></h3><p>
+
+<a name="%_idx_5592" id="%_idx_5592"/>
+<a name="%_idx_5594" id="%_idx_5594"/><a name="%_idx_5596" id="%_idx_5596"/>Uma instrução de controlador em nossa linguagem de máquina de registradores possui uma das seguintes formas, em que cada &lt;<em>entrada<sub><em>i</em></sub></em>&gt; é <tt>(reg &lt;<em>register-name</em>&gt;)</tt> ou <tt>(const &lt;<em>constant-value</em>&gt;)</tt>.</p><p>Estas instruções foram introduzidas na seção <a href="#%_sec_5.1.1">5.1.1</a>:</p><p/><p><tt><a name="%_idx_5598" id="%_idx_5598"/>(assign &lt;<em>register-name</em>&gt; (reg &lt;<em>register-name</em>&gt;))<br/><br/>
+(assign &lt;<em>register-name</em>&gt; (const &lt;<em>constant-value</em>&gt;))<br/><br/><a name="%_idx_5600" id="%_idx_5600"/>(assign &lt;<em>register-name</em>&gt; (op &lt;<em>operation-name</em>&gt;) &lt;<em>input<sub>1</sub></em>&gt; <tt>...</tt> &lt;<em>input<sub><em>n</em></sub></em>&gt;)<br/><br/><a name="%_idx_5602" id="%_idx_5602"/>(perform (op &lt;<em>operation-name</em>&gt;) &lt;<em>input<sub>1</sub></em>&gt; <tt>...</tt> &lt;<em>input<sub><em>n</em></sub></em>&gt;)<br/><br/><a name="%_idx_5604" id="%_idx_5604"/>(test (op &lt;<em>operation-name</em>&gt;) &lt;<em>input<sub>1</sub></em>&gt; <tt>...</tt> &lt;<em>input<sub><em>n</em></sub></em>&gt;)<br/><br/><a name="%_idx_5606" id="%_idx_5606"/><a name="%_idx_5608" id="%_idx_5608"/>(branch (label &lt;<em>label-name</em>&gt;))<br/><br/><a name="%_idx_5610" id="%_idx_5610"/>(goto (label &lt;<em>label-name</em>&gt;))<br/></tt></p><p/><p>
+</p><p>O uso de registradores para guardar etiquetas foi introduzido na seção <a href="#%_sec_5.1.3">5.1.3</a>:</p><p/><p><tt>(assign &lt;<em>register-name</em>&gt; (label &lt;<em>label-name</em>&gt;))<br/><br/>
+(goto (reg &lt;<em>register-name</em>&gt;))<br/></tt></p><p/><p/><p>As instruções para usar a pilha foram introduzidas na seção <a href="#%_sec_5.1.4">5.1.4</a>:</p><p/><p><tt><a name="%_idx_5612" id="%_idx_5612"/>(save &lt;<em>register-name</em>&gt;)<br/><br/><a name="%_idx_5614" id="%_idx_5614"/>(restore &lt;<em>register-name</em>&gt;)<br/></tt></p><p/><p/><p>
+
+<a name="%_idx_5616" id="%_idx_5616"/><a name="%_idx_5618" id="%_idx_5618"/><a name="%_idx_5620" id="%_idx_5620"/>O único tipo de &lt;<em>valor constante</em>&gt; vimos até agora um número, mas depois usaremos sequências de caracteres, símbolos e listas. Por exemplo, <tt>(const &quot;abc&quot;)</tt> é a string <tt>&quot;abc&quot;</tt>, <tt>(const abc)</tt> é o símbolo <tt>abc</tt>, <tt>(const (a b c))</tt> é a lista <tt>(a b c)</tt> e <tt>(const ())</tt> é a lista vazia.</p><p>
+
+</p><p/><div class="smallprint"><hr/></div><p>
+</p><div class="footnote"><p><a name="footnote_Temp_715" href="#call_footnote_Temp_715" id="footnote_Temp_715"><sup><small>1</small></sup></a> Essa suposição encobre uma grande quantidade de complexidade. Geralmente, grande parte da implementação de um sistema Lisp é dedicada a fazer a leitura e a impressão funcionar.</p><p><a name="footnote_Temp_717" href="#call_footnote_Temp_717" id="footnote_Temp_717"><sup><small>2</small></sup></a> Pode-se argumentar que não precisamos salvar o antigo <tt>n</tt>; depois de decrementá-lo e resolver o subproblema, poderíamos simplesmente incrementá-lo para recuperar o valor antigo. Embora essa estratégia funcione para fatorial, ela não pode funcionar em geral, pois o valor antigo de um registrador nem sempre pode ser calculado a partir do novo.</p><p><a name="footnote_Temp_718" href="#call_footnote_Temp_718" id="footnote_Temp_718"><sup><small>3</small></sup></a> Na seção <a href="book-Z-H-33.html#%_sec_5.3">5.3</a> veremos como implementar uma pilha em termos de operações mais primitivas.</p></div>
+
+
+
+</body>
+</html>

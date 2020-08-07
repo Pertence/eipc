@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ops="http://www.idpf.org/2007/ops">
+<!-- Generated from TeX source by tex2page, v 4o,
+     (c) Dorai Sitaram, http://www.cs.rice.edu/~dorai/tex2page -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type: text/html; charset=utf-8"/>
+    <title>Estrutura e Interpretação de Programas de Computador</title>
+    <link rel="stylesheet" type="text/css" href="book-Z-C.css" title="default"/>
+  </head>
+  <body>
+
+
+
+<a name="%_sec_1.3" id="%_sec_1.3"/>
+<h2><a href="book-Z-H-4.html#%_toc_%_sec_1.3">1.3 Formulando abstrações com procedimentos de ordem superior</a></h2><p>
+
+</p><p>Vimos que os procedimentos são, em efeito, abstrações que descrevem operações compostas em números independentes dos números particulares. Por exemplo, </p><p>
+
+
+</p><p/><p><tt><a name="%_idx_962" id="%_idx_962"/>(define (cube x) (* x x x))<br/></tt></p><p/><p>não falamos do cubo de um número específico, mas de um método para obter o cubo de qualquer número. É claro que poderíamos nos dar bem sem nunca definir esse procedimento, sempre escrevendo expressões como</p><p>
+
+</p><p/><p><tt>(* 3 3 3)<br/>
+(* x x x)<br/>
+(* y y y)        <br/></tt></p><p/><p>e nunca mencionar o <tt>cube</tt> explicitamente. Isso nos colocaria em séria desvantagem, forçando-nos a trabalhar sempre no nível das operações específicas que são primitivas na linguagem (multiplicação, neste caso) e não em termos de operações de nível superior. Nossos programas seriam capazes de calcular cubos, mas nossa linguagem não teria a capacidade de expressar o conceito de cubo. Algo que devemos exigir de uma poderosa linguagem de programação é a capacidade de criar abstrações atribuindo nomes a padrões comuns e depois trabalhar diretamente em termos de abstrações. Os procedimentos fornecem essa capacidade. É por isso que todas, exceto as linguagens de programação mais primitivas, incluem mecanismos para definir procedimentos.</p><p>No entanto, mesmo no processamento numérico, seremos severamente limitados em nossa capacidade de criar abstrações se estivermos restritos a procedimentos cujos parâmetros devem ser números. Frequentemente, o mesmo padrão de programação será usado com vários procedimentos diferentes. Para expressar padrões como conceitos, precisaremos construir procedimentos que possam aceitar procedimentos como argumentos ou retornar procedimentos como valores. Os procedimentos que manipulam procedimentos são chamados <a name="%_idx_964" id="%_idx_964"/><em>procedimentos de ordem superior</em>. Esta seção mostra como procedimentos de ordem superior podem servir como poderosos mecanismos de abstração, aumentando consideravelmente o poder expressivo de nossa linguagem.</p><p>
+
+<a name="%_sec_1.3.1" id="%_sec_1.3.1"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_1.3.1">1.3.1 Procedimentos como argumentos</a></h3><p>
+
+
+<a name="%_idx_966" id="%_idx_966"/><a name="%_idx_968" id="%_idx_968"/>Considere os três procedimentos a seguir. O primeiro calcula a soma dos números inteiros de <tt>a</tt> a <tt>b</tt>:</p><p>
+
+</p><p/><p><tt><a name="%_idx_970" id="%_idx_970"/>(define (sum-integers a b)<br/>
+  (if (&gt; a b)<br/>
+      0<br/>
+      (+ a (sum-integers (+ a 1) b))))<br/></tt></p><p/><p>O segundo calcula a soma dos cubos dos números inteiros no intervalo especificado:</p><p>
+
+</p><p/><p><tt><a name="%_idx_972" id="%_idx_972"/>(define (sum-cubes a b)<br/>
+  (if (&gt; a b)<br/>
+      0<br/>
+      (+ (cube a) (sum-cubes (+ a 1) b))))<br/></tt></p><p/><p>O terceiro calcula a soma de uma sequência de termos na série</p><p/><div align="left"><img src="images/ch1-Z-G-26.gif" border="0"/></div><p>que converge para π / 8 (muito lentamente):<a name="call_footnote_Temp_90" href="#footnote_Temp_90" id="call_footnote_Temp_90"><sup><small>49</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_978" id="%_idx_978"/>(define (pi-sum a b)<br/>
+  (if (&gt; a b)<br/>
+      0<br/>
+      (+ (/ 1.0 (* a (+ a 2))) (pi-sum (+ a 4) b))))<br/></tt></p><p/><p/><p>Esses três procedimentos compartilham claramente um padrão subjacente comum. Eles são na maioria idênticos, diferindo apenas no nome do procedimento, na função de <tt>a</tt> usada para calcular o termo a ser adicionado e na função que fornece o próximo valor de <tt>a</tt>. Poderíamos gerar cada um dos procedimentos preenchendo espaços no mesmo modelo:</p><p>
+
+</p><p/><p><tt>(define (&lt;<em>name</em>&gt; a b)<br/>
+  (if (&gt; a b)<br/>
+      0<br/>
+      (+ (&lt;<em>term</em>&gt; a)<br/>
+         (&lt;<em>name</em>&gt; (&lt;<em>next</em>&gt; a) b))))<br/></tt></p><p/><p/><p>
+
+<a name="%_idx_980" id="%_idx_980"/>A presença de um padrão tão comum é uma forte evidência de que há uma abstração útil esperando para ser trazida à superfície. De fato, os matemáticos há muito tempo identificaram a abstração do <a name="%_idx_982" id="%_idx_982"/><a name="%_idx_984" id="%_idx_984"/><em>somatório de uma série</em> e inventaram a &quot;notação<a name="%_idx_986" id="%_idx_986"/><a name="%_idx_988" id="%_idx_988"/> sigma&quot;, por exemplo</p><p>
+
+</p><p/><div align="left"><img src="images/ch1-Z-G-27.gif" border="0"/></div><p/><p>para expressar esse conceito. O poder da notação sigma é que ela permite que os matemáticos lidem com o próprio conceito de somatória, e não apenas com somas particulares - por exemplo, para formular resultados gerais sobre somas independentes da soma da série específica.</p><p>Da mesma forma, como projetistas de programas, gostaríamos que nossa linguagem fosse suficientemente poderosa para poder escrever um procedimento que expresse o conceito de soma em si, em vez de apenas procedimentos que calculam somas específicas. Podemos fazê-lo prontamente em nossa linguagem processual, pegando o modelo comum mostrado acima e transformando os &quot;encaixes&quot; em parâmetros formais:</p><p>
+
+</p><p/><p><tt><a name="%_idx_990" id="%_idx_990"/>(define (sum term a next b)<br/>
+  (if (&gt; a b)<br/>
+      0<br/>
+      (+ (term a)<br/>
+         (sum term (next a) next b))))<br/></tt></p><p/><p>Observe que <tt>sum</tt> usa como argumento os limites inferior e superior <tt>a</tt> e <tt>b</tt>, com os procedimentos <tt>term</tt> e <tt>next</tt>. Podemos usar <tt>sum</tt> da mesma forma que qualquer procedimento. Por exemplo, podemos usá-lo (com um procedimento <tt>inc</tt> que incrementa seu argumento em 1) para definir <tt>sum-cubes</tt>:</p><p>
+
+</p><p/><p><tt><a name="%_idx_992" id="%_idx_992"/>(define (inc n) (+ n 1))<br/><a name="%_idx_994" id="%_idx_994"/>(define (sum-cubes a b)<br/>
+  (sum cube a inc b))<br/></tt></p><p/><p>Usando isso, podemos calcular a soma dos cubos dos números inteiros de 1 a 10:</p><p>
+
+
+</p><p/><p><tt>(sum-cubes 1 10)<br/><i>3025</i><br/></tt></p><p/><p>Com o auxílio de um procedimento de identidade para calcular o termo, podemos definir <tt>sum-integers</tt> em termos de <tt>sum</tt>:</p><p>
+
+
+</p><p/><p><tt><a name="%_idx_996" id="%_idx_996"/>(define (identity x) x)<br/><br/><a name="%_idx_998" id="%_idx_998"/>(define (sum-integers a b)<br/>
+  (sum identity a inc b))<br/></tt></p><p/><p>Em seguida, podemos adicionar os números inteiros de 1 a 10:</p><p>
+
+
+</p><p/><p><tt>(sum-integers 1 10)<br/><i>55</i><br/></tt></p><p/><p>Também podemos definir <tt>pi-sum</tt> da mesma maneira:<a name="call_footnote_Temp_91" href="#footnote_Temp_91" id="call_footnote_Temp_91"><sup><small>50</small></sup></a></p><p>
+
+
+</p><p/><p><tt><a name="%_idx_1000" id="%_idx_1000"/>(define (pi-sum a b)<br/>
+  (define (pi-term x)<br/>
+    (/ 1.0 (* x (+ x 2))))<br/>
+  (define (pi-next x)<br/>
+    (+ x 4))<br/>
+  (sum pi-term a pi-next b))<br/></tt></p><p/><p>Usando esses procedimentos, podemos calcular uma aproximação para π:</p><p>
+
+
+</p><p/><p><tt>(* 8 (pi-sum 1 1000))<br/><i>3.139592655589783</i><br/></tt></p><p/><p/><p>Depois de termos <tt>sum</tt>, podemos usá-lo como um componente básico na formulação de conceitos adicionais. Por exemplo, a <a name="%_idx_1002" id="%_idx_1002"/>integral definida de uma função <em>f</em> entre os limites <em>a</em> e <em>b</em> pode ser aproximada numericamente usando a fórmula</p><p/><p/><div align="left"><img src="images/ch1-Z-G-28.gif" border="0"/></div><p>para pequenos valores de <em>d</em><em>x</em>. Podemos expressar isso diretamente como um procedimento:</p><p>
+
+</p><p/><p><tt><a name="%_idx_1004" id="%_idx_1004"/>(define (integral f a b dx)<br/>
+  (define (add-dx x) (+ x dx))<br/>
+  (* (sum f (+ a (/ dx 2.0)) add-dx b)<br/>
+     dx))<br/>
+(integral cube 0 1 0.01)<br/><i>.24998750000000042</i><br/>
+(integral cube 0 1 0.001)<br/><i>.249999875000001</i><br/></tt></p><p/><p>(O valor exato da integral do <tt>cube</tt> entre 0 e 1 é 1/4).</p><p>
+
+</p><p><a name="%_thm_1.29" id="%_thm_1.29"/>
+<b>Exercício 1.29.</b> <a name="%_idx_1006" id="%_idx_1006"/>A Regra de Simpson é um método mais preciso de integração numérica do que o método ilustrado acima. Usando a Regra de Simpson, a integral de uma função <em>f</em> entre <em>a</em> e <em>b</em> é aproximada</p><p/><div align="left"><img src="images/ch1-Z-G-29.gif" border="0"/></div><p/><p>onde <em>h</em> = (<em>b</em> - <em>a</em>) /<em>n</em>, para alguns inteiros pares <em>n</em>, e <em>y</em><sub><em>k</em></sub> = <em>f</em>(<em>a</em> + <em>k</em><em>h</em>). (Aumentando <em>n</em> aumenta a precisão da aproximação). Defina um procedimento que use como argumentos <em>f</em>, <em>a</em>, <em>b</em> e <em>n</em> e retorna o valor da integral, calculada usando a Regra de Simpson. Use seu procedimento para integrar o <tt>cube</tt> entre 0 e 1 (com <em>n</em> = 100 e <em>n</em> = 1000) e compare os resultados com os do procedimento <tt>integral</tt> mostrado acima.</p><p/><p>
+
+</p><p><a name="%_thm_1.30" id="%_thm_1.30"/>
+<b>Exercício 1.30.</b> <a name="%_idx_1008" id="%_idx_1008"/> O procedimento <tt>sum</tt> acima gera uma recursão linear. O procedimento pode ser reescrito para que a soma seja executada iterativamente. Mostre como fazer isso preenchendo as expressões ausentes na seguinte definição:</p><p>
+
+</p><p/><p><tt>(define (sum term a next b)<br/>
+  (define (iter a result)<br/>
+    (if &lt;<em>??</em>&gt;<br/>
+        &lt;<em>??</em>&gt;<br/>
+        (iter &lt;<em>??</em>&gt; &lt;<em>??</em>&gt;)))<br/>
+  (iter &lt;<em>??</em>&gt; &lt;<em>??</em>&gt;))<br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_1.31" id="%_thm_1.31"/>
+<b>Exercício 1.31.</b> <a name="%_idx_1010" id="%_idx_1010"/> <br/>a. O procedimento <tt>sum</tt> é apenas o mais simples de um vasto número de abstrações semelhantes que podem ser capturadas como procedimentos de ordem superior.<a name="call_footnote_Temp_95" href="#footnote_Temp_95" id="call_footnote_Temp_95"><sup><small>51</small></sup></a> Escreva um procedimento análogo chamado <tt>product</tt> que retorne o produto dos valores de uma função em pontos em um determinado intervalo. Mostre como definir <a name="%_idx_1012" id="%_idx_1012"/><tt>factorial</tt> em termos de <tt>product</tt>. Use também <tt>product</tt> para calcular aproximações para <a name="%_idx_1014" id="%_idx_1014"/>π usando a fórmula <a name="call_footnote_Temp_96" href="#footnote_Temp_96" id="call_footnote_Temp_96"><sup><small>52</small></sup></a>
+</p><p/><div align="left"><img src="images/ch1-Z-G-30.gif" border="0"/></div><p/><p>b. Se o procedimento do <tt>product</tt> gerar um processo recursivo, escreva um que gere um processo iterativo. Se ele gerar um processo iterativo, escreva um que gere um processo recursivo.</p><p/><p>
+
+</p><p><a name="%_thm_1.32" id="%_thm_1.32"/>
+<b>Exercício 1.32.</b> <a name="%_idx_1018" id="%_idx_1018"/> <a name="%_idx_1020" id="%_idx_1020"/><a name="%_idx_1022" id="%_idx_1022"/>a. Mostre que <tt>sum</tt> e <tt>product</tt> (exercício <a href="#%_thm_1.31">1.31</a>) são casos especiais de uma noção ainda mais geral chamada <tt>accumulate</tt> que combina uma coleção de termos, usando alguma função geral de acumulação:</p><p>
+
+</p><p/><p><tt>(accumulate combiner null-value term a next b)<br/></tt></p><p/><p>
+<tt>Accumulate</tt> usa como argumento as mesmas especificações de termo e intervalo que <tt>sum</tt> e <tt>product</tt>, com um procedimento <tt>combiner</tt> (de dois argumentos) que especifica como o termo atual deve ser combinado com a acumulação dos termos anteriores e um <tt>null-value</tt> que especifica qual valor base usar quando os termos se esgotarem. Escreva <tt>accumulate</tt> e mostre como <tt>sum</tt> e <tt>product</tt> podem ser definidos como chamadas simples para <tt>accumulate</tt>.</p><p>
+
+</p><p/><p>b. Se o seu procedimento <tt>accumulate</tt> gerar um processo recursivo, escreva um que gere um processo iterativo. Se ele gerar um processo iterativo, escreva um que gere um processo recursivo.</p><p/><p>
+
+</p><p><a name="%_thm_1.33" id="%_thm_1.33"/>
+<b>Exercício 1.33.</b> <a name="%_idx_1024" id="%_idx_1024"/> Você pode obter uma versão ainda mais geral de <tt>accumulate</tt> (exercício <a href="#%_thm_1.32">1.32</a>) introduzindo a noção de <a name="%_idx_1026" id="%_idx_1026"/><em>filter</em> nos termos a serem combinados. Ou seja, combine apenas os termos derivados de valores no intervalo que atendem a uma condição especificada. A abstração resultante <tt>filtered-accumulate</tt> usa os mesmos argumentos que a acumulação, com um predicado adicional de um argumento que especifica o filtro. Escreva <tt>filtered-accumulate</tt> como um procedimento. Mostre como expressar o seguinte usando <tt>filtered-accumulate</tt>:</p><p>
+
+</p><p/><p>a. a soma dos quadrados dos números primos no intervalo <em>a</em> a <em>b</em> (supondo que você tenha um predicado <tt>prime?</tt> já escrito)</p><p>
+
+</p><p/><p>b. o produto de todos os números inteiros positivos menores que <em>n</em> <a name="%_idx_1028" id="%_idx_1028"/>que são primos relativos para <em>n</em> (ou seja, todos os números inteiros positivos <em>i</em>&lt;<em>n</em> de modo que <em>M</em><em>D</em><em>C</em>(<em>i</em>,<em>n</em>) = 1).</p><p/><p>
+
+<a name="%_sec_1.3.2" id="%_sec_1.3.2"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_1.3.2">1.3.2 Construindo procedimentos usando o <tt>Lambda</tt></a></h3><p>
+
+
+</p><p>Ao usar <tt>sum</tt> como na seção <a href="#%_sec_1.3.1">1.3.1</a>, parece terrivelmente estranho ter que definir procedimentos triviais, como <tt>pi-term</tt> e <tt>pi-next</tt> apenas para que possamos usá-los como argumentos para o nosso procedimento de ordem superior. Em vez de definir <tt>pi-next</tt> e <tt>pi-term</tt>, seria mais conveniente ter uma maneira de especificar diretamente &quot;o procedimento que retorna sua entrada incrementada em 4&quot; e &quot; o procedimento que retorna o inverso de sua entrada vezes sua entrada mais 2. &quot; Podemos fazer isso introduzindo a forma especial <tt>lambda</tt>, que cria procedimentos. Usando <tt>lambda</tt>, podemos descrever o que queremos como</p><p>
+
+</p><p/><p><tt>(lambda (x) (+ x 4))<br/></tt></p><p/><p>e</p><p>
+
+</p><p/><p><tt>(lambda (x) (/ 1.0 (* x (+ x 2))))<br/></tt></p><p/><p>Então, nosso procedimento <tt>pi-sum</tt> pode ser expresso sem definir nenhum procedimento auxiliar como</p><p>
+
+</p><p/><p><tt><a name="%_idx_1030" id="%_idx_1030"/>(define (pi-sum a b)<br/>
+  (sum (lambda (x) (/ 1.0 (* x (+ x 2))))<br/>
+       a<br/>
+       (lambda (x) (+ x 4))<br/>
+       b))<br/></tt></p><p/><p/><p>Novamente, usando <tt>lambda</tt>, podemos escrever o procedimento <tt>integral</tt> sem precisar definir o procedimento auxiliar <tt>add-dx</tt>:</p><p>
+
+</p><p/><p><tt><a name="%_idx_1032" id="%_idx_1032"/>(define (integral f a b dx)<br/>
+  (* (sum f<br/>
+          (+ a (/ dx 2.0))<br/>
+          (lambda (x) (+ x dx))<br/>
+          b)<br/>
+     dx))<br/></tt></p><p/><p/><p>
+
+<a name="%_idx_1034" id="%_idx_1034"/><a name="%_idx_1036" id="%_idx_1036"/><a name="%_idx_1038" id="%_idx_1038"/><a name="%_idx_1040" id="%_idx_1040"/><a name="%_idx_1042" id="%_idx_1042"/>Em geral, <tt>lambda</tt> é usado para criar procedimentos da mesma forma que <tt>define</tt>, exceto que <a name="%_idx_1044" id="%_idx_1044"/>nenhum nome é especificado para o procedimento:</p><p>
+
+</p><p/><p><tt>(lambda (&lt;<em>formal-parameters</em>&gt;) &lt;<em>body</em>&gt;)<br/></tt></p><p/><p>O procedimento resultante é tanto um procedimento quanto o criado usando <tt>define</tt>. A única diferença é que ele não foi associado a nenhum nome no ambiente. De fato,</p><p>
+
+<a name="%_idx_1046" id="%_idx_1046"/></p><p/><p><tt>(define (plus4 x) (+ x 4))<br/></tt></p><p/><p>é equivalente a</p><p>
+
+</p><p/><p><tt>(define plus4 (lambda (x) (+ x 4)))<br/></tt></p><p/><p>Podemos ler uma expressão <tt>lambda</tt> da seguinte maneira:</p><p/><p><tt>    (lambda             (x)             (+    x     4))<br/>         ↑                 ↑               ↑    ↑    ↑<br/> o procedimento de um argumento <tt>x</tt> que adiciona <tt>x</tt> e 4<br/></tt></p><p/><p>
+
+<a name="%_idx_1048" id="%_idx_1048"/><a name="%_idx_1050" id="%_idx_1050"/><a name="%_idx_1052" id="%_idx_1052"/>Como qualquer expressão que tenha um procedimento como valor, uma expressão <tt>lambda</tt> pode ser usada como operador em uma combinação como</p><p>
+
+</p><p/><p><tt>((lambda (x y z) (+ x y (square z))) 1 2 3)<br/><i>12</i><br/></tt></p><p/><p>ou, mais geralmente, em qualquer contexto em que normalmente usássemos o nome de um procedimento.<a name="call_footnote_Temp_99" href="#footnote_Temp_99" id="call_footnote_Temp_99"><sup><small>53</small></sup></a></p><p>
+
+<a name="%_sec_Temp_100" id="%_sec_Temp_100"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_100">Usando <tt>let</tt> para criar variáveis ​​locais</a></h4><p>
+
+<a name="%_idx_1058" id="%_idx_1058"/><a name="%_idx_1060" id="%_idx_1060"/>Outro uso do <tt>lambda</tt> é na criação de variáveis ​​locais. Muitas vezes precisamos de variáveis ​​locais em nossos procedimentos além daquelas que foram ligadas como parâmetros formais. Por exemplo, suponha que desejamos calcular a função</p><p>
+
+</p><p/><div align="left"><img src="images/ch1-Z-G-31.gif" border="0"/></div><p/><p>que também podemos expressar como</p><p/><div align="left"><img src="images/ch1-Z-G-32.gif" border="0"/></div><p>Ao escrever um procedimento para calcular <em>f</em>, gostaríamos de incluir como variáveis ​​locais não apenas <em>x</em> e <em>y</em>, mas também os nomes de quantidades intermediárias, como <em>a</em> e <em>b</em>. Uma maneira de conseguir isso é usar um procedimento auxiliar para ligar as variáveis ​​locais:</p><p>
+
+
+</p><p/><p><tt>(define (f x y)<br/>
+  (define (f-helper a b)<br/>
+    (+ (* x (square a))<br/>
+       (* y b)<br/>
+       (* a b)))<br/>
+  (f-helper (+ 1 (* x y)) <br/>
+            (- 1 y)))<br/></tt></p><p/><p/><p>Obviamente, poderíamos usar uma expressão <tt>lambda</tt> para especificar um procedimento anônimo para ligar nossas variáveis ​​locais. O corpo de <tt>f</tt> se torna uma chamada única para esse procedimento:</p><p>
+
+
+</p><p/><p><tt>(define (f x y)<br/>
+  ((lambda (a b)<br/>
+     (+ (* x (square a))<br/>
+        (* y b)<br/>
+        (* a b)))<br/>
+   (+ 1 (* x y))<br/>
+   (- 1 y)))<br/></tt></p><p/><p>Essa construção é tão útil que existe uma forma especial chamada <tt>let</tt> para tornar seu uso mais conveniente. Usando <tt>let</tt>, o procedimento <tt>f</tt> pode ser escrito como</p><p>
+
+
+</p><p/><p><tt>(define (f x y)<br/>
+  (let ((a (+ 1 (* x y)))<br/>
+        (b (- 1 y)))<br/>
+    (+ (* x (square a))<br/>
+       (* y b)<br/>
+       (* a b))))<br/></tt></p><p/><p>
+<a name="%_idx_1062" id="%_idx_1062"/><a name="%_idx_1064" id="%_idx_1064"/>A forma geral de uma expressão <tt>let</tt> é</p><p>
+
+
+</p><p/><p><tt>(let ((&lt;<em>var<sub>1</sub></em>&gt; &lt;<em>exp<sub>1</sub></em>&gt;)<br/>
+      (&lt;<em>var<sub>2</sub></em>&gt; &lt;<em>exp<sub>2</sub></em>&gt;)<br/>
+      ⋮<br/>
+      (&lt;<em>var<sub><em>n</em></sub></em>&gt; &lt;<em>exp<sub><em>n</em></sub></em>&gt;))<br/>
+   &lt;<em>body</em>&gt;)<br/></tt></p><p/><p>que pode ser pensado como dizendo</p><p>
+
+</p><table border="0"><tr><td valign="top">Seja</td><td valign="top">&lt;<em>var<sub>1</sub></em>&gt; possui o valor &lt;<em>exp<sub>1</sub></em>&gt; e</td></tr><tr><td valign="top"/><td valign="top">&lt;<em>var<sub>2</sub></em>&gt; possui o valor &lt;<em>exp<sub>2</sub></em>&gt; e</td></tr><tr><td valign="top"/><td valign="top">⋮</td></tr><tr><td valign="top"/><td valign="top">&lt;<em>var<sub><em>n</em></sub></em>&gt; possui o valor &lt;<em>exp<sub><em>n</em></sub></em>&gt;</td></tr><tr><td valign="top">em</td><td valign="top">&lt;<em>body</em>&gt;
+</td></tr></table><p>A primeira parte da expressão <tt>let</tt> é uma lista de pares nome-expressão. Quando o <tt>let</tt> é avaliado, cada nome é associado ao valor da expressão correspondente. O corpo do <tt>let</tt> é avaliado com esses nomes ligados como variáveis ​​locais. A maneira como isso acontece é que a expressão <tt>let</tt> é interpretada como uma sintaxe alternativa para</p><p>
+
+</p><p/><p><tt>((lambda (&lt;<em>var<sub>1</sub></em>&gt; <tt>...</tt>&lt;<em>var<sub><em>n</em></sub></em>&gt;)<br/>
+    &lt;<em>body</em>&gt;)<br/>
+ &lt;<em>exp<sub>1</sub></em>&gt;<br/>
+ ⋮<br/>
+ &lt;<em>exp<sub><em>n</em></sub></em>&gt;)<br/></tt></p><p/><p>Nenhum novo mecanismo é necessário no interpretador para fornecer variáveis ​​locais. Uma expressão <a name="%_idx_1066" id="%_idx_1066"/><a name="%_idx_1068" id="%_idx_1068"/><tt>let</tt> é simplesmente açúcar sintático para a aplicação <tt>lambda</tt> subjacente.</p><p>
+
+<a name="%_idx_1070" id="%_idx_1070"/><a name="%_idx_1072" id="%_idx_1072"/>Podemos ver a partir dessa equivalência que o escopo de uma variável especificada por uma expressão <tt>let</tt> é o corpo do <tt>let</tt>. Isso implica que:</p><p>
+
+</p><p/><ul><li><tt>Let</tt> permite ligar variáveis ​​o mais local possível para onde elas serão usadas. Por exemplo, se o valor de <tt>x</tt> for 5, o valor da expressão<p>
+
+</p><p/><p><tt>(+ (let ((x 3))<br/>
+     (+ x (* x 10)))<br/>
+   x)<br/></tt></p><p/><p/><p>é 38. Aqui, o <tt>x</tt> no corpo do <tt>let</tt> é 3, então o valor da expressão <tt>let</tt> é 33. Por outro lado, o <tt>x</tt> que é o segundo argumento para o <tt>+</tt> mais externo ainda é 5.</p><p>
+
+</p></li><li>Os valores das variáveis ​​são calculados fora do <tt>let</tt>. Isso importa quando as expressões que fornecem os valores para as variáveis ​​locais dependem de variáveis ​​com os mesmos nomes que as próprias variáveis ​​locais. Por exemplo, se o valor de <tt>x</tt> for 2, a expressão<p>
+
+</p><p/><p><tt>(let ((x 3)<br/>
+      (y (+ x 2)))<br/>
+  (* x y))<br/></tt></p><p/><p>terá o valor 12 porque, dentro do corpo de <tt>let</tt>, <tt>x</tt> será 3 e <tt>y</tt> será 4 (que é o <tt>x</tt> mais 2).</p></li></ul><p/><p>
+
+
+<a name="%_idx_1074" id="%_idx_1074"/><a name="%_idx_1076" id="%_idx_1076"/>Às vezes, podemos usar definições internas para obter o mesmo efeito que com <tt>let</tt>. Por exemplo, poderíamos ter definido o procedimento <tt>f</tt> acima como</p><p/><p><tt>(define (f x y)<br/>
+  (define a (+ 1 (* x y)))<br/>
+  (define b (- 1 y))<br/>
+  (+ (* x (square a))<br/>
+     (* y b)<br/>
+     (* a b)))<br/></tt></p><p/><p>No entanto, preferimos usar <tt>let</tt> em situações como essa e usar <tt>define</tt> interno apenas para procedimentos internos.<a name="call_footnote_Temp_101" href="#footnote_Temp_101" id="call_footnote_Temp_101"><sup><small>54</small></sup></a></p><p>
+
+</p><p><a name="%_thm_1.34" id="%_thm_1.34"/>
+<b>Exercício 1.34.</b> Suponha que definamos o procedimento</p><p>
+
+</p><p/><p><tt>(define (f g)<br/>
+  (g 2))<br/></tt></p><p/><p>Então temos</p><p>
+
+</p><p/><p><tt>(f square)<br/><i>4</i><br/><br/>
+(f (lambda (z) (* z (+ z 1))))<br/><i>6</i><br/></tt></p><p/><p>O que acontece se pedirmos (perversamente) ao interpretador para avaliar a combinação <tt>(f f)</tt>? Explique.</p><p/><p>
+
+<a name="%_sec_1.3.3" id="%_sec_1.3.3"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_1.3.3">1.3.3 Procedimentos como métodos gerais</a></h3><p>
+
+
+<a name="%_idx_1078" id="%_idx_1078"/><a name="%_idx_1080" id="%_idx_1080"/>Introduzimos procedimentos compostos na seção <a href="book-Z-H-10.html#%_sec_1.1.4">1.1.4</a> como um mecanismo para abstrair padrões de operações numéricas, a fim de torná-los independentes dos números específicos envolvidos. Com procedimentos de ordem superior, como o procedimento <tt>integral</tt> da seção <a href="#%_sec_1.3.1">1.3.1</a>, começamos a ver um tipo mais poderoso de abstração: procedimentos usados ​​para expressar métodos gerais de computação, independente das funções específicas envolvidas. Nesta seção, discutimos mais dois exemplos elaborados - métodos gerais para encontrar zeros e pontos fixos de funções - e mostramos como esses métodos podem ser expressos diretamente como procedimentos.</p><p>
+
+<a name="%_sec_Temp_103" id="%_sec_Temp_103"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_103">Encontrar raízes de equações pelo método de meio intervalo</a></h4><p>
+
+<a name="%_idx_1082" id="%_idx_1082"/>O método <em>half-interval</em> é uma técnica simples, porém poderosa, para encontrar raízes de uma equação <em>f</em>(<em>x</em>) = 0, onde <em>f</em> é uma função contínua. A ideia é que, se recebermos os pontos <em>a</em> e <em>b</em> de modo que <em>f</em>(<em>a</em>) &lt;0 &lt;<em>f</em>(<em>b</em>), então <em>f</em> deve ter, pelo menos, um zero entre <em>a</em> e <em>b</em>. Para localizar um zero, seja <em>x</em> a média de <em>a</em> e <em>b</em> e calcule <em>f</em>(<em>x</em>). Se <em>f</em>(<em>x</em>)&gt; 0, então <em>f</em> deve ter um zero entre <em>a</em> e <em>x</em>. Se <em>f</em>(<em>x</em>) &lt;0, <em>f</em> deve ter um zero entre <em>x</em> e <em>b</em>. Continuando dessa maneira, podemos identificar intervalos cada vez menores nos quais <em>f</em> deve ter um zero. Quando atingimos um ponto em que o intervalo é pequeno o suficiente, o processo para. Como o intervalo de incerteza é reduzido pela metade em cada etapa do processo, o número de etapas necessárias aumenta com θ (<tt>log</tt>(<em>L</em>/<em>T</em>)), onde <em>L</em> é a duração do intervalo original e <em>T</em> é a tolerância a erros (ou seja, o tamanho do intervalo que consideraremos &quot;pequeno o suficiente&quot;). Aqui está um procedimento que implementa esta estratégia:</p><p>
+
+
+</p><p/><p><tt><a name="%_idx_1084" id="%_idx_1084"/>(define (search f neg-point pos-point)<br/>
+  (let ((midpoint (average neg-point pos-point)))<br/>
+    (if (close-enough? neg-point pos-point)<br/>
+        midpoint<br/>
+        (let ((test-value (f midpoint)))<br/>
+          (cond ((positive? test-value)<br/>
+                 (search f neg-point midpoint))<br/>
+                ((negative? test-value)<br/>
+                 (search f midpoint pos-point))<br/>
+                (else midpoint))))))<br/></tt></p><p/><p/><p>Assumimos que inicialmente recebemos a função <em>f</em> com pontos nos quais seus valores são negativos e positivos. Primeiro calculamos o ponto médio dos dois pontos dados. Em seguida, verificamos se o intervalo fornecido é pequeno o suficiente e, se assim for, simplesmente retornamos o ponto médio como nossa resposta. Caso contrário, computamos como valor de teste o valor de <em>f</em> no ponto médio. Se o valor do teste for positivo, continuaremos o processo com um novo intervalo sendo executado do ponto negativo original até o ponto médio. Se o valor do teste for negativo, continuamos com o intervalo do ponto médio ao ponto positivo. Por fim, existe a possibilidade de o valor do teste ser 0; nesse caso, o ponto médio é a raiz que estamos procurando.</p><p>Para testar se os terminais estão &quot;próximos o suficiente&quot;, podemos usar um procedimento semelhante ao usado na seção <a href="book-Z-H-10.html#%_sec_1.1.7">1.1.7</a> para calcular raízes quadradas:<a name="call_footnote_Temp_104" href="#footnote_Temp_104" id="call_footnote_Temp_104"><sup><small>55</small></sup></a></p><p>
+
+</p><p/><p><tt>(define (close-enough? x y)<br/>
+  (&lt; (abs (- x y)) 0.001))<br/></tt></p><p/><p/><p>
+
+<tt>Search</tt> é difícil de usar diretamente, porque podemos atribuir a ela acidentalmente pontos nos quais os valores de <em>f</em> não possuem o sinal necessário, caso em que obtemos uma resposta errada. Em vez disso, usaremos <tt>search</tt> através do procedimento a seguir, que verifica se um dos pontos de extremidade possui um valor de função negativo e qual possui um valor positivo e chama o procedimento <tt>search</tt> de acordo. Se a função tiver o mesmo sinal nos dois pontos indicados, o método de meio intervalo não poderá ser usado. Nesse caso, o procedimento sinaliza um erro.<a name="call_footnote_Temp_105" href="#footnote_Temp_105" id="call_footnote_Temp_105"><sup><small>56</small></sup></a></p><p>
+
+</p><p/><p><tt><a name="%_idx_1092" id="%_idx_1092"/>(define (half-interval-method f a b)<br/>
+  (let ((a-value (f a))<br/>
+        (b-value (f b)))<br/>
+    (cond ((and (negative? a-value) (positive? b-value))<br/>
+           (search f a b))<br/>
+          ((and (negative? b-value) (positive? a-value))<br/>
+           (search f b a))<br/>
+          (else<br/>
+           (error &quot;Values are not of opposite sign&quot; a b)))))<br/></tt></p><p/><p/><p>
+
+<a name="%_idx_1094" id="%_idx_1094"/>O exemplo a seguir usa o método de meio intervalo para aproximar π como a raiz entre 2 e 4 de <tt>sin</tt> <em>x</em> = 0:</p><p>
+
+</p><p/><p><tt>(half-interval-method sin 2.0 4.0)<br/><i>3.14111328125</i><br/></tt></p><p/><p/><p>Aqui está outro exemplo, usando o método de meio intervalo para procurar uma raiz da equação <em>x</em><sup>3</sup> - 2<em>x</em> - 3 = 0 entre 1 e 2:</p><p>
+
+</p><p/><p><tt>(half-interval-method (lambda (x) (- (* x x x) (* 2 x) 3))<br/>
+                      1.0<br/>
+                      2.0)<br/><i>1.89306640625</i><br/></tt></p><p/><p/><p>
+
+<a name="%_sec_Temp_106" id="%_sec_Temp_106"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_106">Localizando pontos fixos de funções</a></h4><p>
+
+<a name="%_idx_1096" id="%_idx_1096"/><a name="%_idx_1098" id="%_idx_1098"/>Um número <em>x</em> é chamado <em>ponto fixo</em> de uma função <em>f</em> se <em>x</em> satisfizer a equação <em>f</em> (<em>x</em>) = <em>x</em>. Para algumas funções <em>f</em>, podemos localizar um ponto fixo começando com um palpite inicial e aplicando <em>f</em> repetidamente,</p><p>
+
+</p><p/><div align="left"><img src="images/ch1-Z-G-33.gif" border="0"/></div><p/><p>até que o valor não mude muito. Usando essa ideia, podemos conceber um procedimento <tt>fixed-point</tt> que tome como entrada uma função e uma estimativa inicial e produza uma aproximação a um ponto fixo da função. Aplicamos a função repetidamente até encontrarmos dois valores sucessivos cuja diferença é menor do que alguma tolerância prescrita:</p><p>
+
+
+</p><p/><p><tt>(define tolerance 0.00001)<br/><a name="%_idx_1100" id="%_idx_1100"/>(define (fixed-point f first-guess)<br/>
+  (define (close-enough? v1 v2)<br/>
+    (&lt; (abs (- v1 v2)) tolerance))<br/>
+  (define (try guess)<br/>
+    (let ((next (f guess)))<br/>
+      (if (close-enough? guess next)<br/>
+          next<br/>
+          (try next))))<br/>
+  (try first-guess))<br/></tt></p><p/><p>
+<a name="%_idx_1102" id="%_idx_1102"/><a name="%_idx_1104" id="%_idx_1104"/>Por exemplo, podemos usar esse método para aproximar o ponto fixo da função cosseno, começando com 1 como uma aproximação inicial:<a name="call_footnote_Temp_107" href="#footnote_Temp_107" id="call_footnote_Temp_107"><sup><small>57</small></sup></a></p><p>
+
+
+</p><p/><p><tt><a name="%_idx_1112" id="%_idx_1112"/><a name="%_idx_1114" id="%_idx_1114"/>(fixed-point cos 1.0)<br/><i>.7390822985224023</i><br/></tt></p><p/><p>Da mesma forma, podemos encontrar uma solução para a equação <em>y</em> = <tt>sin</tt> <em>y</em> + <tt>cos</tt> <em>y</em>:</p><p>
+
+
+</p><p/><p><tt><a name="%_idx_1116" id="%_idx_1116"/><a name="%_idx_1118" id="%_idx_1118"/>(fixed-point (lambda (y) (+ (sin y) (cos y)))<br/>
+             1.0)<br/><i>1.2587315962971173</i><br/></tt></p><p/><p/><p>O processo de ponto fixo lembra o processo que usamos para encontrar raízes quadradas na seção <a href="book-Z-H-10.html#%_sec_1.1.7">1.1.7</a>. Ambos são baseados na ideia de melhorar repetidamente um palpite até que o resultado satisfaça algum critério. De fato, podemos formular prontamente o cálculo da raiz quadrada <a name="%_idx_1120" id="%_idx_1120"/>como uma pesquisa de ponto fixo. O cálculo da raiz quadrada de algum número <em>x</em> requer a localização de um <em>y</em> para que <em>y</em><sup>2</sup> = <em>x</em>. Colocando esta equação na forma equivalente <em>y</em> = <em>x</em>/<em>y</em>, reconhecemos que procuramos um ponto fixo da função <a name="call_footnote_Temp_108" href="#footnote_Temp_108" id="call_footnote_Temp_108"><sup><small>58</small></sup></a> <em>y</em> ⟼ <em>x</em>/<em>y</em> e, portanto, podemos tente calcular raízes quadradas como</p><p>
+
+
+</p><p/><p><tt>(define (sqrt x)<br/>
+  (fixed-point (lambda (y) (/ x y))<br/>
+               1.0))<br/></tt></p><p/><p/><p>Infelizmente, essa pesquisa de ponto fixo não converge. Considere um palpite inicial <em>y</em><sub>1</sub>. O próximo palpite é <em>y</em><sub>2</sub> = <em>x</em>/<em>y</em><sub>1</sub> e o próximo palpite é <em>y</em><sub>3</sub> = <em>x</em>/<em>y</em><sub>2</sub> = <em>x</em> / (<em>x</em>/<em>y</em><sub>1</sub>) = <em>y</em><sub>1</sub>. Isso resulta em um loop infinito no qual as duas suposições <em>y</em><sub>1</sub> e <em>y</em><sub>2</sub> se repetem repetidamente, oscilando sobre a resposta.</p><p>Uma maneira de controlar essas oscilações é impedir que as suposições mudem muito. Como a resposta está sempre entre nosso palpite <em>y</em> e <em>x</em>/<em>y</em>, podemos fazer um novo palpite que não esteja tão longe de <em>y</em> como <em>x</em>/<em>y</em> calculando a média de <em>y</em> com <em>x</em>/<em>y</em>, para que o próximo palpite após <em>y</em> seja (1/2) (<em>y</em> + <em>x</em>/<em>y</em>) em vez de <em>x</em>/<em>y</em>. O processo de fazer essa sequência de suposições é simplesmente o processo de procurar um ponto fixo de <em>y</em> ⟼ (1/2) (<em>y</em> + <em>x</em>/<em>y</em>):</p><p>
+
+</p><p/><p><tt><a name="%_idx_1126" id="%_idx_1126"/>(define (sqrt x)<br/>
+  (fixed-point (lambda (y) (average y (/ x y)))<br/>
+               1.0))<br/></tt></p><p/><p>(Observe que <em>y</em> = (1/2) (<em>y</em> + <em>x</em>/<em>y</em>) é uma simples transformação da equação <em>y</em> = <em>x</em>/<em>y</em>; para derivá-la, adicione <em>y</em> aos dois lados da equação e divida por 2).</p><p>Com essa modificação, o procedimento de raiz quadrada funciona. De fato, se desvendarmos as definições, podemos ver que a sequência de aproximações à raiz quadrada gerada aqui é precisamente a mesma gerada pelo procedimento original de raiz quadrada da seção <a href="book-Z-H-10.html#%_sec_1.1.7">1.1.7</a>. Essa abordagem de calcular aproximações sucessivas médias de uma solução, uma técnica que chamamos de <a name="%_idx_1128" id="%_idx_1128"/><em>amortecimento médio</em>, geralmente ajuda na convergência de pesquisas de ponto fixo.</p><p>
+
+</p><p><a name="%_thm_1.35" id="%_thm_1.35"/>
+<b>Exercício 1.35.</b> <a name="%_idx_1130" id="%_idx_1130"/> <a name="%_idx_1132" id="%_idx_1132"/>Mostre que a proporção áurea <em>φ</em> (seção <a href="book-Z-H-11.html#%_sec_1.2.2">1.2.2</a>) é um ponto fixo da transformação <em>x</em> ⟼ 1 + 1 /<em>x</em> e use esse fato para calcular <em>φ</em> por meio do procedimento <tt>fixed-point</tt>.</p><p/><p>
+
+</p><p><a name="%_thm_1.36" id="%_thm_1.36"/>
+<b>Exercício 1.36.</b> Modifique <tt>fixed-point</tt> para que imprima a sequência de aproximações que gera, usando primitivas <tt>newline</tt> e <tt>display</tt> mostradas no exercício <a href="book-Z-H-11.html#%_thm_1.22">1.22</a>. Em seguida, encontre uma solução para <em>x</em><sup><em>x</em></sup> = 1000 localizando um ponto fixo de <em>x</em> ⟼ <tt>log</tt> (1000) /<tt>log</tt>(<em>x</em>). (Use o procedimento <a name="%_idx_1134" id="%_idx_1134"/><a name="%_idx_1136" id="%_idx_1136"/>primitivo <tt>log</tt> do Scheme, que calcula logaritmos naturais). Compare o número de etapas que são necessárias com e sem amortecimento médio. (Observe que você não pode iniciar <tt>fixed-point</tt> com um palpite de 1, pois isso causaria divisão por <tt>log</tt>(1) = 0).</p><p/><p>
+
+</p><p><a name="%_thm_1.37" id="%_thm_1.37"/>
+<b>Exercício 1.37.</b> <a name="%_idx_1138" id="%_idx_1138"/> a. Uma <em>fração contínua</em> infinita é uma expressão da forma</p><p/><div align="left"><img src="images/ch1-Z-G-34.gif" border="0"/></div><p>
+<a name="%_idx_1140" id="%_idx_1140"/><a name="%_idx_1142" id="%_idx_1142"/>Como exemplo, pode-se mostrar que a expansão da fração contínua e infinita com <em>N</em><sub><em>i</em></sub> e <em>D</em><sub><em>i</em></sub> todos iguais a 1 produzem 1 /<em>φ</em>, onde <em>φ</em> é a proporção áurea (descrita na seção <a href="book-Z-H-11.html#%_sec_1.2.2">1.2.2</a>). Uma maneira de aproximar uma fração contínua infinita é truncar a expansão após um determinado número de termos. Esse truncamento - a chamada fração contínua finita de <em><em>k</em>-termos</em> - possui a forma</p><p/><div align="left"><img src="images/ch1-Z-G-35.gif" border="0"/></div><p>Suponha que <tt>n</tt> e <tt>d</tt> sejam procedimentos de um argumento (o termo índice <em>i</em>) que retornam o <em>N</em><sub><em>i</em></sub> e <em>D</em><sub><em>i</em></sub> dos termos da fração contínua. Defina um procedimento <tt>cont-frac</tt> de modo que a avaliação <tt>(cont-frac n d k)</tt> calcule o valor da fração contínua finita de <em>k</em> termos. Verifique seu procedimento aproximando 1 /<em>φ</em> usando</p><p/><p><tt>(cont-frac (lambda (i) 1.0)<br/>
+           (lambda (i) 1.0)<br/>
+           k)<br/></tt></p><p/><p>para valores sucessivos de <tt>k</tt>. Qual deve ser o tamanho de <tt>k</tt> para obter uma aproximação precisa de 4 casas decimais?</p><p>
+
+</p><p/><p>b. Se o seu procedimento <tt>cont-frac</tt> gerar um processo recursivo, escreva um que gere um processo iterativo. Se ele gerar um processo iterativo, escreva um que gere um processo recursivo.</p><p/><p>
+
+</p><p><a name="%_thm_1.38" id="%_thm_1.38"/>
+<b>Exercício 1.38.</b> <a name="%_idx_1144" id="%_idx_1144"/> Em 1737, o matemático suíço Leonhard Euler publicou um livro de memórias <em>De Fractionibus Continuis</em>, que incluía uma expansão contínua da fração <a name="%_idx_1146" id="%_idx_1146"/><a name="%_idx_1148" id="%_idx_1148"/>para <em>e</em> - 2, onde <em>e</em> é a base dos logaritmos naturais. Nesta fração, <em>N</em><sub><em>i</em></sub> são todos 1 e <em>D</em><sub><em>i</em></sub> são sucessivamente 1, 2, 1, 1, 4, 1, 1, 6, 1, 1, 8, <tt>…</tt>. Escreva um programa que use o procedimento <tt>cont-frac</tt> do exercício <a href="#%_thm_1.37">1.37</a> para aproximar <em>e</em>, com base na expansão do Euler.</p><p/><p>
+
+</p><p><a name="%_thm_1.39" id="%_thm_1.39"/>
+<b>Exercício 1.39.</b> <a name="%_idx_1150" id="%_idx_1150"/><a name="%_idx_1152" id="%_idx_1152"/><a name="%_idx_1154" id="%_idx_1154"/>Uma representação de fração contínua da função tangente foi publicada em 1770 pelo matemático alemão J. H. Lambert:</p><p/><div align="left"><img src="images/ch1-Z-G-36.gif" border="0"/></div><p>onde <em>x</em> está em radianos. Defina um procedimento <tt>(tan-cf x k)</tt> que calcule uma aproximação à função tangente com base na fórmula de Lambert. <tt>K</tt> especifica o número de termos a serem calculados, como no exercício <a href="#%_thm_1.37">1.37</a>.</p><p/><p>
+
+<a name="%_sec_1.3.4" id="%_sec_1.3.4"/>
+</p><h3><a href="book-Z-H-4.html#%_toc_%_sec_1.3.4">1.3.4 Procedimentos como valores retornados</a></h3><p>
+
+
+<a name="%_idx_1156" id="%_idx_1156"/><a name="%_idx_1158" id="%_idx_1158"/>Os exemplos acima demonstram como a capacidade de passar procedimentos como argumentos aprimora significativamente o poder expressivo da nossa linguagem de programação. Podemos obter um poder ainda mais expressivo criando procedimentos cujos valores retornados são os procedimentos eles próprios.</p><p>Podemos ilustrar essa ideia olhando novamente para o exemplo de ponto fixo descrito no final da seção <a href="#%_sec_1.3.3">1.3.3</a>. Formulamos uma nova versão do procedimento de raiz quadrada como uma pesquisa de ponto fixo, começando com a observação de que √<em>x</em> é um ponto fixo da função <em>y</em> ⟼ <em>x</em>/<em>y</em>. Em seguida, usamos o amortecimento médio para fazer as aproximações convergirem. O amortecimento médio é uma técnica geral útil por si só. Ou seja, dada uma função <em>f</em>, consideramos a função cujo valor em <em>x</em> é igual à média de <em>x</em> e <em>f</em> (<em>x</em>).</p><p>Podemos expressar a ideia de amortecimento médio por meio do seguinte procedimento:</p><p>
+
+</p><p/><p><tt><a name="%_idx_1160" id="%_idx_1160"/>(define (average-damp f)<br/>
+  (lambda (x) (average x (f x))))<br/></tt></p><p/><p>
+<tt>Average-damp</tt> é um procedimento que toma como argumento um procedimento <tt>f</tt> e retorna como valor um procedimento (produzido pelo <tt>lambda</tt>) que, quando aplicado a um número <tt>x</tt>, produz a média de <tt>x</tt> e <tt>(f x)</tt>. Por exemplo, a aplicação de <tt>average-damp</tt> ao procedimento <tt>square</tt> produz um procedimento cujo valor em algum número <em>x</em> é a média de <em>x</em> e <em>x</em><sup>2</sup>. A aplicação desse procedimento resultante a 10 retorna a média de 10 e 100, ou 55:<a name="call_footnote_Temp_114" href="#footnote_Temp_114" id="call_footnote_Temp_114"><sup><small>59</small></sup></a></p><p>
+
+
+</p><p/><p><tt>((average-damp square) 10)<br/><i>55</i><br/></tt></p><p/><p/><p>
+
+<a name="%_idx_1168" id="%_idx_1168"/>Usando <tt>average-damp</tt>, podemos reformular o procedimento de raiz quadrada da seguinte maneira:</p><p>
+
+
+</p><p/><p><tt><a name="%_idx_1170" id="%_idx_1170"/>(define (sqrt x)<br/>
+  (fixed-point (average-damp (lambda (y) (/ x y)))<br/>
+               1.0))<br/></tt></p><p/><p>Observe como essa formulação torna explícita as três ideias no método: pesquisa em ponto fixo, amortecimento médio e a função <em>y</em> ⟼ <em>x</em>/<em>y</em>. É instrutivo comparar esta formulação do método da raiz quadrada com a versão original dada na seção <a href="book-Z-H-10.html#%_sec_1.1.7">1.1.7</a>. Lembre-se de que esses procedimentos expressam o mesmo processo e observe como a ideia fica mais clara quando expressamos o processo em termos dessas abstrações. Em geral, existem muitas maneiras de formular um processo como um procedimento. Programadores experientes sabem como escolher formulações procedimentais particularmente evidentes, e onde elementos úteis do processo são expostos como entidades separadas que podem ser reutilizadas em outros aplicativos. Como um exemplo simples de reutilização, observe que a raiz do cubo de <em>x</em> é um ponto fixo da função <em>y</em> ⟼ <em>x</em>/<em>y</em><sup>2</sup>, para que possamos generalizar imediatamente nosso procedimento de raiz quadrada para um que extraia <a name="%_idx_1172" id="%_idx_1172"/><a name="%_idx_1174" id="%_idx_1174"/>raízes cúbicas:<a name="call_footnote_Temp_115" href="#footnote_Temp_115" id="call_footnote_Temp_115"><sup><small>60</small></sup></a></p><p>
+
+
+</p><p/><p><tt><a name="%_idx_1176" id="%_idx_1176"/>(define (cube-root x)<br/>
+  (fixed-point (average-damp (lambda (y) (/ x (square y))))<br/>
+               1.0))<br/></tt></p><p/><p/><p>
+
+
+<a name="%_sec_Temp_116" id="%_sec_Temp_116"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_116">Método de Newton</a></h4><p>
+
+<a name="%_idx_1178" id="%_idx_1178"/>Quando introduzimos o procedimento de raiz quadrada, na seção <a href="book-Z-H-10.html#%_sec_1.1.7">1.1.7</a>, mencionamos que este era um caso especial do <em>método de Newton</em>. Se <em>x</em> ⟼ <em>g</em>(<em>x</em>) é uma função diferenciável, uma solução da equação <em>g</em>(<em>x</em>) = 0 é um ponto fixo da função <em>x</em> ⟼ <em>f</em>(<em>x</em>) em que</p><p/><div align="left"><img src="images/ch1-Z-G-37.gif" border="0"/></div><p>e <em>D</em><em>g</em>(<em>x</em>) é a derivada de <em>g</em> avaliada em <em>x</em>. <a name="%_idx_1180" id="%_idx_1180"/> O método de Newton é o uso do método de ponto fixo que vimos acima para aproximar uma solução da equação, encontrando um ponto fixo da função <em>f</em>.<a name="call_footnote_Temp_117" href="#footnote_Temp_117" id="call_footnote_Temp_117"><sup><small>61</small></sup></a> Para muitas funções <em>g</em> e para suposições iniciais suficientemente boas para <em>x</em>, o método de Newton converge muito rapidamente para uma solução de <em>g</em>(<em>x</em>) = 0.<a name="call_footnote_Temp_118" href="#footnote_Temp_118" id="call_footnote_Temp_118"><sup><small>62</small></sup></a></p><p>
+
+<a name="%_idx_1186" id="%_idx_1186"/><a name="%_idx_1188" id="%_idx_1188"/><a name="%_idx_1190" id="%_idx_1190"/>Para implementar o método de Newton como um procedimento, devemos primeiro expressar a ideia de derivada. Observe que “derivada”, como amortecimento médio, é algo que transforma uma função em outra função. Por exemplo, a derivada da função <em>x</em> ⟼ <em>x</em><sup>3</sup> é a função <em>x</em> ⟼ 3<em>x</em><sup>2</sup>. Em geral, se <em>g</em> for uma função e <em>d</em><em>x</em> for um número pequeno, a derivada <em>D</em><em>g</em> de <em>g</em> é a função cujo valor em qualquer número <em>x</em> é fornecido (no limite de pequenos <em>d</em><em>x</em>) por</p><p/><div align="left"><img src="images/ch1-Z-G-38.gif" border="0"/></div><p>Assim, podemos expressar a ideia de derivada (considerando <em>d</em><em>x</em> como, digamos, 0,00001) como o procedimento</p><p>
+
+</p><p/><p><tt><a name="%_idx_1192" id="%_idx_1192"/>(define (deriv g)<br/>
+  (lambda (x)<br/>
+    (/ (- (g (+ x dx)) (g x))<br/>
+       dx)))<br/></tt></p><p/><p>junto com a definição</p><p>
+
+</p><p/><p><tt>(define dx 0.00001)<br/></tt></p><p/><p/><p>Como <tt>average-damp</tt>, <tt>deriv</tt> é um procedimento que usa um procedimento como argumento e retorna um procedimento como valor. Por exemplo, para aproximar a derivada de <em>x</em> ⟼ <em>x</em><sup>3</sup> em 5 (cujo valor exato é 75), podemos avaliar</p><p>
+
+</p><p/><p><tt><a name="%_idx_1194" id="%_idx_1194"/>(define (cube x) (* x x x))<br/>
+((deriv cube) 5)<br/><i>75.00014999664018</i><br/></tt></p><p/><p/><p>Com o auxílio de <tt>deriv</tt>, podemos expressar o método de Newton como um processo de ponto fixo:</p><p>
+
+</p><p/><p><tt><a name="%_idx_1196" id="%_idx_1196"/>(define (newton-transform g)<br/>
+  (lambda (x)<br/>
+    (- x (/ (g x) ((deriv g) x)))))<br/><a name="%_idx_1198" id="%_idx_1198"/>(define (newtons-method g guess)<br/>
+  (fixed-point (newton-transform g) guess))<br/></tt></p><p/><p>O procedimento <tt>newton-transform</tt> expressa a fórmula no início desta seção, e o <tt>newtons-method</tt> é prontamente definido em termos disso. Toma como argumento um procedimento que calcula a função para a qual queremos encontrar um zero, com uma estimativa inicial. Por exemplo, para encontrar a raiz quadrada <a name="%_idx_1200" id="%_idx_1200"/>de <em>x</em>, podemos usar o método de Newton para encontrar um zero da função <em>y</em> ⟼ <em>y</em><sup>2</sup> - <em>x</em> começando com um palpite inicial de 1.<a name="call_footnote_Temp_119" href="#footnote_Temp_119" id="call_footnote_Temp_119"><sup><small>63</small></sup></a> Isso fornece ainda outra forma do procedimento de raiz quadrada:</p><p>
+
+</p><p/><p><tt><a name="%_idx_1202" id="%_idx_1202"/>(define (sqrt x)<br/>
+  (newtons-method (lambda (y) (- (square y) x))<br/>
+                  1.0))<br/></tt></p><p/><p/><p>
+
+<a name="%_sec_Temp_120" id="%_sec_Temp_120"/>
+</p><h4><a href="book-Z-H-4.html#%_toc_%_sec_Temp_120">Abstrações e procedimentos de primeira classe</a></h4><p>Vimos duas maneiras de expressar o cálculo da raiz quadrada como uma instância de um método mais geral, uma vez como uma pesquisa de ponto fixo e uma vez usando o método de Newton. Como o próprio método de Newton foi expresso como um processo de ponto fixo, vimos duas maneiras de calcular raízes quadradas como pontos fixos. Cada método começa com uma função e encontra um ponto fixo <a name="%_idx_1204" id="%_idx_1204"/>de alguma transformação da função. Podemos expressar essa ideia geral como um procedimento:</p><p>
+
+</p><p/><p><tt><a name="%_idx_1206" id="%_idx_1206"/>(define (fixed-point-of-transform g transform guess)<br/>
+  (fixed-point (transform g) guess))<br/></tt></p><p/><p>Este procedimento mais geral usa como argumento um procedimento <tt>g</tt> que calcula alguma função, um procedimento que transforma <tt>g</tt> e um palpite inicial. O resultado retornado é um ponto fixo da função transformada.</p><p>
+
+<a name="%_idx_1208" id="%_idx_1208"/>Usando essa abstração, podemos reformular a primeira computação de raiz quadrada desta seção (onde procuramos um ponto fixo da versão com amortecimento médio de <em>y</em> ⟼ <em>x</em>/<em>y</em>) como uma instância deste método geral:</p><p>
+
+</p><p/><p><tt><a name="%_idx_1210" id="%_idx_1210"/>(define (sqrt x)<br/>
+  (fixed-point-of-transform (lambda (y) (/ x y))<br/>
+                            average-damp<br/>
+                            1.0))<br/></tt></p><p/><p>
+<a name="%_idx_1212" id="%_idx_1212"/>Da mesma forma, podemos expressar o segundo cálculo de raiz quadrada a partir desta seção (uma instância do método de Newton que encontra um ponto fixo da transformação de Newton de <em>y</em> ⟼ <em>y</em><sup>2</sup> - <em>x</em>) como</p><p>
+
+</p><p/><p><tt><a name="%_idx_1214" id="%_idx_1214"/><a name="%_idx_1216" id="%_idx_1216"/>(define (sqrt x)<br/>
+  (fixed-point-of-transform (lambda (y) (- (square y) x))<br/>
+                            newton-transform<br/>
+                            1.0))<br/></tt></p><p/><p/><p>Começamos a seção <a href="#%_sec_1.3">1.3</a> com a observação de que procedimentos compostos são um mecanismo de abstração crucial, porque nos permitem expressar métodos gerais de computação como elementos explícitos em nossa linguagem de programação. Agora vimos como os procedimentos de ordem superior nos permitem manipular esses métodos gerais para criar abstrações adicionais.</p><p>Como programadores, devemos estar atentos às oportunidades de identificar as abstrações subjacentes em nossos programas e desenvolvê-las e generalizá-las para criar abstrações mais poderosas. Isso não quer dizer que se deva sempre escrever programas da maneira mais abstrata possível; programadores sabem como escolher o nível de abstração apropriado para sua tarefa. Mas é importante poder pensar em termos dessas abstrações, para que possamos estar prontos para aplicá-las em novos contextos. A importância dos procedimentos de ordem superior é que eles nos permitem representar essas abstrações explicitamente como elementos em nossa linguagem de programação, para que possam ser manipuladas como outros elementos computacionais.</p><p>Em geral, as linguagens de programação impõem restrições às maneiras pelas quais os elementos computacionais podem ser manipulados. Diz-se que os elementos com menos restrições possuem status <a name="%_idx_1218" id="%_idx_1218"/><em>de primeira classe</em>. Alguns dos &quot;direitos e privilégios&quot; dos elementos de primeira classe são:<a name="call_footnote_Temp_121" href="#footnote_Temp_121" id="call_footnote_Temp_121"><sup><small>64</small></sup></a>
+</p><p/><ul><li>Eles podem ser nomeados por variáveis.</li><li>Eles podem ser passados ​​como argumentos para procedimentos.</li><li>Eles podem ser retornados como resultados dos procedimentos.</li><li>Eles podem ser incluídos nas estruturas de dados.<a name="call_footnote_Temp_122" href="#footnote_Temp_122" id="call_footnote_Temp_122"><sup><small>65</small></sup></a>
+</li></ul><p>
+<a name="%_idx_1222" id="%_idx_1222"/><a name="%_idx_1224" id="%_idx_1224"/>O Lisp, diferentemente de outras linguagens de programação comuns, concede aos procedimentos o status completo de primeira classe. Isso coloca desafios para uma implementação eficiente, mas o ganho resultante em poder expressivo é enorme.<a name="call_footnote_Temp_123" href="#footnote_Temp_123" id="call_footnote_Temp_123"><sup><small>66</small></sup></a></p><p>
+
+</p><p><a name="%_thm_1.40" id="%_thm_1.40"/>
+<b>Exercício 1.40.</b> Defina um procedimento <tt>cubic</tt> que pode ser usado junto com o procedimento <tt>newtons-method</tt> em expressões da forma</p><p>
+
+
+</p><p/><p><tt>(newtons-method (cubic a b c) 1)<br/></tt></p><p/><p>para aproximar zeros do cúbico <em>x</em><sup>3</sup> + <em>a</em><em>x</em><sup>2</sup> + <em>b</em><em>x</em> + <em>c</em>.</p><p/><p>
+
+</p><p><a name="%_thm_1.41" id="%_thm_1.41"/>
+<b>Exercício 1.41.</b> Defina um procedimento <tt>double</tt> que usa o procedimento de um argumento como argumento e retorna um procedimento que aplica o procedimento original duas vezes. Por exemplo, se <tt>inc</tt> for um procedimento que adicione 1 ao argumento, <tt>(double inc)</tt> deverá ser um procedimento que adicione 2. Qual valor é retornado por</p><p>
+
+
+</p><p/><p><tt>(((double (double double)) inc) 5)<br/></tt></p><p/><p>
+</p><p/><p>
+
+</p><p><a name="%_thm_1.42" id="%_thm_1.42"/>
+<b>Exercício 1.42.</b> <a name="%_idx_1226" id="%_idx_1226"/> <a name="%_idx_1228" id="%_idx_1228"/>Sejam <em>f</em> e <em>g</em> duas funções de um argumento. A <em>composição</em> <em>f</em> após <em>g</em> é definida como a função <em>x</em> ⟼ <em>f</em>(<em>g</em>(<em>x</em>)). Defina um procedimento <tt>compose</tt> que implemente a composição. Por exemplo, se <tt>inc</tt> é um procedimento que adiciona 1 ao argumento,</p><p/><p><tt>((compose square inc) 6)<br/><i>49</i><br/></tt></p><p/><p>
+</p><p/><p>
+
+
+</p><p><a name="%_thm_1.43" id="%_thm_1.43"/>
+<b>Exercício 1.43.</b> <a name="%_idx_1230" id="%_idx_1230"/> Se <em>f</em> for uma função numérica e <em>n</em> for um número inteiro positivo, então podemos formar a <em>n</em>ésima aplicação repetida de <em>f</em>, definida como a função cujo valor em <em>x</em> é <em>f</em>(<em>f</em>(<tt>…</tt>(<em>f</em>(<em>x</em>))<tt>…</tt>)). Por exemplo, se <em>f</em> é a função <em>x</em> ⟼ <em>x</em> + 1, então <em>n</em> ésima a aplicação repetida de <em>f</em> é a função <em>x</em> ⟼ <em>x</em> + <em>n</em>. Se <em>f</em> é a operação de quadrado de um número, então a <em>n</em> ésima aplicação repetida de <em>f</em> é a função que leva seu argumento para o 2 <sup><em>n</em></sup> ésima potência. Escreva um procedimento que tome como entrada um procedimento que calcule <em>f</em> e um número inteiro positivo <em>n</em> e retorne o procedimento que calcula o <em>n</em> ésima aplicação repetida de <em>f</em>. Seu procedimento deve poder ser usado da seguinte maneira:</p><p>
+
+
+</p><p/><p><tt>((repeated square 2) 5)<br/><i>625</i><br/></tt></p><p/><p>Dica: você pode achar conveniente usar <tt>compose</tt> do exercício <a href="#%_thm_1.42">1.42</a>.</p><p/><p>
+
+</p><p><a name="%_thm_1.44" id="%_thm_1.44"/>
+<b>Exercício 1.44.</b> <a name="%_idx_1232" id="%_idx_1232"/><a name="%_idx_1234" id="%_idx_1234"/><a name="%_idx_1236" id="%_idx_1236"/>A ideia de <em>suavizar</em> uma função é um conceito importante no processamento de sinais. Se <em>f</em> é uma função e <em>d</em><em>x</em> é um número pequeno, a versão suavizada de <em>f</em> é a função cujo valor em um ponto <em>x</em> é a média de <em>f</em>(<em>x</em> - <em>d</em><em>x</em>), <em>f</em>(<em>x</em>) e <em>f</em>(<em>x</em> + <em>d</em><em>x</em>). Escreva um procedimento <tt>smooth</tt> que tome como entrada um procedimento que calcule <em>f</em> e retorne um procedimento que calcule <em>f</em> suavizado. Às vezes, é valioso suavizar repetidamente uma função (ou seja, suavizar a função suavizada e assim por diante) para obter a função suavizada com <em><em>n</em>-dobras</em>. Mostre como gerar a função suavizada <em>n</em>-dobras de qualquer função usando <tt>smooth</tt> e <tt>repeated</tt> a partir do exercício <a href="#%_thm_1.43">1.43</a>.</p><p/><p>
+
+</p><p><a name="%_thm_1.45" id="%_thm_1.45"/>
+<b>Exercício 1.45.</b> Vimos na seção <a href="#%_sec_1.3.3">1.3.3</a> que tentando calcular raízes quadradas encontrando ingenuamente um ponto fixo de <em>y</em> ⟼ <em>x</em>/<em>y</em> não convergem e isso pode ser corrigido pelo amortecimento médio. O mesmo método funciona para encontrar raízes de cubo como pontos fixos do amortecimento médio <em>y</em> ⟼ <em>x</em>/<em>y</em><sup>2</sup>. Infelizmente, o processo não funciona para a quarta raiz <a name="%_idx_1238" id="%_idx_1238"/><a name="%_idx_1240" id="%_idx_1240"/>- um único amortecimento médio não é suficiente para fazer uma pesquisa de ponto fixo para <em>y</em> ⟼ <em>x</em>/<em>y</em><sup>3</sup> convergem. Por outro lado, se calcularmos o amortecimento médio duas vezes (ou seja, usar o amortecimento médio de <em>y</em>&gt; <em>x</em>/<em>y</em><sup>3</sup>) a pesquisa de ponto fixo converge. Faça alguns experimentos para determinar quantas amortizações médias são necessárias para calcular <a name="%_idx_1242" id="%_idx_1242"/><a name="%_idx_1244" id="%_idx_1244"/><em>n</em> ésimas raízes como uma pesquisa de ponto fixo com base no amortecimento médio repetido de <em>y</em> ⟼ <em>x</em>/<em>y</em><sup><em>n</em>-1</sup>. Use isso para implementar um procedimento simples para calcular <em>n</em> ésima raízes usando <tt>fixed-point</tt>, <tt>average-damp</tt> e o procedimento <tt>repeated</tt> do exercício <a href="#%_thm_1.43">1.43</a>. Suponha que todas as operações aritméticas necessárias estejam disponíveis como primitivas.</p><p/><p>
+
+</p><p><a name="%_thm_1.46" id="%_thm_1.46"/>
+<b>Exercício 1.46.</b> <a name="%_idx_1246" id="%_idx_1246"/> <a name="%_idx_1248" id="%_idx_1248"/><a name="%_idx_1250" id="%_idx_1250"/><a name="%_idx_1252" id="%_idx_1252"/>Vários dos métodos numéricos descritos neste capítulo são instâncias de uma estratégia computacional extremamente geral conhecida como <em>melhoria iterativa</em>. A melhoria iterativa diz que, para calcular algo, começamos com um palpite inicial para a resposta, testamos se o palpite é bom o suficiente e melhoramos o palpite e continuamos o processo usando o palpite aprimorado como o novo palpite. Escreva um procedimento <tt>iterative-improve</tt> que use dois procedimentos como argumentos: um método para saber se uma suposição é boa o suficiente e um método para melhorar uma suposição. <tt>Iterative-improve</tt> deve retornar como valor um procedimento que adota uma suposição como argumento e continua melhorando a suposição até que seja boa o suficiente. Reescreva o procedimento <tt>sqrt</tt> da seção <a href="book-Z-H-10.html#%_sec_1.1.7">1.1.7</a> e o procedimento <tt>fixed-point</tt> da seção <a href="#%_sec_1.3.3">1.3.3</a> em termos de <tt>iterative-improve</tt>.</p><p>
+</p><p>
+
+
+</p><p/><div class="smallprint"><hr/></div><p>
+</p><div class="footnote"><p><a name="footnote_Temp_90" href="#call_footnote_Temp_90" id="footnote_Temp_90"><sup><small>49</small></sup></a> Esta série, <a name="%_idx_974" id="%_idx_974"/><a name="%_idx_976" id="%_idx_976"/>geralmente escrita na forma equivalente (π / 4) = 1 - (1 / 3) + (1/5) - (1/7) + <tt>···</tt>, é devida a Leibniz. Veremos como usar isso como base para alguns truques numéricos sofisticados na seção <a href="book-Z-H-24.html#%_sec_3.5.3">3.5.3</a>.</p><p><a name="footnote_Temp_91" href="#call_footnote_Temp_91" id="footnote_Temp_91"><sup><small>50</small></sup></a> Observe que usamos a estrutura de blocos (seção <a href="book-Z-H-10.html#%_sec_1.1.8">1.1.8</a>) para incorporar as definições de <tt>pi-next</tt> e <tt>pi-term</tt> dentro de <tt>pi-sum</tt>, pois é improvável que esses procedimentos sejam úteis para qualquer outra finalidade. Veremos como se livrar deles completamente na seção <a href="#%_sec_1.3.2">1.3.2</a>.</p><p><a name="footnote_Temp_95" href="#call_footnote_Temp_95" id="footnote_Temp_95"><sup><small>51</small></sup></a> A intenção dos exercícios <a href="#%_thm_1.31">1.31</a>- <a href="#%_thm_1.33">1.33</a> é demonstrar o poder expressivo que é obtida usando uma abstração apropriada para consolidar muitas operações aparentemente díspares. No entanto, embora a acumulação e a filtragem sejam ideias elegantes, nossas mãos estão um pouco atadas ao usá-las neste momento, pois ainda não temos estruturas de dados para fornecer meios adequados de combinação para essas abstrações. Voltaremos a essas ideias na seção <a href="book-Z-H-15.html#%_sec_2.2.3">2.2.3</a> quando mostrarmos como usar as <em>sequências</em> como interfaces para combinar filtros e acumuladores para criar abstrações ainda mais poderosas. Veremos lá como esses métodos realmente se destacam como uma abordagem poderosa e elegante para projetar programas.</p><p><a name="footnote_Temp_96" href="#call_footnote_Temp_96" id="footnote_Temp_96"><sup><small>52</small></sup></a> Essa fórmula foi descoberta pelo <a name="%_idx_1016" id="%_idx_1016"/>matemático inglês do século XVII, John Wallis.</p><p><a name="footnote_Temp_99" href="#call_footnote_Temp_99" id="footnote_Temp_99"><sup><small>53</small></sup></a> Seria mais claro e menos intimidante para as pessoas que aprendem o Lisp se um nome mais óbvio que <tt>lambda</tt>, como <tt>make-procedure</tt> fossem utilizados. Mas a convenção está firmemente arraigadas. A notação é adotada a partir do <a name="%_idx_1054" id="%_idx_1054"/>cálculo λ<a name="%_idx_1056" id="%_idx_1056"/>, um formalismo matemático introduzido pelo lógico e matemático Alonzo Church (1941). Church desenvolveu o cálculo λ para fornecer uma base rigorosa para o estudo das noções de função e aplicação de função. O cálculo λ tornou-se uma ferramenta básica para investigações matemáticas da semântica de linguagens de programação.</p><p><a name="footnote_Temp_101" href="#call_footnote_Temp_101" id="footnote_Temp_101"><sup><small>54</small></sup></a> Compreender bem as definições internas para garantir que um programa significa o que pretendemos significa requer um modelo mais elaborado do processo de avaliação do que apresentados neste capítulo. As sutilezas não surgem com definições internas de procedimentos. Voltaremos a esse problema na seção <a href="book-Z-H-26.html#%_sec_4.1.6">4.1.6</a>, depois de aprendermos mais sobre a avaliação.</p><p><a name="footnote_Temp_104" href="#call_footnote_Temp_104" id="footnote_Temp_104"><sup><small>55</small></sup></a> Usamos 0,001 como um número &quot;pequeno&quot; representativo para indicar uma tolerância para o erro aceitável em um cálculo. A tolerância apropriada para um cálculo real depende do problema a ser resolvido e das limitações do computador e do algoritmo. Isso geralmente é <a name="%_idx_1086" id="%_idx_1086"/>uma consideração muito sutil, exigindo a ajuda de um analista numérico ou de algum outro tipo de mágico.</p><p><a name="footnote_Temp_105" href="#call_footnote_Temp_105" id="footnote_Temp_105"><sup><small>56</small></sup></a> Isso <a name="%_idx_1088" id="%_idx_1088"/><a name="%_idx_1090" id="%_idx_1090"/>pode ser realizado usando <tt>error</tt>, que assume como argumento um número de itens impressos como mensagens de erro.</p><p><a name="footnote_Temp_107" href="#call_footnote_Temp_107" id="footnote_Temp_107"><sup><small>57</small></sup></a> Tente isso durante uma palestra chata: Defina sua calculadora no modo <a name="%_idx_1106" id="%_idx_1106"/><a name="%_idx_1108" id="%_idx_1108"/><a name="%_idx_1110" id="%_idx_1110"/>radianos e depois repetidamente pressione o botão <tt>cos</tt> até obter o ponto fixo.</p><p><a name="footnote_Temp_108" href="#call_footnote_Temp_108" id="footnote_Temp_108"><sup><small>58</small></sup></a> ⟼ <a name="%_idx_1122" id="%_idx_1122"/><a name="%_idx_1124" id="%_idx_1124"/>(pronuncia-se &quot;mapeia para&quot;) é a maneira do matemático de escrever <tt>lambda</tt>. <em>y</em> ⟼ <em>x</em>/<em>y</em> significa <tt>(lambda(y) (/ x y))</tt>, ou seja, a função cujo valor em <em>y</em> é <em>x</em>/<em>y</em>.</p><p><a name="footnote_Temp_114" href="#call_footnote_Temp_114" id="footnote_Temp_114"><sup><small>59</small></sup></a> Observe que esta é uma combinação cujo operador é ele próprio <a name="%_idx_1162" id="%_idx_1162"/><a name="%_idx_1164" id="%_idx_1164"/><a name="%_idx_1166" id="%_idx_1166"/>uma combinação. O exercício <a href="book-Z-H-10.html#%_thm_1.4">1.4</a> já demonstrou a capacidade de formar essas combinações, mas isso foi apenas um exemplo de brinquedo. Aqui começamos a ver a real necessidade dessas combinações - ao aplicar um procedimento que é obtido como o valor retornado por um procedimento de ordem superior.</p><p><a name="footnote_Temp_115" href="#call_footnote_Temp_115" id="footnote_Temp_115"><sup><small>60</small></sup></a> Veja o exercício <a href="#%_thm_1.45">1.45</a> para uma generalização adicional.</p><p><a name="footnote_Temp_117" href="#call_footnote_Temp_117" id="footnote_Temp_117"><sup><small>61</small></sup></a> Os livros elementares de cálculo geralmente descrevem o método de Newton em termos da sequência de aproximações <em>x</em><sub><em>n</em>+1</sub> = <em>x</em><sub><em>n</em></sub> - <em>g</em>(<em>x</em><sub><em>n</em></sub>) /<em>D</em><em>g</em>(<em>x</em><sub><em>n</em></sub>). Possuir linguagem para falar sobre processos e usar a ideia de pontos fixos simplifica a descrição do método.</p><p><a name="footnote_Temp_118" href="#call_footnote_Temp_118" id="footnote_Temp_118"><sup><small>62</small></sup></a> O método de Newton nem sempre converge para uma resposta, mas pode ser demonstrado que, em casos favoráveis, cada iteração duplica o número de dígitos precisão da aproximação à solução. Nesses casos, o método de Newton <a name="%_idx_1182" id="%_idx_1182"/><a name="%_idx_1184" id="%_idx_1184"/>convergirá muito mais rapidamente que o método de meio intervalo.</p><p><a name="footnote_Temp_119" href="#call_footnote_Temp_119" id="footnote_Temp_119"><sup><small>63</small></sup></a> Para encontrar raízes quadradas, o método de Newton converge rapidamente para a solução correta a partir de qualquer ponto de partida.</p><p><a name="footnote_Temp_121" href="#call_footnote_Temp_121" id="footnote_Temp_121"><sup><small>64</small></sup></a> A noção de status de primeira classe dos elementos <a name="%_idx_1220" id="%_idx_1220"/>da linguagem de programação se deve ao cientista britânico da computação Christopher Strachey (1916- 1975).</p><p><a name="footnote_Temp_122" href="#call_footnote_Temp_122" id="footnote_Temp_122"><sup><small>65</small></sup></a> Veremos exemplos disso depois de introduzirmos estruturas de dados no capítulo 2.</p><p><a name="footnote_Temp_123" href="#call_footnote_Temp_123" id="footnote_Temp_123"><sup><small>66</small></sup></a> O principal custo de implementação dos procedimentos de primeira classe é que permitir que os procedimentos sejam retornados como valores requer a reserva de armazenamento para as variáveis ​​livres de um procedimento, mesmo que o procedimento não é executado. Na implementação do Scheme, estudaremos na seção <a href="book-Z-H-26.html#%_sec_4.1">4.1</a>, essas variáveis ​​são armazenadas no ambiente do procedimento.</p></div>
+
+
+
+</body>
+</html>
